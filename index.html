@@ -1733,6 +1733,8 @@
         let notebookPlaybackType = 'word';
         let notebookPlaybackQueue = [];
         let notebookDisplayedEntry = null;
+        let notebookEntryPlayCount = 0;
+        let notebookRepeatTimer = null;
         const builtInWordItems = cet4Words.map(item => ({ ...item }));
         const activeLibraryIds = loadActiveLibraryIds();
         const API_BASE_URL = 'https://api-enplay.ningboaoke.com';
@@ -2685,6 +2687,7 @@
         }
 
         function goToPrevPhrase() {
+            if (notebookDisplayedEntry && notebookDisplayedEntry.type === 'sentence' && navigateVocabularyNotebook(-1)) return;
             stopPhrasePlayback();
             const prevIdx = findPrevPhraseIndex();
             if (prevIdx !== -1) {
@@ -2695,6 +2698,7 @@
 
         function goToNextPhrase(options = {}) {
             const { fromAutoPlay = false } = options;
+            if (!fromAutoPlay && notebookDisplayedEntry && notebookDisplayedEntry.type === 'sentence' && navigateVocabularyNotebook(1)) return true;
             if (!fromAutoPlay) stopPhrasePlayback();
             const nextIdx = findNextPhraseIndex();
             if (nextIdx !== -1) {
@@ -2742,8 +2746,13 @@
         }
 
         function togglePhrasePlay() {
-            if (isNotebookPlaying && notebookPlaybackType === 'sentence') {
-                stopVocabularyNotebookPlayback();
+            if (notebookDisplayedEntry && notebookDisplayedEntry.type === 'sentence' && notebookPlaybackQueue.length) {
+                if (isNotebookPlaying) {
+                    stopVocabularyNotebookPlayback();
+                } else {
+                    notebookEntryPlayCount = 0;
+                    resumeVocabularyNotebookPlayback();
+                }
                 return;
             }
             if (isPhrasePlaying) {
@@ -3210,16 +3219,25 @@
             stopPhrasePlayback(true);
             stopArticlePlayback();
             stopVocabularyNotebookPlayback();
-            isNotebookPlaying = true;
             notebookPlaybackType = type;
             notebookPlaybackQueue = queue;
             notebookPlaybackIndex = 0;
-            const activeButton = type === 'sentence' ? notebookPlaySentencesBtn : notebookPlayWordsBtn;
-            const activeIcon = type === 'sentence' ? notebookPlaySentencesIcon : notebookPlayWordsIcon;
-            activeButton.classList.add('playing');
+            notebookEntryPlayCount = 0;
+            resumeVocabularyNotebookPlayback();
+        }
+
+        function resumeVocabularyNotebookPlayback() {
+            if (!notebookPlaybackQueue.length || notebookPlaybackIndex < 0 || notebookPlaybackIndex >= notebookPlaybackQueue.length) return;
+            stopPlayback(true);
+            stopPhrasePlayback(true);
+            stopArticlePlayback();
+            isNotebookPlaying = true;
+            const activeIcon = notebookPlaybackType === 'sentence' ? notebookPlaySentencesIcon : notebookPlayWordsIcon;
+            const resolvedButton = notebookPlaybackType === 'sentence' ? notebookPlaySentencesBtn : notebookPlayWordsBtn;
+            resolvedButton.classList.add('playing');
             activeIcon.classList.remove('fa-play');
             activeIcon.classList.add('fa-pause');
-            const playerIcon = type === 'sentence' ? phrasePlayIcon : playIcon;
+            const playerIcon = notebookPlaybackType === 'sentence' ? phrasePlayIcon : playIcon;
             playerIcon.classList.remove('fa-play');
             playerIcon.classList.add('fa-pause');
             playNextNotebookEntry();
@@ -3250,6 +3268,23 @@
             updateWordNotebookToggle();
         }
 
+        function navigateVocabularyNotebook(direction) {
+            if (!notebookDisplayedEntry || !notebookPlaybackQueue.length) return false;
+            const targetIndex = notebookPlaybackIndex + direction;
+            if (targetIndex < 0 || targetIndex >= notebookPlaybackQueue.length) return true;
+            const wasPlaying = isNotebookPlaying;
+            stopVocabularyNotebookPlayback();
+            notebookPlaybackIndex = targetIndex;
+            notebookEntryPlayCount = 0;
+            displayNotebookEntry(
+                notebookPlaybackQueue[notebookPlaybackIndex],
+                notebookPlaybackIndex + 1,
+                notebookPlaybackQueue.length
+            );
+            if (wasPlaying) resumeVocabularyNotebookPlayback();
+            return true;
+        }
+
         function playNextNotebookEntry() {
             if (!isNotebookPlaying) return;
             if (notebookPlaybackIndex >= notebookPlaybackQueue.length) {
@@ -3257,8 +3292,18 @@
                 return;
             }
             const entry = notebookPlaybackQueue[notebookPlaybackIndex];
-            const isSentence = entry.type === 'sentence';
             displayNotebookEntry(entry, notebookPlaybackIndex + 1, notebookPlaybackQueue.length);
+            playCurrentNotebookEntryOnce();
+        }
+
+        function playCurrentNotebookEntryOnce() {
+            if (!isNotebookPlaying) return;
+            const entry = notebookPlaybackQueue[notebookPlaybackIndex];
+            if (!entry) {
+                stopVocabularyNotebookPlayback();
+                return;
+            }
+            const isSentence = entry.type === 'sentence';
             const parts = isSentence
                 ? [{ text: entry.text, element: currentPhraseEl }]
                 : [
@@ -3272,8 +3317,7 @@
             const playPart = () => {
                 if (!isNotebookPlaying) return;
                 if (partIndex >= spokenParts.length) {
-                    notebookPlaybackIndex++;
-                    playNextNotebookEntry();
+                    finishCurrentNotebookEntryPlayback();
                     return;
                 }
                 const part = spokenParts[partIndex++];
@@ -3282,9 +3326,33 @@
             playPart();
         }
 
+        function finishCurrentNotebookEntryPlayback() {
+            if (!isNotebookPlaying) return;
+            notebookEntryPlayCount++;
+            if (notebookEntryPlayCount < playRepeatCount || isWordLooping) {
+                if (notebookEntryPlayCount >= playRepeatCount) notebookEntryPlayCount = 0;
+                notebookRepeatTimer = setTimeout(() => {
+                    notebookRepeatTimer = null;
+                    playCurrentNotebookEntryOnce();
+                }, 700);
+                return;
+            }
+
+            notebookEntryPlayCount = 0;
+            if (isAutoPlaying && notebookPlaybackIndex < notebookPlaybackQueue.length - 1) {
+                notebookPlaybackIndex++;
+                playNextNotebookEntry();
+            } else {
+                stopVocabularyNotebookPlayback();
+            }
+        }
+
         function stopVocabularyNotebookPlayback() {
             isNotebookPlaying = false;
-            notebookPlaybackQueue = [];
+            if (notebookRepeatTimer) {
+                clearTimeout(notebookRepeatTimer);
+                notebookRepeatTimer = null;
+            }
             [notebookPlayWordsBtn, notebookPlaySentencesBtn].forEach(button => {
                 button.classList.remove('playing', 'speaking');
             });
@@ -3358,6 +3426,7 @@
         // Go to previous word
         function goToPreviousWord() {
             console.log('Previous button clicked');
+            if (notebookDisplayedEntry && notebookDisplayedEntry.type !== 'sentence' && navigateVocabularyNotebook(-1)) return;
             stopPlayback();
             
             const prevPos = findPreviousPosition(isNewWordsOnly);
@@ -3375,6 +3444,7 @@
         function goToNextWord(options = {}) {
             const { fromAutoPlay = false } = options;
             console.log('Next button clicked');
+            if (!fromAutoPlay && notebookDisplayedEntry && notebookDisplayedEntry.type !== 'sentence' && navigateVocabularyNotebook(1)) return true;
             if (!fromAutoPlay) {
                 stopPlayback();
             }
@@ -3402,8 +3472,13 @@
         // Toggle play/pause
         function togglePlay() {
             console.log('Play button clicked');
-            if (isNotebookPlaying && notebookPlaybackType === 'word') {
-                stopVocabularyNotebookPlayback();
+            if (notebookDisplayedEntry && notebookDisplayedEntry.type !== 'sentence' && notebookPlaybackQueue.length) {
+                if (isNotebookPlaying) {
+                    stopVocabularyNotebookPlayback();
+                } else {
+                    notebookEntryPlayCount = 0;
+                    resumeVocabularyNotebookPlayback();
+                }
                 return;
             }
             if (isPlaying) {
