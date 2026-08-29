@@ -1067,9 +1067,14 @@
                 <span id="wordIndex" class="bg-primary text-white px-3 py-1 rounded-full text-sm">1/70</span>
             </div>
             
-            <div class="mb-6">
-                <h3 class="text-lg font-semibold mb-2 text-gray-700">Definition</h3>
-                <p id="definition" class="text-lg">to leave a place, thing, or person, usually for ever</p>
+            <div id="englishDefinitionBlock" class="mb-6">
+                <h3 class="text-lg font-semibold mb-2 text-gray-700">English Definition</h3>
+                <p id="englishDefinition" class="text-lg">to leave a place, thing, or person, usually for ever</p>
+            </div>
+
+            <div id="definitionBlock" class="mb-6 hidden">
+                <h3 class="text-lg font-semibold mb-2 text-gray-700">中文释义</h3>
+                <p id="definition" class="text-lg"></p>
             </div>
             
             <div id="exampleBlock">
@@ -1291,7 +1296,10 @@
         // DOM Elements
         const currentWordEl = document.getElementById('currentWord');
         const phoneticEl = document.getElementById('phonetic');
+        const englishDefinitionEl = document.getElementById('englishDefinition');
+        const englishDefinitionBlock = document.getElementById('englishDefinitionBlock');
         const definitionEl = document.getElementById('definition');
+        const definitionBlock = document.getElementById('definitionBlock');
         const exampleEl = document.getElementById('example');
         const exampleBlock = document.getElementById('exampleBlock');
         const wordIndexEl = document.getElementById('wordIndex');
@@ -2019,6 +2027,8 @@
                     word: pick(item, ['word', 'text', 'term', 'front']),
                     phonetic: pick(item, ['phonetic', 'ipa', 'pronunciation']),
                     definition: pick(item, ['definition', 'meaning', 'translation', 'back']),
+                    definitionEn: pick(item, ['definition_en', 'english_definition', 'definitionEn']),
+                    definitionZh: pick(item, ['definition_zh', 'chinese_definition', 'definitionZh']),
                     example: pick(item, ['example', 'sentence'])
                 })).filter(item => item.word && item.definition);
             }
@@ -2570,7 +2580,16 @@
             const word = cet4Words[wordIndex];
             currentWordEl.textContent = word.word;
             phoneticEl.textContent = word.phonetic;
-            definitionEl.textContent = word.definition;
+            const explicitEnglishDefinition = word.definitionEn || word.definition_en || '';
+            const explicitChineseDefinition = word.definitionZh || word.definition_zh || '';
+            const englishDefinition = explicitEnglishDefinition
+                || (!explicitChineseDefinition ? word.definition : '');
+            const chineseDefinition = explicitChineseDefinition
+                || (explicitEnglishDefinition ? word.definition : '');
+            englishDefinitionEl.textContent = englishDefinition || '';
+            englishDefinitionBlock.classList.toggle('hidden', !englishDefinition);
+            definitionEl.textContent = chineseDefinition || '';
+            definitionBlock.classList.toggle('hidden', !chineseDefinition);
             exampleEl.textContent = word.example || '';
             exampleBlock.classList.toggle('hidden', !word.example);
             updateWordIndexLabel();
@@ -2734,8 +2753,9 @@
             
             // Play word, definition, and example in sequence
             playTextWithHighlight(word.word, currentWordEl, function() {
-                playTextWithHighlight(word.definition, definitionEl, function() {
-                    playTextWithHighlight(word.example, exampleEl, function() {
+                playTextWithHighlight(englishDefinitionEl.textContent, englishDefinitionEl, function() {
+                    playTextWithHighlight(definitionEl.textContent, definitionEl, function() {
+                        playTextWithHighlight(word.example, exampleEl, function() {
                         playCount++;
                         console.log(`Play count for word at index ${currentIndex} (${cet4Words[currentIndex].word}):`, playCount);
                         
@@ -2786,6 +2806,7 @@
                                 }, 1000);
                             }
                         }
+                        });
                     });
                 });
             });
@@ -2915,6 +2936,7 @@
         function removeSpeakingHighlights() {
             [
                 currentWordEl,
+                englishDefinitionEl,
                 definitionEl,
                 exampleEl,
                 currentPhraseEl,

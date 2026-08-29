@@ -77,6 +77,7 @@ class WordbookEntryPayload(BaseModel):
     word: str
     phonetic: str | None = None
     definition: str
+    definition_en: str | None = None
     example: str | None = None
 
 

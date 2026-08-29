@@ -79,5 +79,6 @@ class WordbookEntry(Base):
     word: Mapped[str] = mapped_column(String(120), index=True)
     phonetic: Mapped[str | None] = mapped_column(String(255), nullable=True)
     definition: Mapped[str] = mapped_column(Text)
+    definition_en: Mapped[str | None] = mapped_column(Text, nullable=True)
     example: Mapped[str | None] = mapped_column(Text, nullable=True)
     rank: Mapped[int] = mapped_column(Integer, default=0)

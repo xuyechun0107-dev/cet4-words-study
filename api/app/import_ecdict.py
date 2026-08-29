@@ -276,6 +276,7 @@ def read_source() -> dict[str, list[dict[str, object]]]:
                 "word": word,
                 "phonetic": compact_text(row.get("phonetic"), 255) or None,
                 "definition": definition,
+                "definition_en": compact_text(row.get("definition")) or None,
                 "example": None,
                 "rank": frequency_rank(row, source_index),
             }
