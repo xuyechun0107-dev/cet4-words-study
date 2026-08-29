@@ -1249,6 +1249,21 @@
             }
             .control-panel,
             .library-shelf { position: static; }
+            #currentWordCard:fullscreen,
+            #currentWordCard.is-immersive {
+                padding:
+                    max(2.5rem, env(safe-area-inset-top))
+                    max(5rem, env(safe-area-inset-right))
+                    max(2.5rem, env(safe-area-inset-bottom))
+                    max(5rem, env(safe-area-inset-left)) !important;
+            }
+            #currentWordCard.is-immersive.is-landscape-fallback {
+                padding:
+                    max(4.5rem, env(safe-area-inset-top))
+                    max(5rem, env(safe-area-inset-right))
+                    max(4.5rem, env(safe-area-inset-bottom))
+                    max(5rem, env(safe-area-inset-left)) !important;
+            }
         }
 
         @media (max-width: 640px) {
@@ -1274,10 +1289,6 @@
             .notebook-modal-header { flex-direction: column; }
             .notebook-modal-actions { width: 100%; }
             .notebook-play-all { flex: 1; justify-content: center; }
-            #currentWordCard:fullscreen,
-            #currentWordCard.is-immersive {
-                padding: 1.5rem 4rem 1.5rem 2rem !important;
-            }
             #currentWordCard:fullscreen #currentWord,
             #currentWordCard.is-immersive #currentWord {
                 font-size: clamp(3.1rem, 12vw, 5.2rem);
