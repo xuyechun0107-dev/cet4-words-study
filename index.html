@@ -834,22 +834,21 @@
             z-index: 45;
             display: grid;
             justify-items: center;
-            gap: 0.45rem;
-            width: 4.7rem;
+            width: 3.25rem;
         }
 
         .notebook-orb {
             position: relative;
             display: grid;
-            width: 3.75rem;
-            height: 3.75rem;
+            width: 3.1rem;
+            height: 3.1rem;
             place-items: center;
             border: 1px solid rgba(255, 255, 255, 0.72);
-            border-radius: 1.2rem;
+            border-radius: 1rem;
             color: white;
             background: var(--ink);
             box-shadow: 0 16px 36px rgba(23, 35, 60, 0.24);
-            font-size: 1.25rem;
+            font-size: 1rem;
             transition: transform 180ms ease, background 180ms ease, box-shadow 180ms ease;
         }
 
@@ -862,10 +861,10 @@
         .notebook-orb::after {
             content: '';
             position: absolute;
-            right: 0.65rem;
-            bottom: 0.75rem;
-            width: 0.42rem;
-            height: 1.15rem;
+            right: 0.52rem;
+            bottom: 0.58rem;
+            width: 0.34rem;
+            height: 0.9rem;
             border-radius: 0.2rem 0.2rem 0 0;
             background: var(--mint);
             clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 75%, 0 100%);
@@ -873,49 +872,48 @@
 
         .notebook-count {
             position: absolute;
-            top: -0.45rem;
-            right: -0.45rem;
+            top: -0.38rem;
+            right: -0.38rem;
             display: grid;
-            min-width: 1.5rem;
-            height: 1.5rem;
+            min-width: 1.3rem;
+            height: 1.3rem;
             padding: 0 0.35rem;
             place-items: center;
             border: 2px solid white;
             border-radius: 999px;
             color: white;
             background: var(--blue);
-            font-size: 0.65rem;
+            font-size: 0.58rem;
             font-weight: 800;
         }
 
-        .notebook-quick-actions {
-            display: flex;
-            gap: 0.3rem;
-            padding: 0.3rem;
-            border: 1px solid rgba(255, 255, 255, 0.92);
-            border-radius: 999px;
-            background: rgba(255, 255, 255, 0.86);
-            box-shadow: 0 9px 24px rgba(31, 47, 81, 0.12);
-            backdrop-filter: blur(12px);
-        }
-
-        .notebook-quick-button {
+        .notebook-play-all {
             display: inline-flex;
             align-items: center;
-            gap: 0.25rem;
-            padding: 0.38rem 0.48rem;
+            gap: 0.4rem;
+            padding: 0.58rem 0.8rem;
             border-radius: 999px;
-            color: var(--muted);
-            font-size: 0.62rem;
+            color: white;
+            background: var(--ink);
+            font-size: 0.72rem;
             font-weight: 800;
             line-height: 1;
-            transition: color 160ms ease, background 160ms ease;
+            box-shadow: 0 7px 18px rgba(23, 35, 60, 0.16);
+            transition: transform 160ms ease, background 160ms ease, box-shadow 160ms ease;
         }
 
-        .notebook-quick-button:hover,
-        .notebook-quick-button.playing {
-            color: white;
+        .notebook-play-all:hover,
+        .notebook-play-all.playing {
             background: var(--blue);
+            transform: translateY(-1px);
+            box-shadow: 0 9px 22px rgba(36, 87, 214, 0.24);
+        }
+
+        .notebook-play-all:disabled {
+            cursor: not-allowed;
+            opacity: 0.42;
+            transform: none;
+            box-shadow: none;
         }
 
         .notebook-modal-content {
@@ -944,6 +942,12 @@
             font-family: 'Newsreader', 'Noto Sans SC', serif;
             font-size: 1.75rem;
             font-weight: 700;
+        }
+
+        .notebook-modal-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.65rem;
         }
 
         .notebook-list {
@@ -1097,7 +1101,7 @@
                 grid-template-areas: 'canvas' 'controls' 'shelf';
                 padding: 0.75rem;
             }
-            .vocabulary-notebook-widget { top: 8.9rem; right: 0.55rem; transform: scale(0.9); transform-origin: top right; }
+            .vocabulary-notebook-widget { top: 8.9rem; right: 0.55rem; }
             .notebook-toggle { left: 0.65rem; top: 0.65rem; }
         }
 
@@ -1462,19 +1466,11 @@
         </aside>
     </main>
 
-    <aside id="vocabularyNotebookWidget" class="vocabulary-notebook-widget" aria-label="生词本快捷工具">
+    <aside id="vocabularyNotebookWidget" class="vocabulary-notebook-widget" aria-label="生词本">
         <button id="notebookOrb" class="notebook-orb" type="button" aria-label="打开生词本" title="打开生词本">
             <i class="fa fa-book" aria-hidden="true"></i>
             <span id="notebookCount" class="notebook-count" aria-label="生词数量">0</span>
         </button>
-        <div class="notebook-quick-actions" aria-label="生词本操作">
-            <button id="notebookViewBtn" class="notebook-quick-button" type="button" aria-label="查看生词本">
-                <i class="fa fa-eye" aria-hidden="true"></i><span>查看</span>
-            </button>
-            <button id="notebookPlayBtn" class="notebook-quick-button" type="button" aria-label="播放生词本">
-                <i id="notebookPlayIcon" class="fa fa-play" aria-hidden="true"></i><span>播放</span>
-            </button>
-        </div>
     </aside>
 
     <div id="vocabularyNotebookModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="notebookModalTitle">
@@ -1485,9 +1481,14 @@
                     <h2 id="notebookModalTitle">我的生词本</h2>
                     <p id="notebookSummary" class="text-xs text-gray-500 mt-1">共 0 个单词</p>
                 </div>
-                <button id="closeNotebookModal" class="text-gray-400 hover:text-gray-700" type="button" aria-label="关闭生词本">
-                    <i class="fa fa-times text-xl" aria-hidden="true"></i>
-                </button>
+                <div class="notebook-modal-actions">
+                    <button id="notebookPlayBtn" class="notebook-play-all" type="button" aria-label="播放全部生词">
+                        <i id="notebookPlayIcon" class="fa fa-play" aria-hidden="true"></i><span>播放全部</span>
+                    </button>
+                    <button id="closeNotebookModal" class="text-gray-400 hover:text-gray-700" type="button" aria-label="关闭生词本">
+                        <i class="fa fa-times text-xl" aria-hidden="true"></i>
+                    </button>
+                </div>
             </div>
             <div id="notebookList" class="notebook-list"></div>
         </div>
@@ -1640,7 +1641,6 @@
         const wordNotebookToggle = document.getElementById('wordNotebookToggle');
         const notebookOrb = document.getElementById('notebookOrb');
         const notebookCountEl = document.getElementById('notebookCount');
-        const notebookViewBtn = document.getElementById('notebookViewBtn');
         const notebookPlayBtn = document.getElementById('notebookPlayBtn');
         const notebookPlayIcon = document.getElementById('notebookPlayIcon');
         const vocabularyNotebookModal = document.getElementById('vocabularyNotebookModal');
@@ -1764,7 +1764,6 @@
             wordSpeakBtn.addEventListener('click', speakCurrentWordOnce);
             wordNotebookToggle.addEventListener('click', toggleCurrentWordNotebook);
             notebookOrb.addEventListener('click', openVocabularyNotebook);
-            notebookViewBtn.addEventListener('click', openVocabularyNotebook);
             notebookPlayBtn.addEventListener('click', toggleVocabularyNotebookPlayback);
             closeNotebookModalBtn.addEventListener('click', closeVocabularyNotebook);
             vocabularyNotebookModal.addEventListener('click', (event) => {
@@ -2972,6 +2971,7 @@
         function renderVocabularyNotebook() {
             notebookCountEl.textContent = vocabularyNotebook.length > 99 ? '99+' : String(vocabularyNotebook.length);
             notebookSummaryEl.textContent = `共 ${vocabularyNotebook.length} 个单词`;
+            notebookPlayBtn.disabled = vocabularyNotebook.length === 0;
             notebookListEl.innerHTML = '';
 
             if (!vocabularyNotebook.length) {
