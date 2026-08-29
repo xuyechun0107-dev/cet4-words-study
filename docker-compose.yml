@@ -10,6 +10,8 @@ services:
     depends_on:
       db:
         condition: service_healthy
+    volumes:
+      - ./audio:/app/audio:ro
     ports:
       - "127.0.0.1:28100:8000"
 

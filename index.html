@@ -1488,7 +1488,10 @@
             <div class="setting-field">
                 <label for="voiceSelect">朗读声音</label>
                 <select id="voiceSelect">
-                    <option value="auto">自动选择</option>
+                    <option value="kokoro:af_heart">Heart · 美式女声</option>
+                    <option value="kokoro:af_bella">Bella · 美式女声</option>
+                    <option value="kokoro:bf_emma">Emma · 英式女声</option>
+                    <option value="auto">系统自动选择</option>
                 </select>
             </div>
             <div class="toggle-list">
@@ -1943,6 +1946,8 @@
         let speechSessionId = 0;
         let speechUtteranceId = 0;
         let speechCallbackTimer = null;
+        let activeRecordedAudio = null;
+        const recordedAudioHashCache = new Map();
         let playbackStartTimer = null;
         let librarySelectionId = 0;
         let isNotebookPlaying = false;
@@ -2812,16 +2817,16 @@
             isSpeechAvailable = 'speechSynthesis' in window;
             console.log('Speech synthesis support:', isSpeechAvailable);
             
+            populateVoiceOptions();
             if (isSpeechAvailable) {
                 window.speechSynthesis.onvoiceschanged = populateVoiceOptions;
-                populateVoiceOptions();
             }
         }
 
         // Populate voice dropdown with available English voices
         function populateVoiceOptions() {
-            if (!voiceSelect || !isSpeechAvailable) return;
-            const voices = window.speechSynthesis.getVoices() || [];
+            if (!voiceSelect) return;
+            const voices = isSpeechAvailable ? (window.speechSynthesis.getVoices() || []) : [];
             voiceSelect.innerHTML = '';
 
             const makeOpt = (label, value) => {
@@ -2831,8 +2836,16 @@
                 return opt;
             };
 
-            // Auto on top
-            voiceSelect.appendChild(makeOpt('Auto', 'auto'));
+            const kokoroGroup = document.createElement('optgroup');
+            kokoroGroup.label = '自然录音 · 例句与句子';
+            kokoroGroup.appendChild(makeOpt('Heart · 美式女声', 'kokoro:af_heart'));
+            kokoroGroup.appendChild(makeOpt('Bella · 美式女声', 'kokoro:af_bella'));
+            kokoroGroup.appendChild(makeOpt('Emma · 英式女声', 'kokoro:bf_emma'));
+            voiceSelect.appendChild(kokoroGroup);
+
+            const systemGroup = document.createElement('optgroup');
+            systemGroup.label = '系统语音';
+            systemGroup.appendChild(makeOpt('系统自动选择', 'auto'));
 
             // All English voices
             const englishVoices = voices.filter(v => /^en/i.test(v.lang));
@@ -2841,8 +2854,9 @@
             englishVoices.forEach(v => {
                 if (seen.has(v.name)) return;
                 seen.add(v.name);
-                voiceSelect.appendChild(makeOpt(`${v.name} (${v.lang})`, v.name));
+                systemGroup.appendChild(makeOpt(`${v.name} (${v.lang})`, v.name));
             });
+            voiceSelect.appendChild(systemGroup);
 
             const preferredExists = Array.from(voiceSelect.options).some(o => o.value === voicePreference);
             voiceSelect.value = preferredExists ? voicePreference : 'auto';
@@ -2855,7 +2869,7 @@
             if (!voices.length) return null;
 
             const preferredName = voiceSelect ? voiceSelect.value : voicePreference;
-            if (preferredName && preferredName !== 'auto') {
+            if (preferredName && preferredName !== 'auto' && !preferredName.startsWith('kokoro:')) {
                 const chosen = voices.find(v => v.name === preferredName);
                 if (chosen) return chosen;
             }
@@ -3170,7 +3184,7 @@
                         }
                     }
                 }
-            });
+            }, { recorded: true });
         }
 
         function stopPhrasePlayback(manual = false) {
@@ -3667,12 +3681,12 @@
             }
             const isSentence = entry.type === 'sentence';
             const parts = isSentence
-                ? [{ text: entry.text, element: currentPhraseEl }]
+                ? [{ text: entry.text, element: currentPhraseEl, recorded: true }]
                 : [
                     { text: entry.word, element: currentWordEl },
                     { text: entry.definitionEn, element: englishDefinitionEl },
                     ...(shouldReadChineseDefinition ? [{ text: entry.definitionZh, element: definitionEl }] : []),
-                    { text: entry.example, element: exampleEl }
+                    { text: entry.example, element: exampleEl, recorded: true }
                 ];
             const spokenParts = parts.filter(part => part.text && String(part.text).trim());
             let partIndex = 0;
@@ -3683,7 +3697,7 @@
                     return;
                 }
                 const part = spokenParts[partIndex++];
-                playTextWithHighlight(part.text, part.element, playPart);
+                playTextWithHighlight(part.text, part.element, playPart, { recorded: part.recorded });
             };
             playPart();
         }
@@ -3933,7 +3947,12 @@
             playTextWithHighlight(word.word, currentWordEl, function() {
                 playTextWithHighlight(englishDefinitionEl.textContent, englishDefinitionEl, function() {
                     playChineseDefinitionIfEnabled(function() {
-                        playTextWithHighlight(word.example, exampleEl, finishCurrentWordPlayback);
+                        playTextWithHighlight(
+                            word.example,
+                            exampleEl,
+                            finishCurrentWordPlayback,
+                            { recorded: true }
+                        );
                     });
                 });
             });
@@ -3998,7 +4017,7 @@
         }
         
         // Play text with visual highlight
-        function playTextWithHighlight(text, element, callback) {
+        function playTextWithHighlight(text, element, callback, options = {}) {
             console.log('playTextWithHighlight called with text:', text);
             const sessionId = speechSessionId;
             const utteranceId = ++speechUtteranceId;
@@ -4022,23 +4041,37 @@
                 return;
             }
             
-            if (!isSpeechAvailable) {
+            const normalizedText = String(text || '').trim();
+            const useRecordedAudio = Boolean(
+                options.recorded
+                && voicePreference.startsWith('kokoro:')
+                && !/[\u4e00-\u9fa5]/.test(normalizedText)
+            );
+
+            if (!isSpeechAvailable && !useRecordedAudio) {
                 console.log('Speech synthesis not available');
                 runCallback();
                 return;
             }
-            
-            try {
-                // Make sure speech synthesis is not paused
-                if (window.speechSynthesis.paused) {
-                    window.speechSynthesis.resume();
+
+            const speakWithSystemVoice = () => {
+                if (!isCurrentSpeech()) return;
+                if (!isSpeechAvailable) {
+                    element.classList.remove('speaking');
+                    runCallback();
+                    return;
                 }
+                try {
+                    // Make sure speech synthesis is not paused
+                    if (window.speechSynthesis.paused) {
+                        window.speechSynthesis.resume();
+                    }
                 
-                // Cancel any ongoing speech
-                window.speechSynthesis.cancel();
+                    // Cancel any ongoing speech
+                    window.speechSynthesis.cancel();
                 
-                // Create new speech
-                const utterance = new SpeechSynthesisUtterance(text);
+                    // Create new speech
+                    const utterance = new SpeechSynthesisUtterance(text);
                 
                 // Set language based on content
                 const hasChinese = /[\u4e00-\u9fa5]/.test(text);
@@ -4091,19 +4124,62 @@
                     console.log('Speech resumed for text:', text);
                 };
                 
-                // Start speaking
-                console.log('Attempting to speak:', text);
-                window.speechSynthesis.speak(utterance);
-                
-            } catch (error) {
-                if (!isCurrentSpeech()) return;
-                console.error('Error in speech synthesis:', error);
-                // Remove speaking highlight
-                element.classList.remove('speaking');
-                
-                // Call the callback
-                runCallback();
+                    // Start speaking
+                    console.log('Attempting to speak:', text);
+                    window.speechSynthesis.speak(utterance);
+                } catch (error) {
+                    if (!isCurrentSpeech()) return;
+                    console.error('Error in speech synthesis:', error);
+                    element.classList.remove('speaking');
+                    runCallback();
+                }
+            };
+
+            if (!useRecordedAudio) {
+                speakWithSystemVoice();
+                return;
             }
+
+            element.classList.add('speaking');
+            getRecordedAudioUrl(normalizedText, voicePreference.slice('kokoro:'.length))
+                .then((audioUrl) => {
+                    if (!isCurrentSpeech()) return;
+                    const audio = new Audio(audioUrl);
+                    activeRecordedAudio = audio;
+                    audio.preload = 'auto';
+                    audio.playbackRate = playRate;
+                    audio.onended = () => {
+                        if (!isCurrentSpeech()) return;
+                        activeRecordedAudio = null;
+                        element.classList.remove('speaking');
+                        runCallback(300);
+                    };
+                    let hasFallenBack = false;
+                    const fallback = () => {
+                        if (!isCurrentSpeech() || hasFallenBack) return;
+                        hasFallenBack = true;
+                        audio.onerror = null;
+                        audio.pause();
+                        activeRecordedAudio = null;
+                        element.classList.remove('speaking');
+                        console.info('Recorded audio is not ready; using the system voice for this item.');
+                        speakWithSystemVoice();
+                    };
+                    audio.onerror = fallback;
+                    audio.play().catch(fallback);
+                })
+                .catch(() => speakWithSystemVoice());
+        }
+
+        async function getRecordedAudioUrl(text, voiceId) {
+            let digest = recordedAudioHashCache.get(text);
+            if (!digest) {
+                const bytes = new TextEncoder().encode(text.normalize('NFKC').replace(/\s+/g, ' ').trim());
+                const hash = await crypto.subtle.digest('SHA-256', bytes);
+                digest = Array.from(new Uint8Array(hash), byte => byte.toString(16).padStart(2, '0')).join('');
+                recordedAudioHashCache.set(text, digest);
+            }
+            return `${API_BASE_URL}/audio/v1/${encodeURIComponent(voiceId)}/${digest.slice(0, 2)}/${digest}.mp3`;
         }
 
         function cancelSpeechSession() {
@@ -4112,6 +4188,12 @@
             if (speechCallbackTimer) {
                 clearTimeout(speechCallbackTimer);
                 speechCallbackTimer = null;
+            }
+            if (activeRecordedAudio) {
+                activeRecordedAudio.pause();
+                activeRecordedAudio.removeAttribute('src');
+                activeRecordedAudio.load();
+                activeRecordedAudio = null;
             }
             if (isSpeechAvailable) window.speechSynthesis.cancel();
             removeSpeakingHighlights();
@@ -4214,9 +4296,11 @@
         function updateVoicePreference() {
             voicePreference = voiceSelect.value || 'auto';
             saveState();
-            stopPlayback();
-            console.log(`Voice preference set to ${voicePreference}, reloading to apply cleanly`);
-            window.location.reload();
+            stopPlayback(true);
+            stopPhrasePlayback(true);
+            stopArticlePlayback();
+            stopVocabularyNotebookPlayback();
+            console.log(`Voice preference set to ${voicePreference}`);
         }
 
         // Phrase learned helpers

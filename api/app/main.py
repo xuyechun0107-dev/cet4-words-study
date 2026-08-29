@@ -4,6 +4,7 @@ from collections.abc import Generator
 
 from fastapi import Depends, FastAPI, Header, HTTPException, Query, status
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, ConfigDict, Field
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -21,6 +22,7 @@ ALLOWED_ORIGINS = [
     ).split(",")
     if origin.strip()
 ]
+AUDIO_ROOT = os.getenv("AUDIO_ROOT", "/app/audio")
 
 app = FastAPI(title=APP_NAME, version="0.1.0")
 app.add_middleware(
@@ -30,6 +32,7 @@ app.add_middleware(
     allow_methods=["GET", "POST", "OPTIONS"],
     allow_headers=["Content-Type", "X-Admin-Token"],
 )
+app.mount("/audio", StaticFiles(directory=AUDIO_ROOT, check_dir=False), name="audio")
 
 
 class WordPayload(BaseModel):
