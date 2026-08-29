@@ -17,7 +17,7 @@ ADMIN_TOKEN = os.getenv("ADMIN_TOKEN", "")
 ALLOWED_ORIGINS = [
     origin.strip()
     for origin in os.getenv(
-        "ALLOWED_ORIGINS", "https://enplay.xuspring.com"
+        "ALLOWED_ORIGINS", "https://enplay.ningboaoke.com"
     ).split(",")
     if origin.strip()
 ]
