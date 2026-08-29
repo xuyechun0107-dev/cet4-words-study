@@ -121,11 +121,18 @@
         }
         
         .play-btn {
-            background-color: #10b981;
+            background-color: var(--blue);
+            box-shadow: 0 10px 24px rgba(36, 87, 214, 0.28), 0 2px 5px rgba(23, 35, 60, 0.12);
         }
         
         .play-btn:hover {
-            background-color: #059669;
+            background-color: #1948bd;
+            box-shadow: 0 13px 30px rgba(36, 87, 214, 0.34), 0 2px 5px rgba(23, 35, 60, 0.12);
+        }
+
+        .play-btn:focus-visible {
+            outline: 3px solid rgba(36, 87, 214, 0.22);
+            outline-offset: 4px;
         }
         
         .prev-btn, .next-btn {
