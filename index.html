@@ -39,6 +39,30 @@
                 }
             }
         }
+
+        // Find the next position respecting "New Words Only" setting
+        function findNextPosition(skipLearned) {
+            const learnedSet = skipLearned ? getTodayLearnedSet() : null;
+            for (let i = orderPosition + 1; i < order.length; i++) {
+                const targetIndex = order[i];
+                if (!skipLearned || !learnedSet.has(targetIndex)) {
+                    return i;
+                }
+            }
+            return -1;
+        }
+
+        // Find the previous position respecting "New Words Only" setting
+        function findPreviousPosition(skipLearned) {
+            const learnedSet = skipLearned ? getTodayLearnedSet() : null;
+            for (let i = orderPosition - 1; i >= 0; i--) {
+                const targetIndex = order[i];
+                if (!skipLearned || !learnedSet.has(targetIndex)) {
+                    return i;
+                }
+            }
+            return -1;
+        }
     </script>
     <style type="text/tailwindcss">
         @layer utilities {
@@ -285,22 +309,36 @@
 </head>
 <body class="min-h-screen flex flex-col">
     <!-- Header -->
-    <header class="bg-white shadow-sm py-4 px-6 flex justify-between items-center">
-        <h1 class="text-2xl font-bold text-primary">CET-4 Vocabulary</h1>
-        <button id="historyBtn" class="flex items-center gap-2 bg-neutral hover:bg-gray-200 px-4 py-2 rounded-lg transition-all-300">
-            <i class="fa fa-history text-primary"></i>
-            <span>Learned Words</span>
-        </button>
+    <header class="bg-white shadow-sm py-4 px-6 grid grid-cols-3 items-center gap-4">
+        <div class="flex items-center gap-4">
+            <h1 class="text-2xl font-bold text-primary">CET-4 Vocabulary</h1>
+        </div>
+        <div class="flex items-center justify-center">
+            <div class="relative w-full max-w-lg">
+                <input id="searchInput" type="text" placeholder="Search word..." class="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary" autocomplete="off">
+                <div id="searchResults" class="absolute left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto hidden z-10"></div>
+            </div>
+        </div>
+        <div class="flex justify-end">
+            <button id="historyBtn" class="flex items-center gap-2 bg-neutral hover:bg-gray-200 px-4 py-2 rounded-lg transition-all-300">
+                <i class="fa fa-history text-primary"></i>
+                <span>Learned</span>
+            </button>
+        </div>
     </header>
 
     <!-- Main Content -->
     <main class="flex-grow flex flex-col items-center justify-center p-4">
+        <section id="vocabSection" class="w-full flex flex-col items-center">
         <!-- Word Card -->
         <div class="word-card w-full max-w-2xl p-8 mb-8 animate-fade-in">
             <div class="flex justify-between items-start mb-4">
                 <div>
                     <div class="flex items-center">
                         <h2 id="currentWord" class="text-4xl font-bold text-dark mb-2">abandon</h2>
+                        <button id="wordSpeakBtn" class="ml-3 text-primary hover:text-secondary text-2xl transition-all-300" title="Speak word">
+                            <i class="fa fa-volume-up"></i>
+                        </button>
                         <span id="learnedBadge" class="learned-badge hidden">
                             <i class="fa fa-check-circle"></i> Learned
                         </span>
@@ -329,7 +367,7 @@
         </div>
         
         <!-- Control Buttons -->
-        <div class="flex items-center justify-center gap-6 w-full max-w-2xl">
+        <div class="flex items-center justify-center gap-6 w-full max-w-2xl mb-12">
             <button id="prevBtn" class="control-btn prev-btn">
                 <i class="fa fa-step-backward text-xl"></i>
             </button>
@@ -340,6 +378,40 @@
                 <i class="fa fa-step-forward text-xl"></i>
             </button>
         </div>
+        
+        <!-- Phrase Player -->
+        <div class="word-card w-full max-w-2xl p-8 mb-8 animate-fade-in">
+            <div class="flex justify-between items-start mb-4">
+                <div class="flex items-center gap-3">
+                    <h2 class="text-2xl font-bold text-primary">Phrases</h2>
+                </div>
+                <span id="phraseIndex" class="bg-primary text-white px-3 py-1 rounded-full text-sm">1/1</span>
+            </div>
+            <div class="mb-6">
+                <div class="flex items-center justify-between mb-2">
+                    <span id="phraseSceneLabel" class="text-sm text-gray-600 font-semibold bg-neutral px-3 py-1 rounded-full"></span>
+                    <span id="phraseLearnedBadge" class="learned-badge hidden">
+                        <i class="fa fa-check-circle"></i> Learned
+                    </span>
+                </div>
+                <div class="flex items-center">
+                    <p id="currentPhrase" class="text-xl text-dark flex-1">Loading phrases...</p>
+                </div>
+                <p id="currentPhraseNote" class="text-sm text-gray-600 mt-2"></p>
+            </div>
+            <div class="flex items-center justify-center gap-6 w-full max-w-2xl">
+                <button id="phrasePrevBtn" class="control-btn prev-btn">
+                    <i class="fa fa-step-backward text-xl"></i>
+                </button>
+                <button id="phrasePlayBtn" class="control-btn play-btn">
+                    <i id="phrasePlayIcon" class="fa fa-play text-xl"></i>
+                </button>
+                <button id="phraseNextBtn" class="control-btn next-btn">
+                    <i class="fa fa-step-forward text-xl"></i>
+                </button>
+            </div>
+        </div>
+    </section>
     </main>
 
     <!-- Footer -->
@@ -349,8 +421,34 @@
         </div>
         <div class="flex items-center gap-6">
             <div class="flex items-center gap-2">
+                <label for="repeatCountInput" class="text-sm text-gray-700 cursor-pointer whitespace-nowrap">Repeat</label>
+                <input id="repeatCountInput" type="number" min="1" class="w-16 border border-gray-300 rounded px-2 py-1 text-sm" value="3">
+            </div>
+            <div class="flex items-center gap-2">
+                <label for="rateSelect" class="text-sm text-gray-700 cursor-pointer whitespace-nowrap">Speed</label>
+                <select id="rateSelect" class="border border-gray-300 rounded px-2 py-1 text-sm">
+                    <option value="0.5">0.5</option>
+                    <option value="0.6">0.6</option>
+                    <option value="0.7">0.7</option>
+                    <option value="0.8">0.8</option>
+                    <option value="0.9">0.9</option>
+                    <option value="1.0">1.0</option>
+                    <option value="1.1">1.1</option>
+                    <option value="1.2">1.2</option>
+                    <option value="1.3">1.3</option>
+                    <option value="1.4">1.4</option>
+                    <option value="1.5">1.5</option>
+                </select>
+            </div>
+            <div class="flex items-center gap-2">
+                <label for="voiceSelect" class="text-sm text-gray-700 cursor-pointer whitespace-nowrap">Voice</label>
+                <select id="voiceSelect" class="border border-gray-300 rounded px-2 py-1 text-sm">
+                    <option value="auto">Auto</option>
+                </select>
+            </div>
+            <div class="flex items-center gap-2">
                 <input type="checkbox" id="wordLoop" class="custom-checkbox">
-                <label for="wordLoop" class="text-sm text-gray-700 cursor-pointer">Word Loop</label>
+                <label for="wordLoop" class="text-sm text-gray-700 cursor-pointer">Loop</label>
             </div>
             <div class="flex items-center gap-2">
                 <input type="checkbox" id="autoPlay" class="custom-checkbox">
@@ -358,7 +456,7 @@
             </div>
             <div class="flex items-center gap-2">
                 <input type="checkbox" id="newWordsOnly" class="custom-checkbox">
-                <label for="newWordsOnly" class="text-sm text-gray-700 cursor-pointer">New Words Only</label>
+                <label for="newWordsOnly" class="text-sm text-gray-700 cursor-pointer">New Only</label>
             </div>
         </div>
     </footer>
@@ -367,7 +465,19 @@
     <div id="historyModal" class="modal">
         <div class="modal-content w-full max-w-2xl max-h-[80vh]">
             <div class="flex justify-between items-center mb-4">
-                <h2 class="text-xl font-bold text-primary">Learned Words</h2>
+                <div class="flex items-center gap-3">
+                    <h2 class="text-xl font-bold text-primary">Learned</h2>
+                    <select id="historyType" class="border border-gray-300 rounded px-2 py-1 text-sm">
+                        <option value="words">Words</option>
+                        <option value="phrases">Phrases</option>
+                    </select>
+                    <div class="flex items-center gap-2">
+                        <label for="historyFilter" class="text-sm text-gray-600">Filter</label>
+                        <select id="historyFilter" class="border border-gray-300 rounded px-2 py-1 text-sm">
+                            <option value="all">All</option>
+                        </select>
+                    </div>
+                </div>
                 <button id="closeModal" class="text-gray-500 hover:text-gray-700">
                     <i class="fa fa-times text-xl"></i>
                 </button>
@@ -380,6 +490,7 @@
 
     <!-- Word Data -->
     <script src="words.js"></script>
+    <script src="phrases_normalized.js"></script>
     
     <!-- Main Script -->
     <script>
@@ -400,11 +511,28 @@
         const autoPlayCheckbox = document.getElementById('autoPlay');
         const newWordsOnlyCheckbox = document.getElementById('newWordsOnly');
         const learnedBadge = document.getElementById('learnedBadge');
+        const repeatCountInput = document.getElementById('repeatCountInput');
+        const rateSelect = document.getElementById('rateSelect');
+        const voiceSelect = document.getElementById('voiceSelect');
+        const wordSpeakBtn = document.getElementById('wordSpeakBtn');
+        const historyFilter = document.getElementById('historyFilter');
+        const searchInput = document.getElementById('searchInput');
+        const searchResults = document.getElementById('searchResults');
+        const phraseSceneLabel = document.getElementById('phraseSceneLabel');
+        const currentPhraseEl = document.getElementById('currentPhrase');
+        const currentPhraseNoteEl = document.getElementById('currentPhraseNote');
+        const phraseIndexEl = document.getElementById('phraseIndex');
+        const phrasePrevBtn = document.getElementById('phrasePrevBtn');
+        const phrasePlayBtn = document.getElementById('phrasePlayBtn');
+        const phraseNextBtn = document.getElementById('phraseNextBtn');
+        const phrasePlayIcon = document.getElementById('phrasePlayIcon');
+        const phraseLearnedBadge = document.getElementById('phraseLearnedBadge');
         
         const historyBtn = document.getElementById('historyBtn');
         const historyModal = document.getElementById('historyModal');
         const closeModal = document.getElementById('closeModal');
         const historyList = document.getElementById('historyList');
+        const historyTypeSelect = document.getElementById('historyType');
         
         // App State
         let currentIndex = 0;
@@ -416,13 +544,40 @@
         let autoPlayTimer = null;
         let todayLearnedCount = 0;
         let isSpeechAvailable = false;
+        let voicePreference = 'auto';
+        let searchMatches = [];
+        let phraseCategories = [];
+        let phraseList = [];
+        let phraseIndex = 0;
+        let isPhrasePlaying = false;
+        let phrasePlayCount = 0;
+        let phraseRepeatTimer = null;
+        let phraseAutoPlayTimer = null;
+        let order = [];
+        let orderPosition = 0;
+        let playRepeatCount = 3;
+        let playRate = 1;
+        let repeatTimer = null;
+        let continueAutoPlay = true;
+        let historyData = {};
+        let historyDates = [];
+        let isReviewMode = false;
+        let reviewOrder = [];
+        let prevOrderBackup = null;
+        let prevOrderPosBackup = 0;
         
         // Local Storage Keys
         const CURRENT_INDEX_KEY = 'cet4_current_index';
         const LEARNED_WORDS_KEY = 'cet4_learned_words';
+        const LEARNED_PHRASES_KEY = 'phrases_learned';
         const AUTO_PLAY_KEY = 'cet4_auto_play';
         const WORD_LOOP_KEY = 'cet4_word_loop';
         const NEW_WORDS_ONLY_KEY = 'cet4_new_words_only';
+        const ORDER_KEY = 'cet4_word_order';
+        const ORDER_POSITION_KEY = 'cet4_word_order_position';
+        const PLAY_REPEAT_KEY = 'cet4_play_repeat_count';
+        const PLAY_RATE_KEY = 'cet4_play_rate';
+        const VOICE_PREF_KEY = 'cet4_voice_pref';
         
         // Initialize the app
         function init() {
@@ -436,6 +591,9 @@
             
             // Update UI with current word
             updateWordCard();
+
+            // Init phrases
+            initPhrases();
             
             // Update progress bar
             updateProgress();
@@ -450,6 +608,24 @@
             wordLoopCheckbox.addEventListener('change', toggleWordLoop);
             autoPlayCheckbox.addEventListener('change', toggleAutoPlay);
             newWordsOnlyCheckbox.addEventListener('change', toggleNewWordsOnly);
+            repeatCountInput.addEventListener('input', updateRepeatCount);
+            repeatCountInput.addEventListener('blur', updateRepeatCount);
+            rateSelect.addEventListener('change', updateRate);
+            voiceSelect.addEventListener('change', updateVoicePreference);
+            wordSpeakBtn.addEventListener('click', speakCurrentWordOnce);
+            historyFilter.addEventListener('change', onHistoryFilterChange);
+            historyTypeSelect.addEventListener('change', () => {
+                if (historyModal.style.display === 'block') {
+                    refreshHistoryModal();
+                }
+            });
+            searchInput.addEventListener('input', handleSearchInput);
+            searchInput.addEventListener('keydown', handleSearchKeyDown);
+            searchResults.addEventListener('click', handleSearchClick);
+            searchResults.addEventListener('keydown', handleSearchResultsKeyDown);
+            phrasePrevBtn.addEventListener('click', goToPrevPhrase);
+            phraseNextBtn.addEventListener('click', goToNextPhrase);
+            phrasePlayBtn.addEventListener('click', togglePhrasePlay);
             
             historyBtn.addEventListener('click', openHistoryModal);
             closeModal.addEventListener('click', closeHistoryModal);
@@ -468,33 +644,395 @@
             console.log('Speech synthesis support:', isSpeechAvailable);
             
             if (isSpeechAvailable) {
-                // Preload voices
-                window.speechSynthesis.onvoiceschanged = function() {
-                    const voices = window.speechSynthesis.getVoices();
-                    console.log('Available voices loaded:', voices.length);
-                    voices.forEach((voice, index) => {
-                        console.log(`${index}: ${voice.name} (${voice.lang})`);
+                window.speechSynthesis.onvoiceschanged = populateVoiceOptions;
+                populateVoiceOptions();
+            }
+        }
+
+        // Populate voice dropdown with available English voices
+        function populateVoiceOptions() {
+            if (!voiceSelect || !isSpeechAvailable) return;
+            const voices = window.speechSynthesis.getVoices() || [];
+            voiceSelect.innerHTML = '';
+
+            const makeOpt = (label, value) => {
+                const opt = document.createElement('option');
+                opt.value = value;
+                opt.textContent = label;
+                return opt;
+            };
+
+            // Auto on top
+            voiceSelect.appendChild(makeOpt('Auto', 'auto'));
+
+            // All English voices
+            const englishVoices = voices.filter(v => /^en/i.test(v.lang));
+            englishVoices.sort((a, b) => a.name.localeCompare(b.name));
+            const seen = new Set();
+            englishVoices.forEach(v => {
+                if (seen.has(v.name)) return;
+                seen.add(v.name);
+                voiceSelect.appendChild(makeOpt(`${v.name} (${v.lang})`, v.name));
+            });
+
+            const preferredExists = Array.from(voiceSelect.options).some(o => o.value === voicePreference);
+            voiceSelect.value = preferredExists ? voicePreference : 'auto';
+        }
+
+        // Pick a voice: selected name if available, else English fallback
+        function pickVoice(lang) {
+            if (!isSpeechAvailable) return null;
+            const voices = window.speechSynthesis.getVoices() || [];
+            if (!voices.length) return null;
+
+            const preferredName = voiceSelect ? voiceSelect.value : voicePreference;
+            if (preferredName && preferredName !== 'auto') {
+                const chosen = voices.find(v => v.name === preferredName);
+                if (chosen) return chosen;
+            }
+
+            // fallback: try English, then first
+            const englishVoice = voices.find(v => /^en/i.test(v.lang));
+            const langMatch = voices.find(v => v.lang && v.lang.toLowerCase().startsWith(lang.toLowerCase()));
+            return langMatch || englishVoice || voices[0];
+        }
+
+        // Search handling
+        function handleSearchInput() {
+            const query = searchInput.value.trim().toLowerCase();
+            if (!query) {
+                searchResults.classList.add('hidden');
+                searchResults.innerHTML = '';
+                return;
+            }
+            searchMatches = cet4Words
+                .filter(w => w.word.toLowerCase().includes(query))
+                .slice(0, 10);
+            if (!searchMatches.length) {
+                searchResults.classList.add('hidden');
+                searchResults.innerHTML = '';
+                return;
+            }
+            searchResults.innerHTML = searchMatches.map((w) => {
+                return `<div class="px-3 py-2 hover:bg-gray-100 cursor-pointer focus:bg-gray-200" tabindex="0" data-word="${w.word.toLowerCase()}">${w.word} <span class="text-sm text-gray-500">${w.phonetic || ''}</span></div>`;
+            }).join('');
+            searchResults.classList.remove('hidden');
+        }
+
+        function handleSearchKeyDown(e) {
+            if (e.key === 'Enter' && searchMatches.length === 1) {
+                selectSearchWord(searchMatches[0].word.toLowerCase());
+            } else if (e.key === 'ArrowDown') {
+                const firstItem = searchResults.querySelector('[data-word]');
+                if (firstItem) {
+                    e.preventDefault();
+                    firstItem.focus();
+                }
+            }
+        }
+
+        // Keyboard navigation for search results
+        function handleSearchResultsKeyDown(e) {
+            const items = Array.from(searchResults.querySelectorAll('[data-word]'));
+            if (!items.length) return;
+            const currentIndex = items.indexOf(document.activeElement);
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                const next = items[currentIndex + 1] || items[0];
+                next.focus();
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                const prev = items[currentIndex - 1] || items[items.length - 1];
+                prev.focus();
+            } else if (e.key === 'Enter') {
+                e.preventDefault();
+                const word = document.activeElement.getAttribute('data-word');
+                if (word) selectSearchWord(word);
+            }
+        }
+
+        function handleSearchClick(e) {
+            const item = e.target.closest('[data-word]');
+            if (!item) return;
+            const word = item.getAttribute('data-word');
+            selectSearchWord(word);
+        }
+
+        function selectSearchWord(wordLower) {
+            const idx = cet4Words.findIndex(w => w.word.toLowerCase() === wordLower);
+            if (idx !== -1) {
+                jumpToWordIndex(idx);
+                searchResults.classList.add('hidden');
+                searchResults.innerHTML = '';
+                searchInput.value = cet4Words[idx].word;
+                searchInput.focus();
+            }
+        }
+
+        // Format category key to readable label
+        function formatPhraseCategory(key) {
+            if (!key) return '';
+            const spaced = key.replace(/([A-Z])/g, ' $1').trim();
+            return spaced.charAt(0).toUpperCase() + spaced.slice(1);
+        }
+
+        // Phrase controls: flatten all scenes into one list with scene label
+        function initPhrases() {
+            if (!window.COMMON_ENGLISH_SENTENCES) {
+                currentPhraseEl.textContent = 'Phrases data not loaded';
+                phraseIndexEl.textContent = '0/0';
+                phraseSceneLabel.textContent = '';
+                setTimeout(initPhrases, 300);
+                return;
+            }
+            phraseCategories = Object.keys(COMMON_ENGLISH_SENTENCES);
+            phraseList = [];
+            phraseCategories.forEach(scene => {
+                const list = COMMON_ENGLISH_SENTENCES[scene];
+                if (!Array.isArray(list)) return; // skip helper objects
+                list.forEach((item, idx) => {
+                    phraseList.push({
+                        scene,
+                        idx,
+                        text: item[0],
+                        note: item[1]
                     });
-                };
-                
-                // Trigger voiceschanged event
-                window.speechSynthesis.getVoices();
+                });
+            });
+            if (!phraseList.length) {
+                currentPhraseEl.textContent = 'No phrases available';
+                phraseIndexEl.textContent = '0/0';
+                phraseSceneLabel.textContent = '';
+                return;
+            }
+            // Apply New Only start position
+            let start = 0;
+            if (isNewWordsOnly) {
+                const learnedSet = getAllLearnedPhraseSet();
+                const found = phraseList.findIndex(p => !learnedSet.has(getPhraseKey(p.scene, p.idx)));
+                if (found !== -1) start = found;
+            }
+            phraseIndex = start;
+            updatePhraseCard();
+        }
+
+        function updatePhraseCard() {
+            if (!phraseList.length) {
+                currentPhraseEl.textContent = 'No phrases available';
+                phraseIndexEl.textContent = '0/0';
+                phraseLearnedBadge.classList.add('hidden');
+                currentPhraseNoteEl.textContent = '';
+                return;
+            }
+            const item = phraseList[phraseIndex];
+            currentPhraseEl.textContent = item.text;
+            phraseSceneLabel.textContent = formatPhraseCategory(item.scene);
+            phraseIndexEl.textContent = `${phraseIndex + 1}/${phraseList.length}`;
+            const note = getPhraseNote(item.scene, item.text);
+            currentPhraseNoteEl.textContent = note ? note : '（暂无中文释义）';
+            updatePhraseBadge();
+        }
+
+        function updatePhraseBadge() {
+            if (!phraseList.length) {
+                phraseLearnedBadge.classList.add('hidden');
+                return;
+            }
+            const current = phraseList[phraseIndex];
+            const key = getPhraseKey(current.scene, current.idx);
+            const learnedSet = getAllLearnedPhraseSet();
+            if (learnedSet.has(key)) {
+                phraseLearnedBadge.classList.remove('hidden');
+            } else {
+                phraseLearnedBadge.classList.add('hidden');
+            }
+        }
+
+        function getPhraseDataByKey(key) {
+            if (!key) return null;
+            const [scene, idxStr] = key.split(':');
+            const idx = parseInt(idxStr, 10);
+            if (Number.isNaN(idx)) return null;
+            const list = (COMMON_ENGLISH_SENTENCES && COMMON_ENGLISH_SENTENCES[scene]) || [];
+            const entry = list[idx];
+            if (!entry) return null;
+            const [text, note] = entry;
+            return { scene, idx, text, note };
+        }
+
+        function getPhraseNote(scene, sentence) {
+            if (window.phrasesNormalized && Array.isArray(window.phrasesNormalized)) {
+                const found = window.phrasesNormalized.find(p => p.scene === scene && p.sentence === sentence);
+                if (found && found.note) return found.note;
+            }
+            const list = (COMMON_ENGLISH_SENTENCES && COMMON_ENGLISH_SENTENCES[scene]) || [];
+            const match = list.find(item => item[0] === sentence);
+            if (match && match[1]) return match[1];
+            return '';
+        }
+
+        function goToPrevPhrase() {
+            stopPhrasePlayback();
+            const prevIdx = findPrevPhraseIndex();
+            if (prevIdx !== -1) {
+                phraseIndex = prevIdx;
+                updatePhraseCard();
+            }
+        }
+
+        function goToNextPhrase(options = {}) {
+            const { fromAutoPlay = false } = options;
+            if (!fromAutoPlay) stopPhrasePlayback();
+            const nextIdx = findNextPhraseIndex();
+            if (nextIdx !== -1) {
+                phraseIndex = nextIdx;
+                updatePhraseCard();
+                return true;
+            }
+            return false;
+        }
+
+        function findNextPhraseIndex() {
+            if (!isNewWordsOnly) {
+                return phraseIndex < phraseList.length - 1 ? phraseIndex + 1 : -1;
+            }
+            const learnedSet = getAllLearnedPhraseSet();
+            for (let i = phraseIndex + 1; i < phraseList.length; i++) {
+                const item = phraseList[i];
+                const key = getPhraseKey(item.scene, item.idx);
+                if (!learnedSet.has(key)) return i;
+            }
+            return -1;
+        }
+
+        function findPrevPhraseIndex() {
+            if (!isNewWordsOnly) {
+                return phraseIndex > 0 ? phraseIndex - 1 : -1;
+            }
+            const learnedSet = getAllLearnedPhraseSet();
+            for (let i = phraseIndex - 1; i >= 0; i--) {
+                const item = phraseList[i];
+                const key = getPhraseKey(item.scene, item.idx);
+                if (!learnedSet.has(key)) return i;
+            }
+            return -1;
+        }
+
+        function reviewPhrase(scene, idx) {
+            if (!phraseList.length) return;
+            const pos = phraseList.findIndex(p => p.scene === scene && p.idx === idx);
+            if (pos === -1) return;
+            phraseIndex = pos;
+            updatePhraseCard();
+            closeHistoryModal();
+            setTimeout(() => startPhrasePlayback(), 300);
+        }
+
+        function togglePhrasePlay() {
+            if (isPhrasePlaying) {
+                stopPhrasePlayback(true);
+            } else {
+                startPhrasePlayback();
+            }
+        }
+
+        function startPhrasePlayback() {
+            if (!phraseList.length) return;
+            // Stop word playback to keep audio mutually exclusive
+            stopPlayback();
+            isPhrasePlaying = true;
+            continueAutoPlay = true;
+            phrasePlayCount = 0;
+            phrasePlayIcon.classList.remove('fa-play');
+            phrasePlayIcon.classList.add('fa-pause');
+            playCurrentPhrase();
+        }
+
+        function playCurrentPhrase() {
+            if (!phraseList.length) return;
+            const item = phraseList[phraseIndex];
+            playTextWithHighlight(item.text, currentPhraseEl, () => {
+                phrasePlayCount++;
+                if (phrasePlayCount < playRepeatCount) {
+                    phraseRepeatTimer = setTimeout(() => {
+                        phraseRepeatTimer = null;
+                        playCurrentPhrase();
+                    }, 800);
+                } else {
+                    markPhraseLearned(item.scene, item.idx);
+                    stopPhrasePlayback();
+                    if (isWordLooping) {
+                        phrasePlayCount = 0;
+                        setTimeout(() => {
+                            if (continueAutoPlay) startPhrasePlayback();
+                        }, 1000);
+                    } else {
+                        const autoPlaySnapshot = isAutoPlaying && continueAutoPlay;
+                        if (autoPlaySnapshot) {
+                            const moved = goToNextPhrase({ fromAutoPlay: true });
+                            if (moved) {
+                                setTimeout(() => {
+                                    if (isAutoPlaying && continueAutoPlay) startPhrasePlayback();
+                                }, 500);
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function stopPhrasePlayback(manual = false) {
+            isPhrasePlaying = false;
+            phrasePlayIcon.classList.remove('fa-pause');
+            phrasePlayIcon.classList.add('fa-play');
+            if (manual) continueAutoPlay = false;
+            if (phraseRepeatTimer) {
+                clearTimeout(phraseRepeatTimer);
+                phraseRepeatTimer = null;
+            }
+            if (phraseAutoPlayTimer) {
+                clearTimeout(phraseAutoPlayTimer);
+                phraseAutoPlayTimer = null;
+            }
+            if (isSpeechAvailable) {
+                window.speechSynthesis.cancel();
             }
         }
         
         // Load saved state from localStorage
         function loadState() {
-            // Load current index
-            const savedIndex = localStorage.getItem(CURRENT_INDEX_KEY);
-            if (savedIndex !== null) {
-                currentIndex = parseInt(savedIndex, 10);
-            }
+            const loadedOrder = loadOrCreateOrder();
+            order = loadedOrder.order;
+            orderPosition = loadedOrder.position;
+            currentIndex = order[orderPosition] || 0;
             
             // Load auto play setting
             const autoPlaySetting = localStorage.getItem(AUTO_PLAY_KEY);
             if (autoPlaySetting !== null) {
                 autoPlayCheckbox.checked = autoPlaySetting === 'true';
                 isAutoPlaying = autoPlayCheckbox.checked;
+            }
+
+            // Load repeat count
+            const repeatSetting = parseInt(localStorage.getItem(PLAY_REPEAT_KEY), 10);
+            if (!Number.isNaN(repeatSetting) && repeatSetting > 0) {
+                playRepeatCount = repeatSetting;
+            }
+            const repeatInput = document.getElementById('repeatCountInput');
+            if (repeatInput) repeatInput.value = playRepeatCount;
+
+            // Load speech rate
+            const rateSetting = parseFloat(localStorage.getItem(PLAY_RATE_KEY));
+            if (!Number.isNaN(rateSetting) && rateSetting > 0) {
+                playRate = rateSetting;
+            }
+            const rateSelect = document.getElementById('rateSelect');
+            if (rateSelect) rateSelect.value = playRate.toFixed(1);
+            
+            const savedVoice = localStorage.getItem(VOICE_PREF_KEY);
+            if (savedVoice) {
+                voicePreference = savedVoice;
+                if (voiceSelect) voiceSelect.value = savedVoice;
             }
             
             // Load word loop setting
@@ -515,24 +1053,73 @@
         // Save current state to localStorage
         function saveState() {
             localStorage.setItem(CURRENT_INDEX_KEY, currentIndex.toString());
+            localStorage.setItem(ORDER_KEY, JSON.stringify(order));
+            localStorage.setItem(ORDER_POSITION_KEY, orderPosition.toString());
             localStorage.setItem(AUTO_PLAY_KEY, isAutoPlaying.toString());
             localStorage.setItem(WORD_LOOP_KEY, isWordLooping.toString());
             localStorage.setItem(NEW_WORDS_ONLY_KEY, isNewWordsOnly.toString());
+            localStorage.setItem(PLAY_REPEAT_KEY, playRepeatCount.toString());
+            localStorage.setItem(PLAY_RATE_KEY, playRate.toString());
+            localStorage.setItem(VOICE_PREF_KEY, voicePreference);
+        }
+
+        // Load existing shuffle order or create a new one
+        function loadOrCreateOrder() {
+            let parsedOrder = [];
+            try {
+                const storedOrder = localStorage.getItem(ORDER_KEY);
+                if (storedOrder) {
+                    parsedOrder = JSON.parse(storedOrder);
+                }
+            } catch (err) {
+                console.warn('Failed to parse stored order, regenerating.', err);
+            }
+
+            let shuffledOrder = Array.isArray(parsedOrder) && parsedOrder.length === cet4Words.length
+                ? parsedOrder
+                : generateShuffledOrder();
+
+            // Position defaults to 0 if invalid
+            let storedPosition = parseInt(localStorage.getItem(ORDER_POSITION_KEY), 10);
+            if (Number.isNaN(storedPosition) || storedPosition < 0 || storedPosition >= shuffledOrder.length) {
+                storedPosition = 0;
+            }
+
+            // Preserve previous index position when possible
+            const legacyIndex = parseInt(localStorage.getItem(CURRENT_INDEX_KEY), 10);
+            if (!Number.isNaN(legacyIndex)) {
+                const legacyPos = shuffledOrder.indexOf(legacyIndex);
+                if (legacyPos !== -1) {
+                    storedPosition = legacyPos;
+                }
+            }
+
+            return { order: shuffledOrder, position: storedPosition };
+        }
+
+        // Fisher-Yates shuffle to create a random order of indices
+        function generateShuffledOrder() {
+            const arr = Array.from({ length: cet4Words.length }, (_, i) => i);
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            return arr;
         }
         
         // Update the word card with current word
         function updateWordCard() {
-            const word = cet4Words[currentIndex];
+            const wordIndex = order[orderPosition] || 0;
+            currentIndex = wordIndex;
+            const word = cet4Words[wordIndex];
             currentWordEl.textContent = word.word;
             phoneticEl.textContent = word.phonetic;
             definitionEl.textContent = word.definition;
             exampleEl.textContent = word.example;
-            wordIndexEl.textContent = `${currentIndex + 1}/${cet4Words.length}`;
+            updateWordIndexLabel();
             
             // Check if word is learned by its index and show/hide badge
-            const today = new Date().toISOString().split('T')[0];
-            const learnedWords = JSON.parse(localStorage.getItem(LEARNED_WORDS_KEY) || '{}');
-            const isLearned = learnedWords[today] && learnedWords[today].includes(currentIndex);
+            const isLearned = getAllLearnedSet().has(currentIndex);
             
             if (isLearned) {
                 learnedBadge.classList.remove('hidden');
@@ -551,8 +1138,15 @@
         
         // Update progress bar
         function updateProgress() {
-            const progress = ((currentIndex + 1) / cet4Words.length) * 100;
+            const learnedCount = getAllLearnedSet().size;
+            const progress = (learnedCount / cet4Words.length) * 100;
             progressEl.style.width = `${progress}%`;
+        }
+
+        // Update the top-right count badge using learned count
+        function updateWordIndexLabel() {
+            const learnedCount = getAllLearnedSet().size;
+            wordIndexEl.textContent = `${learnedCount}/${cet4Words.length}`;
         }
         
         // Go to previous word
@@ -560,88 +1154,52 @@
             console.log('Previous button clicked');
             stopPlayback();
             
-            if (currentIndex > 0) {
-                currentIndex--;
+            const prevPos = findPreviousPosition(isNewWordsOnly);
+            if (prevPos !== -1) {
+                orderPosition = prevPos;
                 updateWordCard();
                 updateProgress();
                 saveState();
             } else {
-                console.log('Already at the first word');
+                console.log('No previous unlearned word');
             }
         }
         
         // Go to next word
-        function goToNextWord() {
+        function goToNextWord(options = {}) {
+            const { fromAutoPlay = false } = options;
             console.log('Next button clicked');
-            stopPlayback();
-            
-            if (isNewWordsOnly) {
-                // If new words only is enabled, find the next unlearned word
-                moveToNextUnlearnedWord();
-            } else {
-                // Otherwise, just go to the next word
-                if (currentIndex < cet4Words.length - 1) {
-                    currentIndex++;
-                    updateWordCard();
-                    updateProgress();
-                    saveState();
-                    
-                    // Only mark as learned if the word was played at least once
-                    // markAsLearned(currentIndex);
-                } else {
-                    console.log('Already at the last word');
-                }
-            }
-        }
-        
-        // Move to the next unlearned word
-        function moveToNextUnlearnedWord() {
-            console.log('Moving to next unlearned word');
-            const today = new Date().toISOString().split('T')[0];
-            const learnedWords = JSON.parse(localStorage.getItem(LEARNED_WORDS_KEY) || '{}');
-            const todayLearnedIndices = learnedWords[today] || [];
-            
-            // Start from the next word
-            let nextIndex = currentIndex + 1;
-            
-            // Find the first unlearned word
-            while (nextIndex < cet4Words.length) {
-                if (!todayLearnedIndices.includes(nextIndex)) {
-                    // Found an unlearned word
-                    currentIndex = nextIndex;
-                    updateWordCard();
-                    updateProgress();
-                    saveState();
-                    return;
-                }
-                nextIndex++;
+            if (!fromAutoPlay) {
+                stopPlayback();
             }
             
-            // If no unlearned words found, check from the beginning
-            nextIndex = 0;
-            while (nextIndex <= currentIndex) {
-                if (!todayLearnedIndices.includes(nextIndex)) {
-                    // Found an unlearned word
-                    currentIndex = nextIndex;
-                    updateWordCard();
-                    updateProgress();
-                    saveState();
-                    return;
-                }
-                nextIndex++;
+            const nextPos = findNextPosition(isNewWordsOnly);
+            if (nextPos !== -1) {
+                orderPosition = nextPos;
+                updateWordCard();
+                updateProgress();
+                saveState();
+                return true;
+            } 
+            
+            // If we're in review mode and reached the end, stop review flow
+            if (isReviewMode) {
+                console.log('Reached end of review list');
+                stopPlayback(true);
+                return false;
             }
             
-            // If all words are learned
-            console.log('All words are learned today!');
-            alert('Congratulations! You have learned all words today!');
+            console.log('Already at the last word in the queue');
+            return false;
         }
         
         // Toggle play/pause
         function togglePlay() {
             console.log('Play button clicked');
             if (isPlaying) {
-                stopPlayback();
+                stopPlayback(true);
             } else {
+                continueAutoPlay = true;
                 startPlayback();
             }
         }
@@ -649,6 +1207,8 @@
         // Start playing the current word
         function startPlayback() {
             console.log('Starting playback');
+            // Stop phrase playback to keep audio exclusive
+            stopPhrasePlayback();
             isPlaying = true;
             playIcon.classList.remove('fa-play');
             playIcon.classList.add('fa-pause');
@@ -669,12 +1229,15 @@
         }
         
         // Stop playing
-        function stopPlayback() {
+        function stopPlayback(manual = false) {
             console.log('Stopping playback');
             isPlaying = false;
             playIcon.classList.remove('fa-pause');
             playIcon.classList.add('fa-play');
             playIcon.classList.remove('pulse-animation');
+            if (manual) {
+                continueAutoPlay = false;
+            }
             
             // Remove speaking highlights
             removeSpeakingHighlights();
@@ -683,6 +1246,10 @@
             if (autoPlayTimer) {
                 clearTimeout(autoPlayTimer);
                 autoPlayTimer = null;
+            }
+            if (repeatTimer) {
+                clearTimeout(repeatTimer);
+                repeatTimer = null;
             }
             
             // Cancel any speech
@@ -709,16 +1276,17 @@
                         playCount++;
                         console.log(`Play count for word at index ${currentIndex} (${cet4Words[currentIndex].word}):`, playCount);
                         
-                        if (playCount < 3) {
-                            // Play again if not reached 3 times
-                            console.log(`Playing word at index ${currentIndex} (${cet4Words[currentIndex].word}) again (${playCount}/3)`);
-                            setTimeout(() => {
+                        if (playCount < playRepeatCount) {
+                            // Play again if not reached target times
+                            console.log(`Playing word at index ${currentIndex} (${cet4Words[currentIndex].word}) again (${playCount}/${playRepeatCount})`);
+                            repeatTimer = setTimeout(() => {
+                                repeatTimer = null;
                                 playCurrentWord();
                             }, 1000);
                         } else {
-                            // Done playing 3 times
-                            console.log(`Finished playing word at index ${currentIndex} (${cet4Words[currentIndex].word}) 3 times`);
-                            // Mark word as learned only after it has been played 3 times
+                            // Done playing target times
+                            console.log(`Finished playing word at index ${currentIndex} (${cet4Words[currentIndex].word}) ${playRepeatCount} times`);
+                            // Mark word as learned only after it has been played target times
                             markAsLearned(currentIndex);
                             
                             stopPlayback();
@@ -732,13 +1300,23 @@
                                 }, 1000);
                             } 
                             // Otherwise, go to next word if auto-play is enabled
-                            else if (isAutoPlaying && currentIndex < cet4Words.length - 1) {
+                            else if (isAutoPlaying) {
                                 console.log('Auto-play enabled, moving to next word');
+                                const autoPlaySnapshot = isAutoPlaying && continueAutoPlay;
                                 setTimeout(() => {
-                                    goToNextWord();
-                                    setTimeout(() => {
-                                        startPlayback();
-                                    }, 500);
+                                    // Respect latest setting; stop if user unchecked during this word
+                                    if (!autoPlaySnapshot || !isAutoPlaying || !continueAutoPlay) {
+                                        console.log('Auto-play turned off before advancing');
+                                        return;
+                                    }
+                                    const moved = goToNextWord({ fromAutoPlay: true });
+                                    if (moved && isAutoPlaying && continueAutoPlay) {
+                                        setTimeout(() => {
+                                            if (isAutoPlaying && continueAutoPlay) startPlayback();
+                                        }, 500);
+                                    } else {
+                                        console.log('No more words available for auto-play');
+                                    }
                                 }, 1000);
                             }
                         }
@@ -775,9 +1353,14 @@
                 console.log('Set language to:', utterance.lang);
                 
                 // Set speech parameters
-                utterance.rate = 0.9;
+                utterance.rate = playRate;
                 utterance.pitch = 1;
                 utterance.volume = 1;
+                const picked = pickVoice(utterance.lang);
+                if (picked) {
+                    utterance.voice = picked;
+                    console.log('Using voice:', picked.name);
+                }
                 
                 // Add speaking highlight
                 element.classList.add('speaking');
@@ -875,14 +1458,91 @@
         function toggleNewWordsOnly() {
             console.log('New words only toggled:', newWordsOnlyCheckbox.checked);
             isNewWordsOnly = newWordsOnlyCheckbox.checked;
+            // Exit review mode if active
+            if (isReviewMode) {
+                exitReviewMode();
+            }
+            // Do not jump immediately; let the filter apply after current playback is done
             saveState();
-            
-            // If new words only is enabled, move to the next unlearned word
-            if (isNewWordsOnly) {
-                moveToNextUnlearnedWord();
+        }
+
+        // Update repeat count from input
+        function updateRepeatCount() {
+            const val = parseInt(repeatCountInput.value, 10);
+            if (Number.isNaN(val) || val <= 0) {
+                alert('请输入大于 0 的重复次数');
+                repeatCountInput.value = playRepeatCount;
+                return;
+            }
+            playRepeatCount = val;
+            saveState();
+            stopPlayback();
+            console.log(`Set repeat count to ${playRepeatCount}, reloading to avoid overlapping speech`);
+            window.location.reload();
+        }
+
+        // Speak only the current word once
+        function speakCurrentWordOnce() {
+            console.log('Speak word button clicked');
+            stopPlayback(true);
+            if (!isSpeechAvailable) {
+                alert('Your browser does not support speech synthesis');
+                return;
+            }
+            const word = cet4Words[currentIndex];
+            // Small delay to ensure stop takes effect
+            setTimeout(() => {
+                playTextWithHighlight(word.word, currentWordEl, () => {});
+            }, 100);
+        }
+
+        // Update speech rate
+        function updateRate() {
+            const val = parseFloat(rateSelect.value);
+            if (Number.isNaN(val) || val <= 0) {
+                rateSelect.value = playRate.toFixed(1);
+                return;
+            }
+            playRate = val;
+            saveState();
+            stopPlayback();
+            console.log(`Set speech rate to ${playRate}, reloading to avoid overlapping speech`);
+            window.location.reload();
+        }
+
+        function updateVoicePreference() {
+            voicePreference = voiceSelect.value || 'auto';
+            saveState();
+            stopPlayback();
+            console.log(`Voice preference set to ${voicePreference}, reloading to apply cleanly`);
+            window.location.reload();
+        }
+
+        // Phrase learned helpers
+        function getPhraseKey(scene, idx) {
+            return `${scene}:${idx}`;
+        }
+        function getPhraseLearnedByDate() {
+            return JSON.parse(localStorage.getItem(LEARNED_PHRASES_KEY) || '{}');
+        }
+        function getAllLearnedPhraseSet() {
+            const data = getPhraseLearnedByDate();
+            const all = new Set();
+            Object.values(data).forEach(arr => (arr || []).forEach(k => all.add(k)));
+            return all;
+        }
+        function markPhraseLearned(scene, idx) {
+            const key = getPhraseKey(scene, idx);
+            const today = new Date().toISOString().split('T')[0];
+            const data = getPhraseLearnedByDate();
+            if (!data[today]) data[today] = [];
+            if (!data[today].includes(key)) {
+                data[today].push(key);
+                localStorage.setItem(LEARNED_PHRASES_KEY, JSON.stringify(data));
+                updatePhraseBadge();
             }
         }
-        
+
         // Mark a word as learned by its index
         function markAsLearned(index) {
             const today = new Date().toISOString().split('T')[0];
@@ -891,150 +1551,250 @@
             if (!learnedWords[today]) {
                 learnedWords[today] = [];
             }
+            // If already learned on any previous day, do not re-add as new today
+            const historical = getHistoricalLearnedSet();
+            if (historical.has(index)) {
+                console.log(`Word at index ${index} already learned historically, skipping new record`);
+                return;
+            }
             
             if (!learnedWords[today].includes(index)) {
                 learnedWords[today].push(index);
                 localStorage.setItem(LEARNED_WORDS_KEY, JSON.stringify(learnedWords));
                 updateTodayLearnedCount();
+                updateProgress();
+                updateWordIndexLabel();
                 console.log(`Marked word at index ${index} (${cet4Words[index].word}) as learned`);
             } else {
                 console.log(`Word at index ${index} (${cet4Words[index].word}) is already learned`);
             }
+        }
+
+        // Get today's learned indices as a Set for quick lookup
+        function getTodayLearnedSet() {
+            const today = new Date().toISOString().split('T')[0];
+            const learnedWords = JSON.parse(localStorage.getItem(LEARNED_WORDS_KEY) || '{}');
+            const list = learnedWords[today] || [];
+            return new Set(list);
+        }
+
+        // Get all learned indices across all dates
+        function getAllLearnedSet() {
+            const learnedWords = JSON.parse(localStorage.getItem(LEARNED_WORDS_KEY) || '{}');
+            const all = new Set();
+            Object.values(learnedWords).forEach(arr => {
+                (arr || []).forEach(idx => all.add(idx));
+            });
+            return all;
+        }
+
+        // Get learned indices before today
+        function getHistoricalLearnedSet() {
+            const today = new Date().toISOString().split('T')[0];
+            const learnedWords = JSON.parse(localStorage.getItem(LEARNED_WORDS_KEY) || '{}');
+            const hist = new Set();
+            Object.entries(learnedWords).forEach(([date, arr]) => {
+                if (date === today) return;
+                (arr || []).forEach(idx => hist.add(idx));
+            });
+            return hist;
         }
         
         // Update today's learned count
         function updateTodayLearnedCount() {
             const today = new Date().toISOString().split('T')[0];
             const learnedWords = JSON.parse(localStorage.getItem(LEARNED_WORDS_KEY) || '{}');
-            
-            if (learnedWords[today]) {
-                todayLearnedCount = learnedWords[today].length;
-                todayLearnedEl.textContent = `Today's Progress: ${todayLearnedCount} words`;
-            } else {
-                todayLearnedCount = 0;
-                todayLearnedEl.textContent = 'Today\'s Progress: 0 words';
-            }
+            const todaySet = getTodayLearnedSet();
+            const historical = getHistoricalLearnedSet();
+            // Only count words not learned on previous days
+            const newToday = Array.from(todaySet).filter(idx => !historical.has(idx));
+            todayLearnedCount = newToday.length;
+            todayLearnedEl.textContent = `Today's Progress: ${todayLearnedCount} words`;
         }
         
         // Open history modal
         function openHistoryModal() {
             console.log('Opening history modal');
-            const today = new Date().toISOString().split('T')[0];
-            const learnedWords = JSON.parse(localStorage.getItem(LEARNED_WORDS_KEY) || '{}');
-            
-            // Clear previous content
+            refreshHistoryModal();
+            historyModal.style.display = 'block';
+            setTimeout(() => {
+                historyModal.classList.add('active');
+            }, 10);
+        }
+
+        function refreshHistoryModal() {
+            const type = historyTypeSelect.value || 'words';
+            historyData = type === 'phrases'
+                ? getPhraseLearnedByDate()
+                : JSON.parse(localStorage.getItem(LEARNED_WORDS_KEY) || '{}');
+            historyDates = Object.keys(historyData).sort((a, b) => new Date(b) - new Date(a));
+            populateHistoryFilter();
+            historyFilter.value = 'all';
+            renderHistoryList(historyFilter.value, type);
+        }
+
+        // History filter handling
+        function populateHistoryFilter() {
+            historyFilter.innerHTML = '<option value="all">All</option>';
+            historyDates.forEach(date => {
+                const opt = document.createElement('option');
+                opt.value = date;
+                opt.textContent = date;
+                historyFilter.appendChild(opt);
+            });
+        }
+
+        function onHistoryFilterChange() {
+            renderHistoryList(historyFilter.value, historyTypeSelect.value || 'words');
+        }
+
+        function renderHistoryList(filterDate = 'all', type = 'words') {
             historyList.innerHTML = '';
-            
-            // Log the learned words data
-            console.log('Learned words data:', learnedWords);
-            
-            // Get all dates from localStorage and sort them in descending order
-            const dates = Object.keys(learnedWords).sort((a, b) => new Date(b) - new Date(a));
-            
-            // Log the dates
-            console.log('Dates with learned words:', dates);
-            
-            // If there are no learned words, show empty message
-            if (dates.length === 0) {
-                console.log('No learned words found, showing empty message');
+            const dates = filterDate === 'all' ? historyDates : historyDates.filter(d => d === filterDate);
+
+            if (!dates.length) {
                 const emptyMessage = document.createElement('p');
                 emptyMessage.className = 'text-center text-gray-500 py-4';
-                emptyMessage.textContent = '还没有学习单词';
+                emptyMessage.textContent = type === 'phrases' ? '还没有学习短句' : '还没有学习单词';
                 historyList.appendChild(emptyMessage);
-            } else {
-                console.log(`Found ${dates.length} dates with learned words`);
-                // Process each date
-                dates.forEach(date => {
-                    console.log(`Processing date: ${date}`);
-                    // Create date section
-                    const dateSection = document.createElement('div');
-                    dateSection.className = 'mb-6';
-                    
-                    // Format date for display (YYYY-MM-DD to YYYY年MM月DD日)
-                    const [year, month, day] = date.split('-');
-                    const formattedDate = `${year}年${month}月${day}日`;
-                    
-                    // Get words for this date
-                    const wordsForDate = learnedWords[date];
-                    console.log(`Found ${wordsForDate.length} words for date: ${date}`);
-                    
-                    // Create date header with word count
-                    const dateHeader = document.createElement('h3');
-                    dateHeader.className = 'text-lg font-semibold text-primary mb-3 pb-2 border-b border-gray-200 cursor-pointer hover:text-secondary transition-all-300';
-                    dateHeader.innerHTML = `${formattedDate} <span class="text-sm font-normal text-gray-500">(${wordsForDate.length} words)</span>`;
-                    dateHeader.setAttribute('data-date', date);
-                    dateHeader.addEventListener('click', function() {
+                return;
+            }
+
+            dates.forEach(date => {
+            const dateSection = document.createElement('div');
+            dateSection.className = 'mb-6';
+
+            const [year, month, day] = date.split('-');
+            const formattedDate = `${year}年${month}月${day}日`;
+
+                const dateHeader = document.createElement('div');
+                dateHeader.className = 'flex items-center justify-between mb-3 pb-2 border-b border-gray-200';
+
+                const dateTitle = document.createElement('h3');
+                dateTitle.className = 'text-lg font-semibold text-primary cursor-pointer hover:text-secondary transition-all-300';
+                dateTitle.setAttribute('data-date', date);
+                if (type === 'phrases') {
+                    const phrasesForDate = Array.from(new Set(historyData[date] || []));
+                    dateTitle.innerHTML = `${formattedDate} <span class="text-sm font-normal text-gray-500">(${phrasesForDate.length} phrases)</span>`;
+                    dateTitle.addEventListener('click', function() {
+                        // No bulk review for phrases for now
+                    });
+                } else {
+                    let wordsForDate = historyData[date] || [];
+                    const today = new Date().toISOString().split('T')[0];
+                    const historical = getHistoricalLearnedSet();
+                    if (date === today) {
+                        wordsForDate = wordsForDate.filter(idx => !historical.has(idx));
+                    }
+                    dateTitle.innerHTML = `${formattedDate} <span class="text-sm font-normal text-gray-500">(${wordsForDate.length} words)</span>`;
+                    dateTitle.addEventListener('click', function() {
                         const dateToReview = this.getAttribute('data-date');
                         reviewWordsByDate(dateToReview);
                     });
-                    dateSection.appendChild(dateHeader);
-                    
-                    // Sort words alphabetically
+                }
+
+                const clearBtn = document.createElement('button');
+                clearBtn.className = 'text-sm text-red-500 hover:text-red-700 flex items-center gap-1 transition-all-300';
+                clearBtn.innerHTML = '<i class="fa fa-trash-o"></i> 清空';
+                clearBtn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    if (type === 'phrases') {
+                        clearLearnedPhrasesByDate(date);
+                    } else {
+                        clearLearnedWordsByDate(date);
+                    }
+                });
+
+                dateHeader.appendChild(dateTitle);
+                dateHeader.appendChild(clearBtn);
+                dateSection.appendChild(dateHeader);
+
+                const wordsContainer = document.createElement('div');
+                wordsContainer.className = 'space-y-2';
+
+                if (type === 'phrases') {
+                    const phrasesForDate = Array.from(new Set(historyData[date] || []));
+                    const sorted = phrasesForDate.map(getPhraseDataByKey).filter(Boolean).sort((a, b) => a.text.localeCompare(b.text));
+                    sorted.forEach(item => {
+                        const listItem = document.createElement('div');
+                        listItem.className = 'p-3 bg-neutral rounded-lg hover:bg-gray-200 transition-all-300 cursor-pointer';
+                        listItem.setAttribute('data-scene', item.scene);
+                        listItem.setAttribute('data-idx', item.idx);
+                        listItem.innerHTML = `
+                            <div class="flex items-start justify-between">
+                                <div>
+                                    <h3 class="font-semibold">${item.text}</h3>
+                                    <p class="text-xs text-gray-500 mt-1">${formatPhraseCategory(item.scene)}</p>
+                                </div>
+                                <button class="delete-phrase-btn text-red-500 hover:text-red-700 transition-all-300" data-date="${date}" data-key="${getPhraseKey(item.scene, item.idx)}">
+                                    <i class="fa fa-trash-o"></i>
+                                </button>
+                            </div>
+                        `;
+                        listItem.addEventListener('click', function(e) {
+                            if (!e.target.closest('.delete-phrase-btn')) {
+                                const scene = this.getAttribute('data-scene');
+                                const idx = parseInt(this.getAttribute('data-idx'), 10);
+                                reviewPhrase(scene, idx);
+                            }
+                        });
+                        const deleteBtn = listItem.querySelector('.delete-phrase-btn');
+                        deleteBtn.addEventListener('click', function() {
+                            const key = this.getAttribute('data-key');
+                            const dateToDelete = this.getAttribute('data-date');
+                            deleteLearnedPhraseByKey(key, dateToDelete);
+                        });
+                        wordsContainer.appendChild(listItem);
+                    });
+                } else {
+                    let wordsForDate = historyData[date] || [];
+                    const today = new Date().toISOString().split('T')[0];
+                    const historical = getHistoricalLearnedSet();
+                    if (date === today) {
+                        wordsForDate = wordsForDate.filter(idx => !historical.has(idx));
+                    }
                     const sortedWords = [...wordsForDate].sort((a, b) => {
                         const wordA = cet4Words[a] ? cet4Words[a].word : '';
                         const wordB = cet4Words[b] ? cet4Words[b].word : '';
                         return wordA.localeCompare(wordB);
                     });
-                    
-                    // Create words container
-                    const wordsContainer = document.createElement('div');
-                    wordsContainer.className = 'space-y-2';
-                    
-                    // Create list items
-                    console.log('Creating list items for words:');
+
                     sortedWords.forEach(index => {
-                        console.log(`- Index: ${index}`);
-                        // Get the word data by index
                         const wordData = cet4Words[index];
-                        
-                        if (wordData) {
-                            console.log(`-- Word: ${wordData.word}`);
-                            const listItem = document.createElement('div');
-                            listItem.className = 'p-3 bg-neutral rounded-lg hover:bg-gray-200 transition-all-300 cursor-pointer';
-                            listItem.setAttribute('data-index', index);
-                            listItem.innerHTML = `
-                                <div class="flex items-start justify-between">
-                                    <h3 class="font-semibold">${wordData.word} <span class="text-gray-500 text-sm">${wordData.phonetic}</span></h3>
-                                    <button class="delete-word-btn text-red-500 hover:text-red-700 transition-all-300" data-date="${date}" data-index="${index}">
-                                        <i class="fa fa-trash-o"></i>
-                                    </button>
-                                </div>
-                                <p class="text-sm text-gray-600 mt-1">${wordData.definition}</p>
-                            `;
-                            
-                            // Add click event to review the word
-                            listItem.addEventListener('click', function(e) {
-                                // Only proceed if the click is not on the delete button
-                                if (!e.target.closest('.delete-word-btn')) {
-                                    const indexToReview = parseInt(this.getAttribute('data-index'));
-                                    reviewSingleWordByIndex(indexToReview);
-                                }
-                            });
-                            wordsContainer.appendChild(listItem);
-                            
-                            // Add event listener to delete button
-                            const deleteBtn = listItem.querySelector('.delete-word-btn');
-                            deleteBtn.addEventListener('click', function() {
-                                const indexToDelete = parseInt(this.getAttribute('data-index'));
-                                const dateToDelete = this.getAttribute('data-date');
-                                deleteLearnedWordByIndex(indexToDelete, dateToDelete);
-                            });
-                        } else {
-                            console.log(`-- Word not found for index: ${index}`);
-                        }
+                        if (!wordData) return;
+                        const listItem = document.createElement('div');
+                        listItem.className = 'p-3 bg-neutral rounded-lg hover:bg-gray-200 transition-all-300 cursor-pointer';
+                        listItem.setAttribute('data-index', index);
+                        listItem.innerHTML = `
+                            <div class="flex items-start justify-between">
+                                <h3 class="font-semibold">${wordData.word} <span class="text-gray-500 text-sm">${wordData.phonetic}</span></h3>
+                                <button class="delete-word-btn text-red-500 hover:text-red-700 transition-all-300" data-date="${date}" data-index="${index}">
+                                    <i class="fa fa-trash-o"></i>
+                                </button>
+                            </div>
+                            <p class="text-sm text-gray-600 mt-1">${wordData.definition}</p>
+                        `;
+
+                        listItem.addEventListener('click', function(e) {
+                            if (!e.target.closest('.delete-word-btn')) {
+                                const indexToReview = parseInt(this.getAttribute('data-index'));
+                                reviewSingleWordByIndex(indexToReview);
+                            }
+                        });
+                        wordsContainer.appendChild(listItem);
+
+                        const deleteBtn = listItem.querySelector('.delete-word-btn');
+                        deleteBtn.addEventListener('click', function() {
+                            const indexToDelete = parseInt(this.getAttribute('data-index'));
+                            const dateToDelete = this.getAttribute('data-date');
+                            deleteLearnedWordByIndex(indexToDelete, dateToDelete);
+                        });
                     });
-                    
-                    dateSection.appendChild(wordsContainer);
-                    
-                    historyList.appendChild(dateSection);
-                });
-            }
-            
-            // Show modal
-            historyModal.style.display = 'block';
-            setTimeout(() => {
-                historyModal.classList.add('active');
-            }, 10);
+                }
+
+                dateSection.appendChild(wordsContainer);
+                historyList.appendChild(dateSection);
+            });
         }
         
         // Load words from date-specific JS files
@@ -1122,24 +1882,18 @@
             console.log(`Reviewing word at index: ${index}`);
             
             if (index >= 0 && index < cet4Words.length) {
-                // Set current index to the found word
-                currentIndex = index;
-                
-                // Update the word card
-                updateWordCard();
-                
-                // Update progress bar
-                updateProgress();
-                
-                // Close the history modal
-                closeHistoryModal();
-                
-                // Start playing the word automatically
-                setTimeout(() => {
-                    startPlayback();
-                }, 500);
-                
-                console.log(`Successfully loaded word at index: ${index} for review`);
+                if (jumpToWordIndex(index)) {
+                    closeHistoryModal();
+                    
+                    // Start playing the word automatically
+                    setTimeout(() => {
+                        startPlayback();
+                    }, 500);
+                    
+                    console.log(`Successfully loaded word at index: ${index} for review`);
+                } else {
+                    alert(`无法在当前顺序中找到该单词。`);
+                }
             } else {
                 console.log(`Index: ${index} is out of bounds`);
                 alert(`Invalid word index.`);
@@ -1155,35 +1909,93 @@
             
             // Check if the date exists and has words
             if (learnedWords[date] && Array.isArray(learnedWords[date]) && learnedWords[date].length > 0) {
-                // Get the first word index from this date
-                const firstIndex = learnedWords[date][0];
+                enterReviewMode(learnedWords[date]);
+                closeHistoryModal();
                 
-                if (firstIndex >= 0 && firstIndex < cet4Words.length) {
-                    // Set current index to the first word of the date
-                    currentIndex = firstIndex;
-                    
-                    // Update the word card
-                    updateWordCard();
-                    
-                    // Update progress bar
-                    updateProgress();
-                    
-                    // Close the history modal
-                    closeHistoryModal();
-                    
-                    // Start playing the word automatically
-                    setTimeout(() => {
-                        startPlayback();
-                    }, 500);
-                    
-                    console.log(`Successfully loaded first word from ${date} for review`);
-                } else {
-                    console.log(`First index from ${date} is invalid`);
-                    alert(`Unable to find words from ${date} in the vocabulary list.`);
-                }
+                setTimeout(() => {
+                    startPlayback();
+                }, 500);
+                
+                console.log(`Started review for ${date}`);
             } else {
                 console.log(`No words found for date: ${date}`);
                 alert(`No words found for ${date}.`);
+            }
+        }
+
+        function enterReviewMode(indices) {
+            isReviewMode = true;
+            reviewOrder = indices.slice();
+            prevOrderBackup = order.slice();
+            prevOrderPosBackup = orderPosition;
+            order = reviewOrder;
+            orderPosition = 0;
+            updateWordCard();
+            updateProgress();
+            saveState();
+        }
+
+        function exitReviewMode() {
+            if (!isReviewMode) return;
+            isReviewMode = false;
+            reviewOrder = [];
+            if (prevOrderBackup && prevOrderBackup.length === cet4Words.length) {
+                order = prevOrderBackup;
+                orderPosition = prevOrderPosBackup;
+            } else {
+                order = generateShuffledOrder();
+                orderPosition = 0;
+            }
+            prevOrderBackup = null;
+            prevOrderPosBackup = 0;
+            updateWordCard();
+            updateProgress();
+            saveState();
+        }
+
+        // Jump to a specific word index within the shuffled order
+        function jumpToWordIndex(index) {
+            const pos = order.indexOf(index);
+            if (pos !== -1) {
+                orderPosition = pos;
+                currentIndex = index;
+                updateWordCard();
+                updateProgress();
+                saveState();
+                return true;
+            }
+            return false;
+        }
+
+        // Clear all learned words for a specific date
+        function clearLearnedWordsByDate(date) {
+            if (!confirm('确定要清空该日期的已学单词吗？')) return;
+            
+            const learnedWords = JSON.parse(localStorage.getItem(LEARNED_WORDS_KEY) || '{}');
+            if (learnedWords[date]) {
+                delete learnedWords[date];
+                localStorage.setItem(LEARNED_WORDS_KEY, JSON.stringify(learnedWords));
+                
+                updateTodayLearnedCount();
+                updateProgress();
+                updateWordIndexLabel();
+                
+                // Refresh modal content
+                refreshHistoryModal();
+                console.log(`Cleared learned words for date: ${date}`);
+            } else {
+                alert('该日期没有已学单词可清除');
+            }
+        }
+
+        function clearLearnedPhrasesByDate(date) {
+            if (!confirm('确定要清空该日期的已学短句吗？')) return;
+            const learned = getPhraseLearnedByDate();
+            if (learned[date]) {
+                delete learned[date];
+                localStorage.setItem(LEARNED_PHRASES_KEY, JSON.stringify(learned));
+                refreshHistoryModal();
+                updatePhraseBadge();
             }
         }
         
@@ -1213,9 +2025,11 @@
                     
                     // Update today's learned count
                     updateTodayLearnedCount();
+                    updateProgress();
+                    updateWordIndexLabel();
                     
                     // Refresh the history modal
-                    openHistoryModal();
+                    refreshHistoryModal();
                     
                     console.log(`Successfully deleted word at index: ${index}`);
                 } else {
@@ -1224,6 +2038,18 @@
             } else {
                 console.log(`Date: ${date} not found in learned words`);
             }
+        }
+
+        function deleteLearnedPhraseByKey(key, date) {
+            const learned = getPhraseLearnedByDate();
+            if (!learned[date] || !Array.isArray(learned[date])) return;
+            learned[date] = learned[date].filter(k => k !== key);
+            if (!learned[date].length) {
+                delete learned[date];
+            }
+            localStorage.setItem(LEARNED_PHRASES_KEY, JSON.stringify(learned));
+            refreshHistoryModal();
+            updatePhraseBadge();
         }
         
         // Close history modal

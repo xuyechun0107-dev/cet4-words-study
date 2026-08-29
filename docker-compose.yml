@@ -1,0 +1,33 @@
+services:
+  api:
+    build:
+      context: ./api
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: mysql+pymysql://cet4:${MYSQL_PASSWORD}@db:3306/cet4?charset=utf8mb4
+      ADMIN_TOKEN: ${ADMIN_TOKEN}
+      ALLOWED_ORIGINS: https://enplay.xuspring.com,https://cet4-words-study.pages.dev
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:28100:8000"
+
+  db:
+    image: mysql:8.4
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: cet4
+      MYSQL_USER: cet4
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+    volumes:
+      - cet4_mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "cet4", "-p${MYSQL_PASSWORD}"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
+volumes:
+  cet4_mysql_data:
