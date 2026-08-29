@@ -409,10 +409,21 @@
 
         .workspace-main {
             width: 100%;
-            max-width: 76rem;
+            max-width: 96rem;
             margin: 0 auto;
-            padding: clamp(2rem, 5vw, 4.5rem) clamp(1rem, 4vw, 3rem);
+            padding: 1.5rem;
             overflow-x: hidden;
+            display: grid;
+            grid-template-columns: 13.5rem minmax(0, 1fr) 17.5rem;
+            grid-template-areas: 'controls canvas shelf';
+            align-items: start;
+            gap: 1.25rem;
+        }
+
+        .learning-canvas {
+            grid-area: canvas;
+            min-width: 0;
+            padding: clamp(1rem, 3vw, 3rem) 0;
         }
 
         .workspace-section {
@@ -553,10 +564,238 @@
             line-height: 1.5;
         }
 
-        .app-footer {
+        .control-panel,
+        .library-shelf {
+            position: sticky;
+            top: 6.25rem;
+            border: 1px solid rgba(255, 255, 255, 0.96);
+            border-radius: 1.25rem;
+            background: rgba(255, 255, 255, 0.8);
+            box-shadow: 0 18px 48px rgba(31, 47, 81, 0.08);
+            backdrop-filter: blur(16px);
+        }
+
+        .control-panel {
+            grid-area: controls;
+            padding: 1.15rem;
+        }
+
+        .library-shelf {
+            grid-area: shelf;
+            overflow: hidden;
+        }
+
+        .panel-heading {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+
+        .panel-heading h2 {
+            font-family: 'Newsreader', 'Noto Sans SC', serif;
+            font-size: 1.25rem;
+            font-weight: 700;
+        }
+
+        .panel-kicker {
+            color: var(--blue);
+            font-size: 0.65rem;
+            font-weight: 800;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+        }
+
+        .progress-note {
+            margin-bottom: 1rem;
+            padding: 0.85rem;
+            border-radius: 0.9rem;
+            color: var(--ink);
+            background: var(--blue-soft);
+            font-size: 0.78rem;
+            font-weight: 700;
+            line-height: 1.5;
+        }
+
+        .setting-field {
+            display: grid;
+            gap: 0.4rem;
+            margin-top: 0.8rem;
+        }
+
+        .setting-field label,
+        .toggle-row label {
+            color: var(--muted);
+            font-size: 0.72rem;
+            font-weight: 700;
+        }
+
+        .setting-field input,
+        .setting-field select {
+            width: 100%;
+            min-width: 0;
+            padding: 0.55rem 0.65rem;
+            border: 1px solid var(--line);
+            border-radius: 0.7rem;
+            background: white;
+            color: var(--ink);
+            font-size: 0.78rem;
+        }
+
+        .toggle-list {
+            display: grid;
+            gap: 0.6rem;
+            margin-top: 1rem;
+            padding-top: 1rem;
             border-top: 1px solid var(--line);
-            background: rgba(255, 255, 255, 0.82);
-            backdrop-filter: blur(18px);
+        }
+
+        .toggle-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.5rem;
+        }
+
+        .shelf-header {
+            padding: 1.15rem 1.15rem 0;
+        }
+
+        .shelf-list {
+            display: grid;
+            gap: 0.65rem;
+            max-height: 25rem;
+            padding: 0 1rem;
+            overflow-y: auto;
+        }
+
+        .shelf-book {
+            position: relative;
+            display: grid;
+            grid-template-columns: 2.5rem minmax(0, 1fr) auto;
+            align-items: center;
+            gap: 0.7rem;
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--line);
+            border-radius: 0.9rem;
+            color: var(--ink);
+            background: rgba(255, 255, 255, 0.72);
+            text-align: left;
+            transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
+        }
+
+        .shelf-book:hover {
+            transform: translateY(-1px);
+            border-color: rgba(36, 87, 214, 0.28);
+            box-shadow: 0 9px 24px rgba(31, 47, 81, 0.08);
+        }
+
+        .shelf-book.active {
+            border-color: rgba(36, 87, 214, 0.46);
+            background: var(--blue-soft);
+        }
+
+        .book-spine {
+            display: grid;
+            width: 2.5rem;
+            height: 3rem;
+            place-items: center;
+            border-radius: 0.35rem 0.7rem 0.7rem 0.35rem;
+            color: white;
+            background: var(--ink);
+            box-shadow: inset 4px 0 rgba(255, 255, 255, 0.12);
+        }
+
+        .shelf-book:nth-child(2n) .book-spine { background: var(--blue); }
+        .shelf-book:nth-child(3n) .book-spine { background: var(--mint); }
+
+        .book-title {
+            display: block;
+            overflow: hidden;
+            font-size: 0.78rem;
+            font-weight: 800;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .book-meta {
+            display: block;
+            margin-top: 0.2rem;
+            color: var(--muted);
+            font-size: 0.65rem;
+        }
+
+        .book-check {
+            color: var(--blue);
+            opacity: 0;
+        }
+
+        .shelf-book.active .book-check { opacity: 1; }
+
+        .shelf-empty {
+            padding: 1rem;
+            border: 1px dashed rgba(107, 118, 144, 0.32);
+            border-radius: 0.9rem;
+            color: var(--muted);
+            font-size: 0.72rem;
+            line-height: 1.6;
+            text-align: center;
+        }
+
+        .shelf-actions {
+            margin-top: 1rem;
+            padding: 1rem;
+            border-top: 1px solid var(--line);
+            background: rgba(245, 247, 251, 0.68);
+        }
+
+        .upload-library-button {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            width: 100%;
+            padding: 0.72rem;
+            border-radius: 0.8rem;
+            color: white;
+            background: var(--ink);
+            font-size: 0.78rem;
+            font-weight: 800;
+            transition: transform 180ms ease, background 180ms ease;
+        }
+
+        .upload-library-button:hover {
+            transform: translateY(-1px);
+            background: var(--blue);
+        }
+
+        .format-note {
+            margin-top: 0.65rem;
+            color: var(--muted);
+            font-size: 0.62rem;
+            line-height: 1.55;
+            text-align: center;
+        }
+
+        .upload-dropzone {
+            display: grid;
+            min-height: 8rem;
+            place-items: center;
+            padding: 1rem;
+            border: 1.5px dashed rgba(36, 87, 214, 0.32);
+            border-radius: 1rem;
+            background: var(--blue-soft);
+            text-align: center;
+            cursor: pointer;
+        }
+
+        .upload-status {
+            min-height: 1.25rem;
+            margin-top: 0.75rem;
+            font-size: 0.75rem;
+            line-height: 1.5;
         }
 
         @media (max-width: 900px) {
@@ -573,6 +812,12 @@
             .nav-tab { flex: 1; min-width: 0; }
             .header-actions { grid-column: 2; grid-row: 1; }
             .search-shell { display: none; }
+            .workspace-main {
+                grid-template-columns: 1fr 1fr;
+                grid-template-areas: 'canvas canvas' 'controls shelf';
+            }
+            .control-panel,
+            .library-shelf { position: static; }
         }
 
         @media (max-width: 640px) {
@@ -589,8 +834,11 @@
             .workspace-main { padding-top: 2rem; }
             .word-card { padding: 1.4rem !important; }
             .article-features { grid-template-columns: 1fr; }
-            .app-footer { align-items: flex-start !important; gap: 0.85rem; }
-            .app-footer > div:last-child { flex-wrap: wrap; gap: 0.75rem !important; }
+            .workspace-main {
+                grid-template-columns: 1fr;
+                grid-template-areas: 'canvas' 'controls' 'shelf';
+                padding: 0.75rem;
+            }
         }
 
         @media (max-width: 420px) {
@@ -715,6 +963,60 @@
 
     <!-- Main Content -->
     <main class="workspace-main flex-grow">
+        <aside id="playerSettings" class="control-panel" aria-label="播放控制">
+            <div class="panel-heading">
+                <div>
+                    <span class="panel-kicker">Player</span>
+                    <h2>播放控制</h2>
+                </div>
+                <i class="fa fa-sliders text-primary"></i>
+            </div>
+            <div class="progress-note">
+                <span id="todayLearned">今日进度：0 个单词</span>
+            </div>
+            <div class="setting-field">
+                <label for="repeatCountInput">重复次数</label>
+                <input id="repeatCountInput" type="number" min="1" value="3">
+            </div>
+            <div class="setting-field">
+                <label for="rateSelect">播放速度</label>
+                <select id="rateSelect">
+                    <option value="0.5">0.5×</option>
+                    <option value="0.6">0.6×</option>
+                    <option value="0.7">0.7×</option>
+                    <option value="0.8">0.8×</option>
+                    <option value="0.9">0.9×</option>
+                    <option value="1.0">1.0×</option>
+                    <option value="1.1">1.1×</option>
+                    <option value="1.2">1.2×</option>
+                    <option value="1.3">1.3×</option>
+                    <option value="1.4">1.4×</option>
+                    <option value="1.5">1.5×</option>
+                </select>
+            </div>
+            <div class="setting-field">
+                <label for="voiceSelect">朗读声音</label>
+                <select id="voiceSelect">
+                    <option value="auto">自动选择</option>
+                </select>
+            </div>
+            <div class="toggle-list">
+                <div class="toggle-row">
+                    <label for="wordLoop">单项循环</label>
+                    <input type="checkbox" id="wordLoop" class="custom-checkbox">
+                </div>
+                <div class="toggle-row">
+                    <label for="autoPlay">连续播放</label>
+                    <input type="checkbox" id="autoPlay" class="custom-checkbox">
+                </div>
+                <div class="toggle-row">
+                    <label for="newWordsOnly">仅播放未学</label>
+                    <input type="checkbox" id="newWordsOnly" class="custom-checkbox">
+                </div>
+            </div>
+        </aside>
+
+        <div class="learning-canvas">
         <section id="wordsSection" class="workspace-section" data-section="words">
             <div class="section-intro">
                 <div>
@@ -823,7 +1125,7 @@
         </section>
 
         <section id="articlesSection" class="workspace-section hidden" data-section="articles">
-            <div class="article-empty">
+            <div id="articleEmpty" class="article-empty">
                 <span class="eyebrow">Articles · 文章</span>
                 <div class="article-icon mt-5"><i class="fa fa-book"></i></div>
                 <h1 class="section-title mt-6">文章播放器，正在等待第一篇内容。</h1>
@@ -846,55 +1148,46 @@
                     </div>
                 </div>
             </div>
+            <div id="articleReader" class="player-stage hidden">
+                <div class="word-card w-full p-8 animate-fade-in">
+                    <div class="flex items-start justify-between gap-4 mb-5">
+                        <div>
+                            <span id="articleLevel" class="eyebrow">Article</span>
+                            <h1 id="articleTitle" class="section-title mt-2">Untitled</h1>
+                        </div>
+                        <span id="articleIndex" class="bg-primary text-white px-3 py-1 rounded-full text-sm">1/1</span>
+                    </div>
+                    <div id="articleContent" class="text-gray-700 leading-8 whitespace-pre-wrap"></div>
+                    <div id="articleTranslation" class="mt-5 pt-5 border-t border-gray-200 text-gray-500 leading-7 whitespace-pre-wrap"></div>
+                    <div class="flex items-center justify-center gap-6 mt-8">
+                        <button id="articlePrevBtn" class="control-btn prev-btn" aria-label="上一篇"><i class="fa fa-step-backward"></i></button>
+                        <button id="articlePlayBtn" class="control-btn play-btn" aria-label="播放文章"><i id="articlePlayIcon" class="fa fa-play"></i></button>
+                        <button id="articleNextBtn" class="control-btn next-btn" aria-label="下一篇"><i class="fa fa-step-forward"></i></button>
+                    </div>
+                </div>
+            </div>
         </section>
-    </main>
+        </div>
 
-    <!-- Footer -->
-    <footer id="playerSettings" class="app-footer py-4 px-6 flex justify-between items-center">
-        <div class="text-sm text-gray-500">
-            <span id="todayLearned">Today's Progress: 0 words</span>
-        </div>
-        <div class="flex items-center gap-6">
-            <div id="wordLoopSetting" class="flex items-center gap-2">
-                <label for="repeatCountInput" class="text-sm text-gray-700 cursor-pointer whitespace-nowrap">Repeat</label>
-                <input id="repeatCountInput" type="number" min="1" class="w-16 border border-gray-300 rounded px-2 py-1 text-sm" value="3">
+        <aside id="libraryShelf" class="library-shelf" aria-label="我的书架">
+            <div class="shelf-header">
+                <div class="panel-heading">
+                    <div>
+                        <span class="panel-kicker">Library</span>
+                        <h2>我的书架</h2>
+                    </div>
+                    <span id="libraryCount" class="text-xs font-bold text-gray-400">1 本</span>
+                </div>
             </div>
-            <div id="autoPlaySetting" class="flex items-center gap-2">
-                <label for="rateSelect" class="text-sm text-gray-700 cursor-pointer whitespace-nowrap">Speed</label>
-                <select id="rateSelect" class="border border-gray-300 rounded px-2 py-1 text-sm">
-                    <option value="0.5">0.5</option>
-                    <option value="0.6">0.6</option>
-                    <option value="0.7">0.7</option>
-                    <option value="0.8">0.8</option>
-                    <option value="0.9">0.9</option>
-                    <option value="1.0">1.0</option>
-                    <option value="1.1">1.1</option>
-                    <option value="1.2">1.2</option>
-                    <option value="1.3">1.3</option>
-                    <option value="1.4">1.4</option>
-                    <option value="1.5">1.5</option>
-                </select>
+            <div id="libraryList" class="shelf-list"></div>
+            <div class="shelf-actions">
+                <button id="uploadLibraryBtn" class="upload-library-button" type="button">
+                    <i class="fa fa-plus"></i><span>导入内容库</span>
+                </button>
+                <p class="format-note">本机书架支持 UTF‑8 CSV / TSV / JSON；文章也支持 TXT / Markdown。</p>
             </div>
-            <div id="newWordsOnlySetting" class="flex items-center gap-2">
-                <label for="voiceSelect" class="text-sm text-gray-700 cursor-pointer whitespace-nowrap">Voice</label>
-                <select id="voiceSelect" class="border border-gray-300 rounded px-2 py-1 text-sm">
-                    <option value="auto">Auto</option>
-                </select>
-            </div>
-            <div class="flex items-center gap-2">
-                <input type="checkbox" id="wordLoop" class="custom-checkbox">
-                <label for="wordLoop" class="text-sm text-gray-700 cursor-pointer">Loop</label>
-            </div>
-            <div class="flex items-center gap-2">
-                <input type="checkbox" id="autoPlay" class="custom-checkbox">
-                <label for="autoPlay" class="text-sm text-gray-700 cursor-pointer">Auto Play</label>
-            </div>
-            <div class="flex items-center gap-2">
-                <input type="checkbox" id="newWordsOnly" class="custom-checkbox">
-                <label for="newWordsOnly" class="text-sm text-gray-700 cursor-pointer">New Only</label>
-            </div>
-        </div>
-    </footer>
+        </aside>
+    </main>
 
     <!-- History Modal -->
     <div id="historyModal" class="modal">
@@ -919,6 +1212,50 @@
             </div>
             <div id="historyList" class="space-y-2 max-h-[60vh] overflow-y-auto">
                 <!-- History items will be inserted here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Personal Library Import Modal -->
+    <div id="uploadLibraryModal" class="modal">
+        <div class="modal-content w-full max-w-xl">
+            <div class="flex items-start justify-between gap-4 mb-5">
+                <div>
+                    <span class="panel-kicker">Personal Library</span>
+                    <h2 class="text-2xl font-bold text-dark mt-1">导入到本机书架</h2>
+                    <p class="text-sm text-gray-500 mt-2">内容保存在当前浏览器，不会公开上传；导入后可立即切换播放。</p>
+                </div>
+                <button id="closeUploadModal" class="text-gray-400 hover:text-gray-700" type="button" aria-label="关闭">
+                    <i class="fa fa-times text-xl"></i>
+                </button>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
+                <div class="setting-field !mt-0">
+                    <label for="uploadLibraryType">内容类型</label>
+                    <select id="uploadLibraryType">
+                        <option value="words">单词库</option>
+                        <option value="sentences">句子库</option>
+                        <option value="articles">文章库</option>
+                    </select>
+                </div>
+                <div class="setting-field !mt-0">
+                    <label for="uploadLibraryName">书架名称</label>
+                    <input id="uploadLibraryName" type="text" maxlength="80" placeholder="例如：商务英语词库">
+                </div>
+            </div>
+            <label class="upload-dropzone" for="uploadLibraryFile">
+                <span>
+                    <i class="fa fa-cloud-upload text-2xl text-primary"></i>
+                    <strong class="block mt-2 text-sm">选择内容文件</strong>
+                    <span id="uploadFormatHint" class="block mt-1 text-xs text-gray-500">CSV / TSV / JSON</span>
+                </span>
+                <input id="uploadLibraryFile" class="hidden" type="file" accept=".csv,.tsv,.json,.txt,.md,.markdown,text/csv,text/tab-separated-values,application/json,text/plain,text/markdown">
+            </label>
+            <div id="selectedLibraryFile" class="mt-3 text-xs text-gray-500">尚未选择文件</div>
+            <div id="uploadLibraryStatus" class="upload-status text-gray-500"></div>
+            <div class="flex justify-end gap-3 mt-4">
+                <button id="cancelUploadLibrary" class="px-4 py-2 rounded-lg border border-gray-200 text-sm font-bold text-gray-600" type="button">取消</button>
+                <button id="confirmUploadLibrary" class="px-4 py-2 rounded-lg bg-dark text-white text-sm font-bold disabled:opacity-40" type="button" disabled>导入书架</button>
             </div>
         </div>
     </div>
@@ -967,6 +1304,30 @@
         const searchShell = document.getElementById('searchShell');
         const playerSettings = document.getElementById('playerSettings');
         const historyButtonLabel = document.getElementById('historyButtonLabel');
+        const libraryListEl = document.getElementById('libraryList');
+        const libraryCountEl = document.getElementById('libraryCount');
+        const uploadLibraryBtn = document.getElementById('uploadLibraryBtn');
+        const uploadLibraryModal = document.getElementById('uploadLibraryModal');
+        const closeUploadModalBtn = document.getElementById('closeUploadModal');
+        const cancelUploadLibraryBtn = document.getElementById('cancelUploadLibrary');
+        const confirmUploadLibraryBtn = document.getElementById('confirmUploadLibrary');
+        const uploadLibraryType = document.getElementById('uploadLibraryType');
+        const uploadLibraryName = document.getElementById('uploadLibraryName');
+        const uploadLibraryFile = document.getElementById('uploadLibraryFile');
+        const uploadFormatHint = document.getElementById('uploadFormatHint');
+        const selectedLibraryFile = document.getElementById('selectedLibraryFile');
+        const uploadLibraryStatus = document.getElementById('uploadLibraryStatus');
+        const articleEmpty = document.getElementById('articleEmpty');
+        const articleReader = document.getElementById('articleReader');
+        const articleTitleEl = document.getElementById('articleTitle');
+        const articleContentEl = document.getElementById('articleContent');
+        const articleTranslationEl = document.getElementById('articleTranslation');
+        const articleLevelEl = document.getElementById('articleLevel');
+        const articleIndexEl = document.getElementById('articleIndex');
+        const articlePrevBtn = document.getElementById('articlePrevBtn');
+        const articlePlayBtn = document.getElementById('articlePlayBtn');
+        const articleNextBtn = document.getElementById('articleNextBtn');
+        const articlePlayIcon = document.getElementById('articlePlayIcon');
         
         const historyBtn = document.getElementById('historyBtn');
         const historyModal = document.getElementById('historyModal');
@@ -1005,16 +1366,24 @@
         let reviewOrder = [];
         let prevOrderBackup = null;
         let prevOrderPosBackup = 0;
+        let currentWorkspaceView = 'words';
+        let customLibraries = [];
+        let builtInPhraseItems = [];
+        let articleList = [];
+        let articleIndex = 0;
+        let isArticlePlaying = false;
+        const builtInWordItems = cet4Words.map(item => ({ ...item }));
+        const activeLibraryIds = loadActiveLibraryIds();
         
         // Local Storage Keys
-        const CURRENT_INDEX_KEY = 'cet4_current_index';
-        const LEARNED_WORDS_KEY = 'cet4_learned_words';
-        const LEARNED_PHRASES_KEY = 'phrases_learned';
+        let CURRENT_INDEX_KEY = 'cet4_current_index';
+        let LEARNED_WORDS_KEY = 'cet4_learned_words';
+        let LEARNED_PHRASES_KEY = 'phrases_learned';
         const AUTO_PLAY_KEY = 'cet4_auto_play';
         const WORD_LOOP_KEY = 'cet4_word_loop';
         const NEW_WORDS_ONLY_KEY = 'cet4_new_words_only';
-        const ORDER_KEY = 'cet4_word_order';
-        const ORDER_POSITION_KEY = 'cet4_word_order_position';
+        let ORDER_KEY = 'cet4_word_order';
+        let ORDER_POSITION_KEY = 'cet4_word_order_position';
         const PLAY_REPEAT_KEY = 'cet4_play_repeat_count';
         const PLAY_RATE_KEY = 'cet4_play_rate';
         const VOICE_PREF_KEY = 'cet4_voice_pref';
@@ -1034,6 +1403,7 @@
 
             // Init phrases
             initPhrases();
+            builtInPhraseItems = phraseList.map(item => ({ ...item }));
 
             // Update progress bar
             updateProgress();
@@ -1069,6 +1439,19 @@
             phrasePrevBtn.addEventListener('click', goToPrevPhrase);
             phraseNextBtn.addEventListener('click', goToNextPhrase);
             phrasePlayBtn.addEventListener('click', togglePhrasePlay);
+            articlePrevBtn.addEventListener('click', goToPreviousArticle);
+            articlePlayBtn.addEventListener('click', toggleArticlePlay);
+            articleNextBtn.addEventListener('click', goToNextArticle);
+            uploadLibraryBtn.addEventListener('click', openUploadLibraryModal);
+            closeUploadModalBtn.addEventListener('click', closeUploadLibraryModal);
+            cancelUploadLibraryBtn.addEventListener('click', closeUploadLibraryModal);
+            uploadLibraryType.addEventListener('change', updateUploadFormatHint);
+            uploadLibraryFile.addEventListener('change', handleLibraryFileSelection);
+            uploadLibraryName.addEventListener('input', updateUploadButtonState);
+            confirmUploadLibraryBtn.addEventListener('click', importSelectedLibraryFile);
+            uploadLibraryModal.addEventListener('click', (event) => {
+                if (event.target === uploadLibraryModal) closeUploadLibraryModal();
+            });
             navTabs.forEach(tab => {
                 tab.addEventListener('click', () => switchWorkspace(tab.dataset.view));
             });
@@ -1082,6 +1465,11 @@
                 if (e.target === historyModal) {
                     closeHistoryModal();
                 }
+            });
+
+            renderLibraryShelf();
+            initPersonalLibrary().catch(error => {
+                console.error('Unable to load personal libraries:', error);
             });
             
             console.log('App initialized successfully');
@@ -1103,6 +1491,8 @@
 
             if (view !== 'words') stopPlayback(true);
             if (view !== 'sentences') stopPhrasePlayback(true);
+            if (view !== 'articles') stopArticlePlayback();
+            currentWorkspaceView = view;
 
             workspaceSections.forEach(section => {
                 section.classList.toggle('hidden', section.dataset.section !== view);
@@ -1116,7 +1506,6 @@
 
             searchShell.classList.toggle('hidden', view !== 'words');
             historyBtn.classList.toggle('hidden', view === 'articles');
-            playerSettings.classList.toggle('hidden', view === 'articles');
             searchResults.classList.add('hidden');
 
             if (view === 'sentences') {
@@ -1126,6 +1515,7 @@
                 document.title = '句子播放器 · Enplay';
             } else if (view === 'articles') {
                 historyButtonLabel.textContent = '学习记录';
+                todayLearnedEl.textContent = `当前书库：${articleList.length} 篇`;
                 document.title = '文章播放器 · Enplay';
             } else {
                 historyTypeSelect.value = 'words';
@@ -1137,6 +1527,7 @@
             if (updateHash && window.location.hash !== `#${view}`) {
                 history.replaceState(null, '', `#${view}`);
             }
+            renderLibraryShelf();
         }
 
         function updateTodaySentenceCount() {
@@ -1144,6 +1535,435 @@
             const learned = getPhraseLearnedByDate();
             const count = new Set(learned[today] || []).size;
             todayLearnedEl.textContent = `今日进度：${count} 句`;
+        }
+
+        function loadActiveLibraryIds() {
+            const defaults = {
+                words: 'builtin-words',
+                sentences: 'builtin-sentences',
+                articles: 'builtin-articles'
+            };
+            try {
+                return { ...defaults, ...JSON.parse(localStorage.getItem('enplay_active_libraries') || '{}') };
+            } catch (error) {
+                return defaults;
+            }
+        }
+
+        function getBuiltInLibrary(type) {
+            const libraries = {
+                words: {
+                    id: 'builtin-words',
+                    type: 'words',
+                    name: 'CET-4 核心词库',
+                    format: '内置',
+                    items: builtInWordItems
+                },
+                sentences: {
+                    id: 'builtin-sentences',
+                    type: 'sentences',
+                    name: '日常英语句库',
+                    format: '内置',
+                    items: builtInPhraseItems
+                },
+                articles: {
+                    id: 'builtin-articles',
+                    type: 'articles',
+                    name: '我的文章库',
+                    format: '内置',
+                    items: []
+                }
+            };
+            return libraries[type];
+        }
+
+        function renderLibraryShelf() {
+            if (!libraryListEl) return;
+            const builtIn = getBuiltInLibrary(currentWorkspaceView);
+            if (!builtIn) return;
+            const libraries = [builtIn, ...customLibraries.filter(item => item.type === currentWorkspaceView)];
+            libraryListEl.innerHTML = '';
+            libraryCountEl.textContent = `${libraries.length} 本`;
+
+            libraries.forEach(library => {
+                const button = document.createElement('button');
+                button.type = 'button';
+                button.className = 'shelf-book';
+                if (activeLibraryIds[currentWorkspaceView] === library.id) {
+                    button.classList.add('active');
+                }
+                button.dataset.libraryId = library.id;
+
+                const spine = document.createElement('span');
+                spine.className = 'book-spine';
+                const icon = document.createElement('i');
+                icon.className = currentWorkspaceView === 'words'
+                    ? 'fa fa-font'
+                    : currentWorkspaceView === 'sentences'
+                        ? 'fa fa-comment-o'
+                        : 'fa fa-file-text-o';
+                spine.appendChild(icon);
+
+                const copy = document.createElement('span');
+                const title = document.createElement('span');
+                title.className = 'book-title';
+                title.textContent = library.name;
+                const meta = document.createElement('span');
+                meta.className = 'book-meta';
+                const unit = currentWorkspaceView === 'words' ? '词' : currentWorkspaceView === 'sentences' ? '句' : '篇';
+                meta.textContent = `${library.items.length} ${unit} · ${library.format || '自定义'}`;
+                copy.append(title, meta);
+
+                const check = document.createElement('i');
+                check.className = 'book-check fa fa-check-circle';
+                button.append(spine, copy, check);
+                button.addEventListener('click', () => selectLibrary(library.id));
+                libraryListEl.appendChild(button);
+            });
+        }
+
+        function selectLibrary(libraryId) {
+            const library = libraryId.startsWith('builtin-')
+                ? getBuiltInLibrary(currentWorkspaceView)
+                : customLibraries.find(item => item.id === libraryId && item.type === currentWorkspaceView);
+            if (!library) return;
+            activeLibraryIds[currentWorkspaceView] = library.id;
+            localStorage.setItem('enplay_active_libraries', JSON.stringify(activeLibraryIds));
+            applyLibraryData(library);
+            renderLibraryShelf();
+        }
+
+        function setLibraryStorageScope(type, libraryId) {
+            const suffix = libraryId.startsWith('builtin-') ? '' : `:${libraryId}`;
+            if (type === 'words') {
+                CURRENT_INDEX_KEY = `cet4_current_index${suffix}`;
+                ORDER_KEY = `cet4_word_order${suffix}`;
+                ORDER_POSITION_KEY = `cet4_word_order_position${suffix}`;
+                LEARNED_WORDS_KEY = `cet4_learned_words${suffix}`;
+            } else if (type === 'sentences') {
+                LEARNED_PHRASES_KEY = `phrases_learned${suffix}`;
+            }
+        }
+
+        function applyLibraryData(library) {
+            setLibraryStorageScope(library.type, library.id);
+            if (library.type === 'words') {
+                stopPlayback(true);
+                cet4Words.splice(0, cet4Words.length, ...library.items.map(item => ({ ...item })));
+                const loadedOrder = loadOrCreateOrder();
+                order = loadedOrder.order;
+                orderPosition = loadedOrder.position;
+                currentIndex = order[orderPosition] || 0;
+                isReviewMode = false;
+                updateWordCard();
+                updateProgress();
+                updateTodayLearnedCount();
+            } else if (library.type === 'sentences') {
+                stopPhrasePlayback(true);
+                phraseList = library.items.map((item, idx) => ({ ...item, idx }));
+                phraseIndex = 0;
+                updatePhraseCard();
+                updateTodaySentenceCount();
+            } else {
+                stopArticlePlayback();
+                articleList = library.items.map(item => ({ ...item }));
+                articleIndex = 0;
+                updateArticleCard();
+                if (currentWorkspaceView === 'articles') {
+                    todayLearnedEl.textContent = `当前书库：${articleList.length} 篇`;
+                }
+            }
+        }
+
+        async function initPersonalLibrary() {
+            customLibraries = await readAllPersonalLibraries();
+            for (const type of ['words', 'sentences', 'articles']) {
+                const activeId = activeLibraryIds[type];
+                const custom = customLibraries.find(item => item.id === activeId && item.type === type);
+                if (custom) {
+                    applyLibraryData(custom);
+                } else if (typeof activeId !== 'string' || !activeId.startsWith('builtin-')) {
+                    activeLibraryIds[type] = `builtin-${type}`;
+                }
+            }
+            localStorage.setItem('enplay_active_libraries', JSON.stringify(activeLibraryIds));
+            renderLibraryShelf();
+        }
+
+        function openLibraryDatabase() {
+            return new Promise((resolve, reject) => {
+                const request = indexedDB.open('enplay_personal_library', 1);
+                request.onupgradeneeded = () => {
+                    const database = request.result;
+                    if (!database.objectStoreNames.contains('libraries')) {
+                        database.createObjectStore('libraries', { keyPath: 'id' });
+                    }
+                };
+                request.onsuccess = () => resolve(request.result);
+                request.onerror = () => reject(request.error);
+            });
+        }
+
+        async function readAllPersonalLibraries() {
+            const database = await openLibraryDatabase();
+            return new Promise((resolve, reject) => {
+                const transaction = database.transaction('libraries', 'readonly');
+                const request = transaction.objectStore('libraries').getAll();
+                request.onsuccess = () => resolve(request.result || []);
+                request.onerror = () => reject(request.error);
+                transaction.oncomplete = () => database.close();
+                transaction.onerror = () => {
+                    database.close();
+                    reject(transaction.error);
+                };
+            });
+        }
+
+        async function savePersonalLibrary(library) {
+            const database = await openLibraryDatabase();
+            return new Promise((resolve, reject) => {
+                const transaction = database.transaction('libraries', 'readwrite');
+                transaction.objectStore('libraries').put(library);
+                transaction.oncomplete = () => {
+                    database.close();
+                    resolve();
+                };
+                transaction.onerror = () => reject(transaction.error);
+            });
+        }
+
+        function openUploadLibraryModal() {
+            uploadLibraryType.value = currentWorkspaceView;
+            uploadLibraryName.value = '';
+            uploadLibraryFile.value = '';
+            selectedLibraryFile.textContent = '尚未选择文件';
+            uploadLibraryStatus.textContent = '';
+            updateUploadFormatHint();
+            updateUploadButtonState();
+            uploadLibraryModal.style.display = 'block';
+            setTimeout(() => uploadLibraryModal.classList.add('active'), 10);
+        }
+
+        function closeUploadLibraryModal() {
+            uploadLibraryModal.classList.remove('active');
+            setTimeout(() => {
+                uploadLibraryModal.style.display = 'none';
+            }, 250);
+        }
+
+        function updateUploadFormatHint() {
+            uploadFormatHint.textContent = uploadLibraryType.value === 'articles'
+                ? 'JSON / CSV / TSV / TXT / Markdown'
+                : 'UTF-8 JSON / CSV / TSV';
+        }
+
+        function handleLibraryFileSelection() {
+            const file = uploadLibraryFile.files[0];
+            if (!file) {
+                selectedLibraryFile.textContent = '尚未选择文件';
+            } else {
+                selectedLibraryFile.textContent = `${file.name} · ${formatFileSize(file.size)}`;
+                if (!uploadLibraryName.value.trim()) {
+                    uploadLibraryName.value = file.name.replace(/\.[^.]+$/, '');
+                }
+            }
+            uploadLibraryStatus.textContent = '';
+            updateUploadButtonState();
+        }
+
+        function updateUploadButtonState() {
+            confirmUploadLibraryBtn.disabled = !(uploadLibraryFile.files[0] && uploadLibraryName.value.trim());
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes < 1024) return `${bytes} B`;
+            if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+            return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
+        }
+
+        async function importSelectedLibraryFile() {
+            const file = uploadLibraryFile.files[0];
+            if (!file) return;
+            confirmUploadLibraryBtn.disabled = true;
+            uploadLibraryStatus.className = 'upload-status text-gray-500';
+            uploadLibraryStatus.textContent = '正在解析并校验内容…';
+            try {
+                const type = uploadLibraryType.value;
+                const items = await parseLibraryFile(file, type);
+                if (!items.length) throw new Error('文件中没有找到可导入的有效内容');
+                const library = {
+                    id: `local-${type}-${Date.now()}`,
+                    type,
+                    name: uploadLibraryName.value.trim(),
+                    format: file.name.split('.').pop().toUpperCase(),
+                    items,
+                    createdAt: new Date().toISOString()
+                };
+                await savePersonalLibrary(library);
+                customLibraries.push(library);
+                currentWorkspaceView = type;
+                switchWorkspace(type);
+                selectLibrary(library.id);
+                uploadLibraryStatus.className = 'upload-status text-green-600';
+                uploadLibraryStatus.textContent = `导入成功：${items.length} 条内容已加入书架`;
+                setTimeout(closeUploadLibraryModal, 700);
+            } catch (error) {
+                uploadLibraryStatus.className = 'upload-status text-red-600';
+                uploadLibraryStatus.textContent = `导入失败：${error.message}`;
+                updateUploadButtonState();
+            }
+        }
+
+        async function parseLibraryFile(file, type) {
+            const text = await file.text();
+            const extension = (file.name.split('.').pop() || '').toLowerCase();
+            let rawItems;
+            if (extension === 'json') {
+                const parsed = JSON.parse(text);
+                rawItems = Array.isArray(parsed)
+                    ? parsed
+                    : parsed.items || parsed.words || parsed.sentences || parsed.articles || [];
+            } else if (type === 'articles' && ['txt', 'md', 'markdown'].includes(extension)) {
+                rawItems = [{ title: file.name.replace(/\.[^.]+$/, ''), content: text.trim() }];
+            } else {
+                rawItems = tableRowsToObjects(parseDelimitedRows(text), type);
+            }
+            if (!Array.isArray(rawItems)) throw new Error('JSON 顶层必须是数组或包含 items 数组');
+            return normalizeLibraryItems(rawItems, type);
+        }
+
+        function parseDelimitedRows(text) {
+            const sample = (text.split(/\r?\n/).find(line => line.trim()) || '');
+            const delimiter = sample.includes('\t') ? '\t' : sample.includes(';') && !sample.includes(',') ? ';' : ',';
+            const rows = [];
+            let row = [];
+            let field = '';
+            let quoted = false;
+            for (let i = 0; i < text.length; i++) {
+                const char = text[i];
+                if (char === '"') {
+                    if (quoted && text[i + 1] === '"') {
+                        field += '"';
+                        i++;
+                    } else {
+                        quoted = !quoted;
+                    }
+                } else if (char === delimiter && !quoted) {
+                    row.push(field.trim());
+                    field = '';
+                } else if ((char === '\n' || char === '\r') && !quoted) {
+                    if (char === '\r' && text[i + 1] === '\n') i++;
+                    row.push(field.trim());
+                    if (row.some(value => value)) rows.push(row);
+                    row = [];
+                    field = '';
+                } else {
+                    field += char;
+                }
+            }
+            row.push(field.trim());
+            if (row.some(value => value)) rows.push(row);
+            return rows;
+        }
+
+        function tableRowsToObjects(rows, type) {
+            if (!rows.length) return [];
+            const knownHeaders = new Set([
+                'word', 'text', 'term', 'phonetic', 'definition', 'meaning', 'example',
+                'sentence', 'translation', 'note', 'scene', 'category', 'title', 'content', 'body', 'level'
+            ]);
+            const firstRow = rows[0].map(value => value.replace(/^\uFEFF/, '').trim().toLowerCase());
+            const hasHeader = firstRow.some(value => knownHeaders.has(value));
+            const dataRows = hasHeader ? rows.slice(1) : rows;
+            const positional = type === 'words'
+                ? ['word', 'phonetic', 'definition', 'example']
+                : type === 'sentences'
+                    ? ['text', 'translation', 'scene']
+                    : ['title', 'content', 'translation', 'level'];
+            const headers = hasHeader ? firstRow : positional;
+            return dataRows.map(row => Object.fromEntries(headers.map((header, index) => [header, row[index] || ''])));
+        }
+
+        function normalizeLibraryItems(items, type) {
+            const pick = (item, names) => {
+                for (const name of names) {
+                    const value = item && typeof item === 'object' ? item[name] : undefined;
+                    if (value !== undefined && value !== null && String(value).trim()) return String(value).trim();
+                }
+                return '';
+            };
+            if (type === 'words') {
+                return items.map(item => ({
+                    word: pick(item, ['word', 'text', 'term', 'front']),
+                    phonetic: pick(item, ['phonetic', 'ipa', 'pronunciation']),
+                    definition: pick(item, ['definition', 'meaning', 'translation', 'back']),
+                    example: pick(item, ['example', 'sentence'])
+                })).filter(item => item.word && item.definition);
+            }
+            if (type === 'sentences') {
+                return items.map((item, index) => ({
+                    scene: pick(item, ['scene', 'category', 'tag']) || 'Imported',
+                    idx: index,
+                    text: pick(item, ['text', 'sentence', 'source', 'front']),
+                    note: pick(item, ['translation', 'note', 'target', 'back'])
+                })).filter(item => item.text);
+            }
+            return items.map(item => ({
+                title: pick(item, ['title', 'name']),
+                content: pick(item, ['content', 'text', 'body']),
+                translation: pick(item, ['translation', 'note']),
+                level: pick(item, ['level', 'difficulty']) || 'Article'
+            })).filter(item => item.title && item.content);
+        }
+
+        function updateArticleCard() {
+            const hasArticles = articleList.length > 0;
+            articleEmpty.classList.toggle('hidden', hasArticles);
+            articleReader.classList.toggle('hidden', !hasArticles);
+            if (!hasArticles) return;
+            const article = articleList[articleIndex];
+            articleTitleEl.textContent = article.title;
+            articleContentEl.textContent = article.content;
+            articleTranslationEl.textContent = article.translation || '';
+            articleTranslationEl.classList.toggle('hidden', !article.translation);
+            articleLevelEl.textContent = article.level || 'Article';
+            articleIndexEl.textContent = `${articleIndex + 1}/${articleList.length}`;
+        }
+
+        function goToPreviousArticle() {
+            stopArticlePlayback();
+            if (!articleList.length) return;
+            articleIndex = (articleIndex - 1 + articleList.length) % articleList.length;
+            updateArticleCard();
+        }
+
+        function goToNextArticle() {
+            stopArticlePlayback();
+            if (!articleList.length) return;
+            articleIndex = (articleIndex + 1) % articleList.length;
+            updateArticleCard();
+        }
+
+        function toggleArticlePlay() {
+            if (isArticlePlaying) {
+                stopArticlePlayback();
+                return;
+            }
+            if (!articleList.length || !isSpeechAvailable) return;
+            isArticlePlaying = true;
+            articlePlayIcon.classList.replace('fa-play', 'fa-pause');
+            const article = articleList[articleIndex];
+            playTextWithHighlight(article.title, articleTitleEl, () => {
+                playTextWithHighlight(article.content, articleContentEl, stopArticlePlayback);
+            });
+        }
+
+        function stopArticlePlayback() {
+            isArticlePlaying = false;
+            articlePlayIcon.classList.remove('fa-pause');
+            articlePlayIcon.classList.add('fa-play');
+            if (isSpeechAvailable) window.speechSynthesis.cancel();
+            removeSpeakingHighlights();
         }
 
         // Check if speech synthesis is supported
@@ -1336,7 +2156,7 @@
             currentPhraseEl.textContent = item.text;
             phraseSceneLabel.textContent = formatPhraseCategory(item.scene);
             phraseIndexEl.textContent = `${phraseIndex + 1}/${phraseList.length}`;
-            const note = getPhraseNote(item.scene, item.text);
+            const note = item.note || getPhraseNote(item.scene, item.text);
             currentPhraseNoteEl.textContent = note ? note : '（暂无中文释义）';
             updatePhraseBadge();
         }
@@ -1361,6 +2181,8 @@
             const [scene, idxStr] = key.split(':');
             const idx = parseInt(idxStr, 10);
             if (Number.isNaN(idx)) return null;
+            const activeEntry = phraseList.find(item => item.scene === scene && item.idx === idx);
+            if (activeEntry) return activeEntry;
             const list = (COMMON_ENGLISH_SENTENCES && COMMON_ENGLISH_SENTENCES[scene]) || [];
             const entry = list[idx];
             if (!entry) return null;
