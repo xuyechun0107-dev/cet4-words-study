@@ -896,7 +896,7 @@
             box-shadow: none;
             overflow: auto;
             display: grid;
-            grid-template-columns: minmax(0, 64rem);
+            grid-template-columns: minmax(0, 70vw);
             align-content: center;
             justify-content: center;
         }
@@ -1249,6 +1249,10 @@
             }
             .control-panel,
             .library-shelf { position: static; }
+            #currentWordCard:fullscreen,
+            #currentWordCard.is-immersive {
+                grid-template-columns: minmax(0, 100%);
+            }
         }
 
         @media (max-width: 640px) {
