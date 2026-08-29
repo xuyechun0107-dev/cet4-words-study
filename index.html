@@ -896,7 +896,7 @@
             box-shadow: none;
             overflow: auto;
             display: grid;
-            grid-template-columns: minmax(0, 70vw);
+            grid-template-columns: minmax(0, 64rem);
             align-content: center;
             justify-content: center;
         }
@@ -918,19 +918,19 @@
 
         #currentWordCard:fullscreen #currentWord,
         #currentWordCard.is-immersive #currentWord {
-            font-size: clamp(3.25rem, 8vw, 7rem);
+            font-size: clamp(3.75rem, 9vw, 8.5rem);
             line-height: 0.95;
         }
 
         #currentWordCard:fullscreen #phonetic,
         #currentWordCard.is-immersive #phonetic {
             margin-top: 0.6rem;
-            font-size: clamp(1.05rem, 2vw, 1.55rem);
+            font-size: clamp(1.2rem, 2.2vw, 1.9rem);
         }
 
         #currentWordCard:fullscreen h3,
         #currentWordCard.is-immersive h3 {
-            font-size: clamp(1.15rem, 2vw, 1.55rem);
+            font-size: clamp(1.35rem, 2.2vw, 1.85rem);
         }
 
         #currentWordCard:fullscreen #englishDefinition,
@@ -940,8 +940,8 @@
         #currentWordCard.is-immersive #definition,
         #currentWordCard.is-immersive #example {
             max-width: 70ch;
-            font-size: clamp(1.15rem, 2.2vw, 1.85rem);
-            line-height: 1.55;
+            font-size: clamp(1.3rem, 2.4vw, 2.2rem);
+            line-height: 1.5;
         }
 
         #currentWordCard:fullscreen .notebook-toggle,
@@ -1249,10 +1249,6 @@
             }
             .control-panel,
             .library-shelf { position: static; }
-            #currentWordCard:fullscreen,
-            #currentWordCard.is-immersive {
-                grid-template-columns: minmax(0, 100%);
-            }
         }
 
         @media (max-width: 640px) {
@@ -1284,7 +1280,7 @@
             }
             #currentWordCard:fullscreen #currentWord,
             #currentWordCard.is-immersive #currentWord {
-                font-size: clamp(2.8rem, 11vw, 4.6rem);
+                font-size: clamp(3.1rem, 12vw, 5.2rem);
             }
             #currentWordCard:fullscreen #englishDefinitionBlock,
             #currentWordCard:fullscreen #definitionBlock,
