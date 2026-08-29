@@ -1072,7 +1072,7 @@
                 <p id="definition" class="text-lg">to leave a place, thing, or person, usually for ever</p>
             </div>
             
-            <div>
+            <div id="exampleBlock">
                 <h3 class="text-lg font-semibold mb-2 text-gray-700">Example</h3>
                 <p id="example" class="text-lg italic text-gray-600">The climbers had to abandon their attempt to reach the summit due to the bad weather.</p>
             </div>
@@ -1293,6 +1293,7 @@
         const phoneticEl = document.getElementById('phonetic');
         const definitionEl = document.getElementById('definition');
         const exampleEl = document.getElementById('example');
+        const exampleBlock = document.getElementById('exampleBlock');
         const wordIndexEl = document.getElementById('wordIndex');
         const progressEl = document.getElementById('progress');
         const todayLearnedEl = document.getElementById('todayLearned');
@@ -2549,7 +2550,8 @@
             currentWordEl.textContent = word.word;
             phoneticEl.textContent = word.phonetic;
             definitionEl.textContent = word.definition;
-            exampleEl.textContent = word.example;
+            exampleEl.textContent = word.example || '';
+            exampleBlock.classList.toggle('hidden', !word.example);
             updateWordIndexLabel();
             
             // Check if word is learned by its index and show/hide badge
@@ -2762,6 +2764,12 @@
         // Play text with visual highlight
         function playTextWithHighlight(text, element, callback) {
             console.log('playTextWithHighlight called with text:', text);
+
+            if (!text || !String(text).trim()) {
+                element.classList.remove('speaking');
+                if (callback) callback();
+                return;
+            }
             
             if (!isSpeechAvailable) {
                 console.log('Speech synthesis not available');
