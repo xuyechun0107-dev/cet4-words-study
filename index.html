@@ -853,6 +853,133 @@
             background: var(--blue);
         }
 
+        .card-fullscreen-toggle {
+            position: absolute;
+            right: 1rem;
+            bottom: 1rem;
+            z-index: 3;
+            display: grid;
+            width: 2.5rem;
+            height: 2.5rem;
+            place-items: center;
+            border: 1px solid rgba(36, 87, 214, 0.16);
+            border-radius: 0.8rem;
+            color: var(--blue);
+            background: rgba(255, 255, 255, 0.92);
+            box-shadow: 0 8px 22px rgba(31, 47, 81, 0.12);
+            transition: color 180ms ease, background 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+        }
+
+        .card-fullscreen-toggle:hover {
+            color: white;
+            background: var(--blue);
+            box-shadow: 0 12px 28px rgba(36, 87, 214, 0.24);
+            transform: translateY(-1px);
+        }
+
+        .card-fullscreen-toggle:focus-visible {
+            outline: 3px solid rgba(36, 87, 214, 0.24);
+            outline-offset: 3px;
+        }
+
+        #currentWordCard:fullscreen,
+        #currentWordCard.is-immersive {
+            width: 100vw;
+            max-width: none;
+            height: 100vh;
+            max-height: none;
+            margin: 0 !important;
+            padding: clamp(2rem, 6vw, 6rem) !important;
+            border: 0;
+            border-radius: 0;
+            background: var(--paper);
+            box-shadow: none;
+            overflow: auto;
+            display: grid;
+            grid-template-columns: minmax(0, 64rem);
+            align-content: center;
+            justify-content: center;
+        }
+
+        #currentWordCard:fullscreen:hover,
+        #currentWordCard.is-immersive:hover {
+            transform: none;
+            box-shadow: none;
+        }
+
+        #currentWordCard:fullscreen::backdrop {
+            background: var(--paper);
+        }
+
+        #currentWordCard:fullscreen > :not(button),
+        #currentWordCard.is-immersive > :not(button) {
+            width: 100%;
+        }
+
+        #currentWordCard:fullscreen #currentWord,
+        #currentWordCard.is-immersive #currentWord {
+            font-size: clamp(3.25rem, 8vw, 7rem);
+            line-height: 0.95;
+        }
+
+        #currentWordCard:fullscreen #phonetic,
+        #currentWordCard.is-immersive #phonetic {
+            margin-top: 0.6rem;
+            font-size: clamp(1.05rem, 2vw, 1.55rem);
+        }
+
+        #currentWordCard:fullscreen h3,
+        #currentWordCard.is-immersive h3 {
+            font-size: clamp(1.15rem, 2vw, 1.55rem);
+        }
+
+        #currentWordCard:fullscreen #englishDefinition,
+        #currentWordCard:fullscreen #definition,
+        #currentWordCard:fullscreen #example,
+        #currentWordCard.is-immersive #englishDefinition,
+        #currentWordCard.is-immersive #definition,
+        #currentWordCard.is-immersive #example {
+            max-width: 70ch;
+            font-size: clamp(1.15rem, 2.2vw, 1.85rem);
+            line-height: 1.55;
+        }
+
+        #currentWordCard:fullscreen .notebook-toggle,
+        #currentWordCard.is-immersive .notebook-toggle {
+            top: 1.25rem;
+            right: 1.25rem;
+            transform: none;
+        }
+
+        #currentWordCard:fullscreen .notebook-toggle:hover,
+        #currentWordCard.is-immersive .notebook-toggle:hover {
+            transform: scale(1.08);
+        }
+
+        #currentWordCard:fullscreen .card-fullscreen-toggle,
+        #currentWordCard.is-immersive .card-fullscreen-toggle {
+            right: 1.25rem;
+            bottom: 1.25rem;
+        }
+
+        body.word-card-immersive-open {
+            overflow: hidden;
+        }
+
+        #currentWordCard.is-immersive {
+            position: fixed;
+            inset: 0;
+            z-index: 2000;
+        }
+
+        #currentWordCard.is-immersive.is-landscape-fallback {
+            top: 50%;
+            left: 50%;
+            width: 100vh;
+            height: 100vw;
+            transform: translate(-50%, -50%) rotate(90deg) !important;
+        }
+
         .vocabulary-notebook-widget {
             position: fixed;
             top: 6.2rem;
@@ -1147,6 +1274,20 @@
             .notebook-modal-header { flex-direction: column; }
             .notebook-modal-actions { width: 100%; }
             .notebook-play-all { flex: 1; justify-content: center; }
+            #currentWordCard:fullscreen,
+            #currentWordCard.is-immersive {
+                padding: 1.5rem 4rem 1.5rem 2rem !important;
+            }
+            #currentWordCard:fullscreen #currentWord,
+            #currentWordCard.is-immersive #currentWord {
+                font-size: clamp(2.8rem, 11vw, 4.6rem);
+            }
+            #currentWordCard:fullscreen #englishDefinitionBlock,
+            #currentWordCard:fullscreen #definitionBlock,
+            #currentWordCard.is-immersive #englishDefinitionBlock,
+            #currentWordCard.is-immersive #definitionBlock {
+                margin-bottom: 1rem;
+            }
         }
 
         @media (max-width: 420px) {
@@ -1347,6 +1488,9 @@
         <div id="currentWordCard" class="word-card relative w-full p-8 mb-8 animate-fade-in">
             <button id="wordNotebookToggle" class="notebook-toggle" type="button" aria-label="加入生词本" title="加入生词本">
                 <i class="fa fa-plus" aria-hidden="true"></i>
+            </button>
+            <button id="wordFullscreenBtn" class="card-fullscreen-toggle" type="button" aria-label="全屏查看单词" title="全屏查看" aria-pressed="false">
+                <i id="wordFullscreenIcon" class="fa fa-expand" aria-hidden="true"></i>
             </button>
             <div class="flex justify-between items-start mb-4">
                 <div>
@@ -1693,6 +1837,9 @@
         const articleNextBtn = document.getElementById('articleNextBtn');
         const articlePlayIcon = document.getElementById('articlePlayIcon');
         const wordNotebookToggle = document.getElementById('wordNotebookToggle');
+        const currentWordCard = document.getElementById('currentWordCard');
+        const wordFullscreenBtn = document.getElementById('wordFullscreenBtn');
+        const wordFullscreenIcon = document.getElementById('wordFullscreenIcon');
         const phraseNotebookToggle = document.getElementById('phraseNotebookToggle');
         const notebookOrb = document.getElementById('notebookOrb');
         const notebookCountEl = document.getElementById('notebookCount');
@@ -1765,6 +1912,7 @@
         let notebookDisplayedEntry = null;
         let notebookEntryPlayCount = 0;
         let notebookRepeatTimer = null;
+        let isWordCardFallbackFullscreen = false;
         const builtInWordItems = cet4Words.map(item => ({ ...item }));
         const activeLibraryIds = loadActiveLibraryIds();
         const API_BASE_URL = 'https://api-enplay.ningboaoke.com';
@@ -1827,6 +1975,12 @@
             voiceSelect.addEventListener('change', updateVoicePreference);
             wordSpeakBtn.addEventListener('click', speakCurrentWordOnce);
             wordNotebookToggle.addEventListener('click', toggleCurrentWordNotebook);
+            wordFullscreenBtn.addEventListener('click', toggleWordCardFullscreen);
+            document.addEventListener('fullscreenchange', handleWordCardFullscreenChange);
+            document.addEventListener('webkitfullscreenchange', handleWordCardFullscreenChange);
+            document.addEventListener('keydown', handleWordCardFullscreenKeydown);
+            window.addEventListener('resize', syncWordCardFallbackOrientation);
+            window.addEventListener('orientationchange', syncWordCardFallbackOrientation);
             phraseNotebookToggle.addEventListener('click', toggleCurrentPhraseNotebook);
             notebookOrb.addEventListener('click', openVocabularyNotebook);
             notebookPlayWordsBtn.addEventListener('click', () => toggleVocabularyNotebookPlayback('word'));
@@ -1883,6 +2037,135 @@
             });
             
             console.log('App initialized successfully');
+        }
+
+        function getFullscreenElement() {
+            return document.fullscreenElement || document.webkitFullscreenElement || null;
+        }
+
+        function isWordCardFullscreen() {
+            return wordFullscreenBtn.getAttribute('aria-pressed') === 'true'
+                || getFullscreenElement() === currentWordCard
+                || isWordCardFallbackFullscreen;
+        }
+
+        function isCompactPortraitViewport() {
+            return window.matchMedia('(max-width: 900px) and (orientation: portrait)').matches;
+        }
+
+        function updateWordFullscreenButton(isActive) {
+            wordFullscreenBtn.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+            wordFullscreenBtn.setAttribute('aria-label', isActive ? '退出单词全屏' : '全屏查看单词');
+            wordFullscreenBtn.title = isActive ? '退出全屏' : '全屏查看';
+            wordFullscreenIcon.classList.toggle('fa-expand', !isActive);
+            wordFullscreenIcon.classList.toggle('fa-compress', isActive);
+        }
+
+        function enterWordCardFallback(rotateToLandscape = false) {
+            isWordCardFallbackFullscreen = true;
+            currentWordCard.classList.add('is-immersive');
+            currentWordCard.classList.toggle('is-landscape-fallback', rotateToLandscape);
+            document.body.classList.add('word-card-immersive-open');
+            updateWordFullscreenButton(true);
+        }
+
+        function exitWordCardFallback() {
+            isWordCardFallbackFullscreen = false;
+            currentWordCard.classList.remove('is-immersive', 'is-landscape-fallback');
+            document.body.classList.remove('word-card-immersive-open');
+        }
+
+        async function requestWordCardNativeFullscreen() {
+            const request = currentWordCard.requestFullscreen || currentWordCard.webkitRequestFullscreen;
+            if (!request) throw new Error('Fullscreen API is unavailable');
+            await request.call(currentWordCard);
+        }
+
+        async function exitNativeFullscreen() {
+            const exit = document.exitFullscreen || document.webkitExitFullscreen;
+            if (!exit) return;
+            try {
+                await exit.call(document);
+            } catch (error) {
+                console.debug('Native fullscreen was already closed:', error);
+            }
+        }
+
+        function unlockScreenOrientation() {
+            if (!screen.orientation || typeof screen.orientation.unlock !== 'function') return;
+            try {
+                screen.orientation.unlock();
+            } catch (error) {
+                console.debug('Screen orientation unlock was not available:', error);
+            }
+        }
+
+        async function enterWordCardFullscreen() {
+            const needsLandscape = isCompactPortraitViewport();
+            const canLockOrientation = screen.orientation && typeof screen.orientation.lock === 'function';
+
+            if (needsLandscape && !canLockOrientation) {
+                enterWordCardFallback(true);
+                return;
+            }
+
+            try {
+                await requestWordCardNativeFullscreen();
+                if (getFullscreenElement() !== currentWordCard) {
+                    enterWordCardFallback(needsLandscape);
+                    return;
+                }
+                updateWordFullscreenButton(true);
+                if (needsLandscape && canLockOrientation) {
+                    try {
+                        await screen.orientation.lock('landscape');
+                    } catch (orientationError) {
+                        console.debug('Native landscape lock failed, using visual landscape mode:', orientationError);
+                        await exitNativeFullscreen();
+                        enterWordCardFallback(true);
+                    }
+                }
+            } catch (fullscreenError) {
+                console.debug('Native fullscreen failed, using page fullscreen mode:', fullscreenError);
+                enterWordCardFallback(needsLandscape);
+            }
+        }
+
+        async function exitWordCardFullscreen() {
+            if (isWordCardFallbackFullscreen) {
+                exitWordCardFallback();
+            } else {
+                await exitNativeFullscreen();
+            }
+            unlockScreenOrientation();
+            updateWordFullscreenButton(false);
+        }
+
+        async function toggleWordCardFullscreen() {
+            if (isWordCardFullscreen()) {
+                await exitWordCardFullscreen();
+            } else {
+                await enterWordCardFullscreen();
+            }
+        }
+
+        function handleWordCardFullscreenChange() {
+            const isNativeActive = getFullscreenElement() === currentWordCard;
+            if (!isNativeActive && !isWordCardFallbackFullscreen) {
+                unlockScreenOrientation();
+            }
+            updateWordFullscreenButton(isNativeActive || isWordCardFallbackFullscreen);
+        }
+
+        function handleWordCardFullscreenKeydown(event) {
+            if (event.key === 'Escape' && isWordCardFallbackFullscreen) {
+                exitWordCardFullscreen();
+            }
+        }
+
+        function syncWordCardFallbackOrientation() {
+            if (!isWordCardFallbackFullscreen) return;
+            currentWordCard.classList.toggle('is-landscape-fallback', isCompactPortraitViewport());
         }
 
         function getViewFromHash() {
