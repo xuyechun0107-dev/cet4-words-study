@@ -1035,6 +1035,10 @@
                     <label for="newWordsOnly">仅播放未学</label>
                     <input type="checkbox" id="newWordsOnly" class="custom-checkbox">
                 </div>
+                <div class="toggle-row">
+                    <label for="readChineseDefinition">读中文释义</label>
+                    <input type="checkbox" id="readChineseDefinition" class="custom-checkbox">
+                </div>
             </div>
         </aside>
 
@@ -1313,6 +1317,7 @@
         const wordLoopCheckbox = document.getElementById('wordLoop');
         const autoPlayCheckbox = document.getElementById('autoPlay');
         const newWordsOnlyCheckbox = document.getElementById('newWordsOnly');
+        const readChineseDefinitionCheckbox = document.getElementById('readChineseDefinition');
         const learnedBadge = document.getElementById('learnedBadge');
         const repeatCountInput = document.getElementById('repeatCountInput');
         const rateSelect = document.getElementById('rateSelect');
@@ -1372,6 +1377,7 @@
         let isAutoPlaying = false;
         let isWordLooping = false;
         let isNewWordsOnly = false;
+        let shouldReadChineseDefinition = false;
         let playCount = 0;
         let autoPlayTimer = null;
         let todayLearnedCount = 0;
@@ -1422,6 +1428,7 @@
         const AUTO_PLAY_KEY = 'cet4_auto_play';
         const WORD_LOOP_KEY = 'cet4_word_loop';
         const NEW_WORDS_ONLY_KEY = 'cet4_new_words_only';
+        const READ_CHINESE_DEFINITION_KEY = 'cet4_read_chinese_definition';
         let ORDER_KEY = 'cet4_word_order';
         let ORDER_POSITION_KEY = 'cet4_word_order_position';
         const PLAY_REPEAT_KEY = 'cet4_play_repeat_count';
@@ -1461,6 +1468,7 @@
             wordLoopCheckbox.addEventListener('change', toggleWordLoop);
             autoPlayCheckbox.addEventListener('change', toggleAutoPlay);
             newWordsOnlyCheckbox.addEventListener('change', toggleNewWordsOnly);
+            readChineseDefinitionCheckbox.addEventListener('change', toggleChineseDefinitionReading);
             repeatCountInput.addEventListener('input', updateRepeatCount);
             repeatCountInput.addEventListener('blur', updateRepeatCount);
             rateSelect.addEventListener('change', updateRate);
@@ -2514,6 +2522,12 @@
                 newWordsOnlyCheckbox.checked = newWordsOnlySetting === 'true';
                 isNewWordsOnly = newWordsOnlyCheckbox.checked;
             }
+
+            const readChineseDefinitionSetting = localStorage.getItem(READ_CHINESE_DEFINITION_KEY);
+            if (readChineseDefinitionSetting !== null) {
+                readChineseDefinitionCheckbox.checked = readChineseDefinitionSetting === 'true';
+                shouldReadChineseDefinition = readChineseDefinitionCheckbox.checked;
+            }
         }
         
         // Save current state to localStorage
@@ -2524,6 +2538,7 @@
             localStorage.setItem(AUTO_PLAY_KEY, isAutoPlaying.toString());
             localStorage.setItem(WORD_LOOP_KEY, isWordLooping.toString());
             localStorage.setItem(NEW_WORDS_ONLY_KEY, isNewWordsOnly.toString());
+            localStorage.setItem(READ_CHINESE_DEFINITION_KEY, shouldReadChineseDefinition.toString());
             localStorage.setItem(PLAY_REPEAT_KEY, playRepeatCount.toString());
             localStorage.setItem(PLAY_RATE_KEY, playRate.toString());
             localStorage.setItem(VOICE_PREF_KEY, voicePreference);
@@ -2753,63 +2768,72 @@
                 return;
             }
             
-            // Play the word, English definition, and example. Chinese is display-only.
+            // Play the word, English definition, optional Chinese definition, and example.
             playTextWithHighlight(word.word, currentWordEl, function() {
                 playTextWithHighlight(englishDefinitionEl.textContent, englishDefinitionEl, function() {
-                    playTextWithHighlight(word.example, exampleEl, function() {
-                        playCount++;
-                        console.log(`Play count for word at index ${currentIndex} (${cet4Words[currentIndex].word}):`, playCount);
-                        
-                        if (playCount < playRepeatCount) {
-                            // Play again if not reached target times
-                            console.log(`Playing word at index ${currentIndex} (${cet4Words[currentIndex].word}) again (${playCount}/${playRepeatCount})`);
-                            repeatTimer = setTimeout(() => {
-                                repeatTimer = null;
-                                playCurrentWord();
-                            }, 1000);
-                        } else {
-                            // Done playing target times
-                            console.log(`Finished playing word at index ${currentIndex} (${cet4Words[currentIndex].word}) ${playRepeatCount} times`);
-                            // Mark word as learned only after it has been played target times
-                            markAsLearned(currentIndex);
-                            
-                            stopPlayback();
-                            
-                            // If word loop is enabled, restart playing the current word
-                            if (isWordLooping) {
-                                playCount = 0;
-                                console.log('Word loop enabled, restarting playback');
-                                repeatTimer = setTimeout(() => {
-                                    repeatTimer = null;
-                                    if (isWordLooping && continueAutoPlay) startPlayback();
-                                }, 1000);
-                            } 
-                            // Otherwise, go to next word if auto-play is enabled
-                            else if (isAutoPlaying) {
-                                console.log('Auto-play enabled, moving to next word');
-                                const autoPlaySnapshot = isAutoPlaying && continueAutoPlay;
-                                autoPlayTimer = setTimeout(() => {
-                                    autoPlayTimer = null;
-                                    // Respect latest setting; stop if user unchecked during this word
-                                    if (!autoPlaySnapshot || !isAutoPlaying || !continueAutoPlay) {
-                                        console.log('Auto-play turned off before advancing');
-                                        return;
-                                    }
-                                    const moved = goToNextWord({ fromAutoPlay: true });
-                                    if (moved && isAutoPlaying && continueAutoPlay) {
-                                        autoPlayTimer = setTimeout(() => {
-                                            autoPlayTimer = null;
-                                            if (isAutoPlaying && continueAutoPlay) startPlayback();
-                                        }, 500);
-                                    } else {
-                                        console.log('No more words available for auto-play');
-                                    }
-                                }, 1000);
-                            }
-                        }
+                    playChineseDefinitionIfEnabled(function() {
+                        playTextWithHighlight(word.example, exampleEl, finishCurrentWordPlayback);
                     });
                 });
             });
+        }
+
+        function finishCurrentWordPlayback() {
+            playCount++;
+            console.log(`Play count for word at index ${currentIndex} (${cet4Words[currentIndex].word}):`, playCount);
+
+            if (playCount < playRepeatCount) {
+                console.log(`Playing word at index ${currentIndex} (${cet4Words[currentIndex].word}) again (${playCount}/${playRepeatCount})`);
+                repeatTimer = setTimeout(() => {
+                    repeatTimer = null;
+                    playCurrentWord();
+                }, 1000);
+                return;
+            }
+
+            console.log(`Finished playing word at index ${currentIndex} (${cet4Words[currentIndex].word}) ${playRepeatCount} times`);
+            markAsLearned(currentIndex);
+            stopPlayback();
+
+            if (isWordLooping) {
+                playCount = 0;
+                console.log('Word loop enabled, restarting playback');
+                repeatTimer = setTimeout(() => {
+                    repeatTimer = null;
+                    if (isWordLooping && continueAutoPlay) startPlayback();
+                }, 1000);
+                return;
+            }
+
+            if (isAutoPlaying) {
+                console.log('Auto-play enabled, moving to next word');
+                const autoPlaySnapshot = isAutoPlaying && continueAutoPlay;
+                autoPlayTimer = setTimeout(() => {
+                    autoPlayTimer = null;
+                    if (!autoPlaySnapshot || !isAutoPlaying || !continueAutoPlay) {
+                        console.log('Auto-play turned off before advancing');
+                        return;
+                    }
+                    const moved = goToNextWord({ fromAutoPlay: true });
+                    if (moved && isAutoPlaying && continueAutoPlay) {
+                        autoPlayTimer = setTimeout(() => {
+                            autoPlayTimer = null;
+                            if (isAutoPlaying && continueAutoPlay) startPlayback();
+                        }, 500);
+                    } else {
+                        console.log('No more words available for auto-play');
+                    }
+                }, 1000);
+            }
+        }
+
+        function playChineseDefinitionIfEnabled(callback) {
+            const chineseDefinition = definitionEl.textContent.trim();
+            if (!shouldReadChineseDefinition || !chineseDefinition) {
+                callback();
+                return;
+            }
+            playTextWithHighlight(chineseDefinition, definitionEl, callback);
         }
         
         // Play text with visual highlight
@@ -2968,6 +2992,11 @@
                 exitReviewMode();
             }
             // Do not jump immediately; let the filter apply after current playback is done
+            saveState();
+        }
+
+        function toggleChineseDefinitionReading() {
+            shouldReadChineseDefinition = readChineseDefinitionCheckbox.checked;
             saveState();
         }
 
