@@ -2582,10 +2582,12 @@
             phoneticEl.textContent = word.phonetic;
             const explicitEnglishDefinition = word.definitionEn || word.definition_en || '';
             const explicitChineseDefinition = word.definitionZh || word.definition_zh || '';
+            const baseDefinition = word.definition || '';
+            const baseDefinitionIsChinese = /[\u3400-\u9fff]/.test(baseDefinition);
             const englishDefinition = explicitEnglishDefinition
-                || (!explicitChineseDefinition ? word.definition : '');
+                || (!baseDefinitionIsChinese ? baseDefinition : '');
             const chineseDefinition = explicitChineseDefinition
-                || (explicitEnglishDefinition ? word.definition : '');
+                || (baseDefinitionIsChinese ? baseDefinition : '');
             englishDefinitionEl.textContent = englishDefinition || '';
             englishDefinitionBlock.classList.toggle('hidden', !englishDefinition);
             definitionEl.textContent = chineseDefinition || '';
@@ -2751,11 +2753,10 @@
                 return;
             }
             
-            // Play word, definition, and example in sequence
+            // Play the word, English definition, and example. Chinese is display-only.
             playTextWithHighlight(word.word, currentWordEl, function() {
                 playTextWithHighlight(englishDefinitionEl.textContent, englishDefinitionEl, function() {
-                    playTextWithHighlight(definitionEl.textContent, definitionEl, function() {
-                        playTextWithHighlight(word.example, exampleEl, function() {
+                    playTextWithHighlight(word.example, exampleEl, function() {
                         playCount++;
                         console.log(`Play count for word at index ${currentIndex} (${cet4Words[currentIndex].word}):`, playCount);
                         
@@ -2806,7 +2807,6 @@
                                 }, 1000);
                             }
                         }
-                        });
                     });
                 });
             });
