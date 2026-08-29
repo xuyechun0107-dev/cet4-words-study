@@ -3,11 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CET-4 Vocabulary Player</title>
+    <title>Enplay · CET-4 Language Studio</title>
     <!-- Tailwind CSS v3 -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Font Awesome -->
     <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;family=Newsreader:opsz,wght@6..72,600;6..72,700&amp;family=Noto+Sans+SC:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
     <script>
         tailwind.config = {
             theme: {
@@ -227,6 +230,374 @@
         .modal.active .modal-content {
             transform: translate(-50%, -50%) scale(1);
         }
+
+        :root {
+            --ink: #17233c;
+            --muted: #6b7690;
+            --paper: #f5f7fb;
+            --surface: rgba(255, 255, 255, 0.88);
+            --line: rgba(23, 35, 60, 0.1);
+            --blue: #2457d6;
+            --blue-soft: #eaf0ff;
+            --mint: #0aae86;
+        }
+
+        .app-header,
+        .app-header *,
+        .workspace-main,
+        .workspace-main *,
+        .app-footer,
+        .app-footer * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Manrope', 'Noto Sans SC', sans-serif;
+            color: var(--ink);
+            background:
+                radial-gradient(circle at 15% 5%, rgba(36, 87, 214, 0.09), transparent 30rem),
+                radial-gradient(circle at 88% 75%, rgba(10, 174, 134, 0.07), transparent 28rem),
+                var(--paper);
+        }
+
+        .app-header {
+            position: sticky;
+            top: 0;
+            z-index: 40;
+            display: grid;
+            grid-template-columns: minmax(190px, 1fr) auto minmax(240px, 1fr);
+            align-items: center;
+            gap: 1.5rem;
+            min-height: 76px;
+            padding: 0.75rem clamp(1rem, 3vw, 2.75rem);
+            background: rgba(255, 255, 255, 0.82);
+            border-bottom: 1px solid var(--line);
+            backdrop-filter: blur(18px);
+        }
+
+        .brand-mark {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            min-width: 0;
+        }
+
+        .brand-glyph {
+            display: grid;
+            width: 2.5rem;
+            height: 2.5rem;
+            place-items: center;
+            border-radius: 0.85rem;
+            color: white;
+            background: var(--ink);
+            box-shadow: 0 8px 24px rgba(23, 35, 60, 0.18);
+        }
+
+        .brand-title {
+            font-family: 'Newsreader', 'Noto Sans SC', serif;
+            font-size: 1.45rem;
+            font-weight: 700;
+            line-height: 1;
+            letter-spacing: -0.025em;
+        }
+
+        .brand-kicker {
+            margin-top: 0.25rem;
+            color: var(--muted);
+            font-size: 0.68rem;
+            font-weight: 700;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+        }
+
+        .workspace-nav {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.3rem;
+            border: 1px solid var(--line);
+            border-radius: 999px;
+            background: rgba(245, 247, 251, 0.9);
+        }
+
+        .nav-tab {
+            display: flex;
+            align-items: center;
+            gap: 0.45rem;
+            min-width: 5.5rem;
+            justify-content: center;
+            padding: 0.65rem 1rem;
+            border-radius: 999px;
+            color: var(--muted);
+            font-size: 0.9rem;
+            font-weight: 700;
+            transition: color 180ms ease, background 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+        }
+
+        .nav-tab:hover {
+            color: var(--ink);
+            transform: translateY(-1px);
+        }
+
+        .nav-tab.active {
+            color: white;
+            background: var(--ink);
+            box-shadow: 0 6px 18px rgba(23, 35, 60, 0.18);
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 0.75rem;
+            min-width: 0;
+        }
+
+        .search-shell {
+            position: relative;
+            width: min(100%, 20rem);
+        }
+
+        .search-shell::before {
+            content: '\f002';
+            position: absolute;
+            top: 50%;
+            left: 0.9rem;
+            z-index: 1;
+            color: #929bb0;
+            font-family: FontAwesome;
+            transform: translateY(-50%);
+        }
+
+        .search-shell input {
+            width: 100%;
+            padding: 0.7rem 1rem 0.7rem 2.55rem;
+            border: 1px solid var(--line);
+            border-radius: 0.8rem;
+            background: rgba(255, 255, 255, 0.9);
+            color: var(--ink);
+            font-size: 0.84rem;
+            outline: none;
+            transition: border-color 180ms ease, box-shadow 180ms ease;
+        }
+
+        .search-shell input:focus {
+            border-color: rgba(36, 87, 214, 0.5);
+            box-shadow: 0 0 0 4px rgba(36, 87, 214, 0.09);
+        }
+
+        .history-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.68rem 0.9rem;
+            border: 1px solid var(--line);
+            border-radius: 0.8rem;
+            background: white;
+            color: var(--ink);
+            font-size: 0.82rem;
+            font-weight: 700;
+            white-space: nowrap;
+            transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
+        }
+
+        .history-button:hover {
+            transform: translateY(-1px);
+            border-color: rgba(36, 87, 214, 0.3);
+            box-shadow: 0 8px 24px rgba(23, 35, 60, 0.08);
+        }
+
+        .workspace-main {
+            width: 100%;
+            max-width: 76rem;
+            margin: 0 auto;
+            padding: clamp(2rem, 5vw, 4.5rem) clamp(1rem, 4vw, 3rem);
+            overflow-x: hidden;
+        }
+
+        .workspace-section {
+            width: 100%;
+            animation: workspaceIn 360ms cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+
+        @keyframes workspaceIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .section-intro {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            align-items: end;
+            gap: 1.5rem;
+            width: min(100%, 42rem);
+            margin: 0 auto 1.5rem;
+        }
+
+        .eyebrow {
+            color: var(--blue);
+            font-size: 0.7rem;
+            font-weight: 800;
+            letter-spacing: 0.16em;
+            text-transform: uppercase;
+        }
+
+        .section-title {
+            margin-top: 0.35rem;
+            font-family: 'Newsreader', 'Noto Sans SC', serif;
+            font-size: clamp(2rem, 5vw, 3rem);
+            font-weight: 700;
+            line-height: 1;
+            letter-spacing: -0.035em;
+        }
+
+        .section-description {
+            max-width: 22rem;
+            color: var(--muted);
+            font-size: 0.88rem;
+            line-height: 1.65;
+            text-align: right;
+        }
+
+        .player-stage {
+            width: min(100%, 42rem);
+            margin: 0 auto;
+        }
+
+        .word-card {
+            border: 1px solid rgba(255, 255, 255, 0.9);
+            background: var(--surface);
+            box-shadow: 0 24px 70px rgba(31, 47, 81, 0.11), 0 2px 8px rgba(31, 47, 81, 0.05);
+            backdrop-filter: blur(10px);
+        }
+
+        .word-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 28px 78px rgba(31, 47, 81, 0.14), 0 2px 8px rgba(31, 47, 81, 0.05);
+        }
+
+        .article-empty {
+            position: relative;
+            overflow: hidden;
+            width: min(100%, 58rem);
+            max-width: 100%;
+            min-height: 27rem;
+            margin: 0 auto;
+            padding: clamp(2rem, 5vw, 4rem);
+            border: 1px solid rgba(255, 255, 255, 0.95);
+            border-radius: 1.5rem;
+            background: rgba(255, 255, 255, 0.76);
+            box-shadow: 0 28px 80px rgba(31, 47, 81, 0.1);
+        }
+
+        .article-empty::after {
+            content: 'Aa';
+            position: absolute;
+            right: -1rem;
+            bottom: -4.5rem;
+            color: rgba(36, 87, 214, 0.055);
+            font-family: 'Newsreader', serif;
+            font-size: 16rem;
+            font-weight: 700;
+            line-height: 1;
+            pointer-events: none;
+        }
+
+        .article-empty .section-title,
+        .article-empty p {
+            overflow-wrap: anywhere;
+        }
+
+        .article-icon {
+            display: grid;
+            width: 3.75rem;
+            height: 3.75rem;
+            place-items: center;
+            border-radius: 1.1rem;
+            color: var(--blue);
+            background: var(--blue-soft);
+            font-size: 1.35rem;
+        }
+
+        .article-features {
+            position: relative;
+            z-index: 1;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.75rem;
+            margin-top: 2.5rem;
+        }
+
+        .article-feature {
+            padding: 1rem;
+            border: 1px solid var(--line);
+            border-radius: 1rem;
+            background: rgba(255, 255, 255, 0.72);
+        }
+
+        .article-feature i {
+            color: var(--blue);
+        }
+
+        .article-feature strong {
+            display: block;
+            margin-top: 0.7rem;
+            font-size: 0.86rem;
+        }
+
+        .article-feature span {
+            display: block;
+            margin-top: 0.25rem;
+            color: var(--muted);
+            font-size: 0.73rem;
+            line-height: 1.5;
+        }
+
+        .app-footer {
+            border-top: 1px solid var(--line);
+            background: rgba(255, 255, 255, 0.82);
+            backdrop-filter: blur(18px);
+        }
+
+        @media (max-width: 900px) {
+            .app-header {
+                grid-template-columns: 1fr auto;
+            }
+
+            .workspace-nav {
+                grid-column: 1 / -1;
+                grid-row: 2;
+                width: 100%;
+            }
+
+            .nav-tab { flex: 1; min-width: 0; }
+            .header-actions { grid-column: 2; grid-row: 1; }
+            .search-shell { display: none; }
+        }
+
+        @media (max-width: 640px) {
+            .app-header { gap: 0.65rem; padding: 0.75rem; }
+            .brand-kicker { display: none; }
+            .brand-title { font-size: 1.2rem; }
+            .brand-glyph { width: 2.2rem; height: 2.2rem; }
+            .history-button span { display: none; }
+            .history-button { width: 2.5rem; height: 2.5rem; justify-content: center; padding: 0; }
+            .workspace-nav { overflow: hidden; }
+            .nav-tab { min-width: 0; gap: 0.3rem; padding: 0.6rem 0.3rem; font-size: 0.8rem; }
+            .section-intro { grid-template-columns: 1fr; gap: 0.6rem; }
+            .section-description { text-align: left; }
+            .workspace-main { padding-top: 2rem; }
+            .word-card { padding: 1.4rem !important; }
+            .article-features { grid-template-columns: 1fr; }
+            .app-footer { align-items: flex-start !important; gap: 0.85rem; }
+            .app-footer > div:last-child { flex-wrap: wrap; gap: 0.75rem !important; }
+        }
+
+        @media (max-width: 420px) {
+            .nav-tab i { display: none; }
+            .article-empty { padding: 2rem; }
+            .section-title { font-size: 1.9rem; }
+        }
         
         @keyframes pulse {
             0%, 100% {
@@ -309,29 +680,53 @@
 </head>
 <body class="min-h-screen flex flex-col">
     <!-- Header -->
-    <header class="bg-white shadow-sm py-4 px-6 grid grid-cols-3 items-center gap-4">
-        <div class="flex items-center gap-4">
-            <h1 class="text-2xl font-bold text-primary">CET-4 Vocabulary</h1>
-        </div>
-        <div class="flex items-center justify-center">
-            <div class="relative w-full max-w-lg">
-                <input id="searchInput" type="text" placeholder="Search word..." class="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary" autocomplete="off">
-                <div id="searchResults" class="absolute left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto hidden z-10"></div>
+    <header class="app-header">
+        <a class="brand-mark" href="#words" aria-label="Enplay 首页">
+            <span class="brand-glyph"><i class="fa fa-headphones"></i></span>
+            <span>
+                <span class="brand-title block">Enplay</span>
+                <span class="brand-kicker block">CET-4 Language Studio</span>
+            </span>
+        </a>
+
+        <nav class="workspace-nav" aria-label="学习内容">
+            <button class="nav-tab active" type="button" data-view="words" aria-selected="true">
+                <i class="fa fa-font"></i><span>单词</span>
+            </button>
+            <button class="nav-tab" type="button" data-view="sentences" aria-selected="false">
+                <i class="fa fa-comment-o"></i><span>句子</span>
+            </button>
+            <button class="nav-tab" type="button" data-view="articles" aria-selected="false">
+                <i class="fa fa-file-text-o"></i><span>文章</span>
+            </button>
+        </nav>
+
+        <div class="header-actions">
+            <div id="searchShell" class="search-shell">
+                <input id="searchInput" type="text" placeholder="搜索单词…" autocomplete="off" aria-label="搜索单词">
+                <div id="searchResults" class="absolute left-0 right-0 mt-2 bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-y-auto hidden z-10"></div>
             </div>
-        </div>
-        <div class="flex justify-end">
-            <button id="historyBtn" class="flex items-center gap-2 bg-neutral hover:bg-gray-200 px-4 py-2 rounded-lg transition-all-300">
+            <button id="historyBtn" class="history-button" type="button">
                 <i class="fa fa-history text-primary"></i>
-                <span>Learned</span>
+                <span id="historyButtonLabel">学习记录</span>
             </button>
         </div>
     </header>
 
     <!-- Main Content -->
-    <main class="flex-grow flex flex-col items-center justify-center p-4">
-        <section id="vocabSection" class="w-full flex flex-col items-center">
+    <main class="workspace-main flex-grow">
+        <section id="wordsSection" class="workspace-section" data-section="words">
+            <div class="section-intro">
+                <div>
+                    <p class="eyebrow">Vocabulary · 词汇</p>
+                    <h1 class="section-title">听见一个词，记住一个词。</h1>
+                </div>
+                <p class="section-description">按自己的节奏循环、跟读和复习，让每一次播放都成为有效输入。</p>
+            </div>
+
+            <div class="player-stage">
         <!-- Word Card -->
-        <div class="word-card w-full max-w-2xl p-8 mb-8 animate-fade-in">
+        <div class="word-card w-full p-8 mb-8 animate-fade-in">
             <div class="flex justify-between items-start mb-4">
                 <div>
                     <div class="flex items-center">
@@ -360,14 +755,14 @@
         </div>
         
         <!-- Progress Bar -->
-        <div class="w-full max-w-2xl mb-8">
+        <div class="w-full mb-8">
             <div class="progress-bar">
                 <div id="progress" class="progress" style="width: 0%"></div>
             </div>
         </div>
         
         <!-- Control Buttons -->
-        <div class="flex items-center justify-center gap-6 w-full max-w-2xl mb-12">
+        <div class="flex items-center justify-center gap-6 w-full mb-4">
             <button id="prevBtn" class="control-btn prev-btn">
                 <i class="fa fa-step-backward text-xl"></i>
             </button>
@@ -379,11 +774,24 @@
             </button>
         </div>
         
-        <!-- Phrase Player -->
-        <div class="word-card w-full max-w-2xl p-8 mb-8 animate-fade-in">
+            </div>
+        </section>
+
+        <section id="sentencesSection" class="workspace-section hidden" data-section="sentences">
+            <div class="section-intro">
+                <div>
+                    <p class="eyebrow">Sentences · 句子</p>
+                    <h1 class="section-title">把英语放回真实场景。</h1>
+                </div>
+                <p class="section-description">围绕生活场景听句子、看译文、反复跟读，建立更自然的表达反应。</p>
+            </div>
+
+            <div class="player-stage">
+        <!-- Sentence Player -->
+        <div class="word-card w-full p-8 mb-8 animate-fade-in">
             <div class="flex justify-between items-start mb-4">
                 <div class="flex items-center gap-3">
-                    <h2 class="text-2xl font-bold text-primary">Phrases</h2>
+                    <h2 class="text-2xl font-bold text-primary">Sentence Player</h2>
                 </div>
                 <span id="phraseIndex" class="bg-primary text-white px-3 py-1 rounded-full text-sm">1/1</span>
             </div>
@@ -399,7 +807,7 @@
                 </div>
                 <p id="currentPhraseNote" class="text-sm text-gray-600 mt-2"></p>
             </div>
-            <div class="flex items-center justify-center gap-6 w-full max-w-2xl">
+            <div class="flex items-center justify-center gap-6 w-full">
                 <button id="phrasePrevBtn" class="control-btn prev-btn">
                     <i class="fa fa-step-backward text-xl"></i>
                 </button>
@@ -411,20 +819,47 @@
                 </button>
             </div>
         </div>
-    </section>
+            </div>
+        </section>
+
+        <section id="articlesSection" class="workspace-section hidden" data-section="articles">
+            <div class="article-empty">
+                <span class="eyebrow">Articles · 文章</span>
+                <div class="article-icon mt-5"><i class="fa fa-book"></i></div>
+                <h1 class="section-title mt-6">文章播放器，正在等待第一篇内容。</h1>
+                <p class="mt-4 max-w-xl text-gray-500 leading-7">文章库目前还是空的。后续上传例文后，这里会提供连续播放、逐段跟读和生词标记，让长文本也能像单词一样循序学习。</p>
+                <div class="article-features" aria-label="规划中的文章播放器功能">
+                    <div class="article-feature">
+                        <i class="fa fa-play-circle"></i>
+                        <strong>连续播放</strong>
+                        <span>全文与段落两种播放方式</span>
+                    </div>
+                    <div class="article-feature">
+                        <i class="fa fa-align-left"></i>
+                        <strong>逐段跟读</strong>
+                        <span>当前段落高亮并同步进度</span>
+                    </div>
+                    <div class="article-feature">
+                        <i class="fa fa-bookmark-o"></i>
+                        <strong>生词标记</strong>
+                        <span>随时收藏并加入单词复习</span>
+                    </div>
+                </div>
+            </div>
+        </section>
     </main>
 
     <!-- Footer -->
-    <footer class="bg-white shadow-inner py-4 px-6 flex justify-between items-center">
+    <footer id="playerSettings" class="app-footer py-4 px-6 flex justify-between items-center">
         <div class="text-sm text-gray-500">
             <span id="todayLearned">Today's Progress: 0 words</span>
         </div>
         <div class="flex items-center gap-6">
-            <div class="flex items-center gap-2">
+            <div id="wordLoopSetting" class="flex items-center gap-2">
                 <label for="repeatCountInput" class="text-sm text-gray-700 cursor-pointer whitespace-nowrap">Repeat</label>
                 <input id="repeatCountInput" type="number" min="1" class="w-16 border border-gray-300 rounded px-2 py-1 text-sm" value="3">
             </div>
-            <div class="flex items-center gap-2">
+            <div id="autoPlaySetting" class="flex items-center gap-2">
                 <label for="rateSelect" class="text-sm text-gray-700 cursor-pointer whitespace-nowrap">Speed</label>
                 <select id="rateSelect" class="border border-gray-300 rounded px-2 py-1 text-sm">
                     <option value="0.5">0.5</option>
@@ -440,7 +875,7 @@
                     <option value="1.5">1.5</option>
                 </select>
             </div>
-            <div class="flex items-center gap-2">
+            <div id="newWordsOnlySetting" class="flex items-center gap-2">
                 <label for="voiceSelect" class="text-sm text-gray-700 cursor-pointer whitespace-nowrap">Voice</label>
                 <select id="voiceSelect" class="border border-gray-300 rounded px-2 py-1 text-sm">
                     <option value="auto">Auto</option>
@@ -466,15 +901,15 @@
         <div class="modal-content w-full max-w-2xl max-h-[80vh]">
             <div class="flex justify-between items-center mb-4">
                 <div class="flex items-center gap-3">
-                    <h2 class="text-xl font-bold text-primary">Learned</h2>
+                    <h2 class="text-xl font-bold text-primary">学习记录</h2>
                     <select id="historyType" class="border border-gray-300 rounded px-2 py-1 text-sm">
-                        <option value="words">Words</option>
-                        <option value="phrases">Phrases</option>
+                        <option value="words">单词</option>
+                        <option value="phrases">句子</option>
                     </select>
                     <div class="flex items-center gap-2">
-                        <label for="historyFilter" class="text-sm text-gray-600">Filter</label>
+                        <label for="historyFilter" class="text-sm text-gray-600">日期</label>
                         <select id="historyFilter" class="border border-gray-300 rounded px-2 py-1 text-sm">
-                            <option value="all">All</option>
+                            <option value="all">全部</option>
                         </select>
                     </div>
                 </div>
@@ -527,6 +962,11 @@
         const phraseNextBtn = document.getElementById('phraseNextBtn');
         const phrasePlayIcon = document.getElementById('phrasePlayIcon');
         const phraseLearnedBadge = document.getElementById('phraseLearnedBadge');
+        const navTabs = Array.from(document.querySelectorAll('.nav-tab'));
+        const workspaceSections = Array.from(document.querySelectorAll('.workspace-section'));
+        const searchShell = document.getElementById('searchShell');
+        const playerSettings = document.getElementById('playerSettings');
+        const historyButtonLabel = document.getElementById('historyButtonLabel');
         
         const historyBtn = document.getElementById('historyBtn');
         const historyModal = document.getElementById('historyModal');
@@ -594,12 +1034,15 @@
 
             // Init phrases
             initPhrases();
-            
+
             // Update progress bar
             updateProgress();
             
             // Update today's learned count
             updateTodayLearnedCount();
+
+            // Init the three learning workspaces after progress has loaded
+            initWorkspaceNavigation();
             
             // Event listeners
             prevBtn.addEventListener('click', goToPreviousWord);
@@ -626,6 +1069,12 @@
             phrasePrevBtn.addEventListener('click', goToPrevPhrase);
             phraseNextBtn.addEventListener('click', goToNextPhrase);
             phrasePlayBtn.addEventListener('click', togglePhrasePlay);
+            navTabs.forEach(tab => {
+                tab.addEventListener('click', () => switchWorkspace(tab.dataset.view));
+            });
+            window.addEventListener('hashchange', () => {
+                switchWorkspace(getViewFromHash(), false);
+            });
             
             historyBtn.addEventListener('click', openHistoryModal);
             closeModal.addEventListener('click', closeHistoryModal);
@@ -637,7 +1086,66 @@
             
             console.log('App initialized successfully');
         }
-        
+
+        function getViewFromHash() {
+            const view = window.location.hash.replace('#', '');
+            return ['words', 'sentences', 'articles'].includes(view) ? view : 'words';
+        }
+
+        function initWorkspaceNavigation() {
+            switchWorkspace(getViewFromHash(), false);
+        }
+
+        function switchWorkspace(view, updateHash = true) {
+            if (!['words', 'sentences', 'articles'].includes(view)) {
+                view = 'words';
+            }
+
+            if (view !== 'words') stopPlayback(true);
+            if (view !== 'sentences') stopPhrasePlayback(true);
+
+            workspaceSections.forEach(section => {
+                section.classList.toggle('hidden', section.dataset.section !== view);
+            });
+
+            navTabs.forEach(tab => {
+                const isActive = tab.dataset.view === view;
+                tab.classList.toggle('active', isActive);
+                tab.setAttribute('aria-selected', isActive ? 'true' : 'false');
+            });
+
+            searchShell.classList.toggle('hidden', view !== 'words');
+            historyBtn.classList.toggle('hidden', view === 'articles');
+            playerSettings.classList.toggle('hidden', view === 'articles');
+            searchResults.classList.add('hidden');
+
+            if (view === 'sentences') {
+                historyTypeSelect.value = 'phrases';
+                historyButtonLabel.textContent = '句子记录';
+                updateTodaySentenceCount();
+                document.title = '句子播放器 · Enplay';
+            } else if (view === 'articles') {
+                historyButtonLabel.textContent = '学习记录';
+                document.title = '文章播放器 · Enplay';
+            } else {
+                historyTypeSelect.value = 'words';
+                historyButtonLabel.textContent = '单词记录';
+                updateTodayLearnedCount();
+                document.title = '单词播放器 · Enplay';
+            }
+
+            if (updateHash && window.location.hash !== `#${view}`) {
+                history.replaceState(null, '', `#${view}`);
+            }
+        }
+
+        function updateTodaySentenceCount() {
+            const today = new Date().toISOString().split('T')[0];
+            const learned = getPhraseLearnedByDate();
+            const count = new Set(learned[today] || []).size;
+            todayLearnedEl.textContent = `今日进度：${count} 句`;
+        }
+
         // Check if speech synthesis is supported
         function checkSpeechSupport() {
             isSpeechAvailable = 'speechSynthesis' in window;
@@ -1540,6 +2048,9 @@
                 data[today].push(key);
                 localStorage.setItem(LEARNED_PHRASES_KEY, JSON.stringify(data));
                 updatePhraseBadge();
+                if (!document.getElementById('sentencesSection').classList.contains('hidden')) {
+                    updateTodaySentenceCount();
+                }
             }
         }
 
@@ -1609,7 +2120,7 @@
             // Only count words not learned on previous days
             const newToday = Array.from(todaySet).filter(idx => !historical.has(idx));
             todayLearnedCount = newToday.length;
-            todayLearnedEl.textContent = `Today's Progress: ${todayLearnedCount} words`;
+            todayLearnedEl.textContent = `今日进度：${todayLearnedCount} 个单词`;
         }
         
         // Open history modal
@@ -1635,7 +2146,7 @@
 
         // History filter handling
         function populateHistoryFilter() {
-            historyFilter.innerHTML = '<option value="all">All</option>';
+            historyFilter.innerHTML = '<option value="all">全部</option>';
             historyDates.forEach(date => {
                 const opt = document.createElement('option');
                 opt.value = date;
