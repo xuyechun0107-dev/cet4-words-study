@@ -9,7 +9,7 @@ from urllib.request import Request, urlopen
 from sqlalchemy import inspect, select, text
 
 from .database import SessionLocal, engine
-from .import_ecdict import compact_text, open_source
+from .import_ecdict import compact_text, open_source, score_sentence
 from .models import Wordbook, WordbookEntry
 
 
@@ -95,6 +95,28 @@ def choose_definition(entry: object) -> str:
     return compact_text("；".join(selected))
 
 
+def choose_example(entry: object) -> str:
+    if not isinstance(entry, dict):
+        return ""
+    selected = ""
+    selected_score = 10_000
+    for etymology in entry.get("etymologies", []):
+        for part in etymology.get("partsOfSpeech", []):
+            for sense in part.get("senses", []):
+                if not isinstance(sense, dict):
+                    continue
+                for value in sense.get("examples", []):
+                    example = clean_sense(value)
+                    scored = score_sentence(example)
+                    if scored is None:
+                        continue
+                    score, _ = scored
+                    if score < selected_score:
+                        selected = example
+                        selected_score = score
+    return compact_text(selected)
+
+
 def fetch_prefix(prefix: tuple[str, str]) -> tuple[tuple[str, str], dict[str, object]]:
     directory, filename = prefix
     source_url = f"{OPEN_DICTIONARY_BASE}/{directory}/{filename}.json"
@@ -109,7 +131,9 @@ def fetch_prefix(prefix: tuple[str, str]) -> tuple[tuple[str, str], dict[str, ob
         return prefix, {}
 
 
-def read_open_dictionary_definitions(target_words: set[str]) -> dict[str, str]:
+def read_open_dictionary_content(
+    target_words: set[str],
+) -> tuple[dict[str, str], dict[str, str]]:
     words_by_prefix: dict[tuple[str, str], set[str]] = {}
     for word in target_words:
         prefix = dictionary_prefix(word)
@@ -117,6 +141,7 @@ def read_open_dictionary_definitions(target_words: set[str]) -> dict[str, str]:
             words_by_prefix.setdefault(prefix, set()).add(word)
 
     definitions: dict[str, str] = {}
+    examples: dict[str, str] = {}
     with ThreadPoolExecutor(max_workers=12) as executor:
         futures = {
             executor.submit(fetch_prefix, prefix): prefix for prefix in words_by_prefix
@@ -125,9 +150,18 @@ def read_open_dictionary_definitions(target_words: set[str]) -> dict[str, str]:
             prefix, payload = future.result()
             normalized_payload = {key.casefold(): value for key, value in payload.items()}
             for word in words_by_prefix[prefix]:
-                definition = choose_definition(normalized_payload.get(word))
+                entry = normalized_payload.get(word)
+                definition = choose_definition(entry)
                 if definition:
                     definitions[word] = definition
+                example = choose_example(entry)
+                if example:
+                    examples[word] = example
+    return definitions, examples
+
+
+def read_open_dictionary_definitions(target_words: set[str]) -> dict[str, str]:
+    definitions, _ = read_open_dictionary_content(target_words)
     return definitions
 
 
