@@ -1275,6 +1275,22 @@
                     max(4.5rem, env(safe-area-inset-bottom))
                     max(5rem, env(safe-area-inset-left)) !important;
             }
+            #currentWordCard:fullscreen .notebook-toggle,
+            #currentWordCard.is-immersive .notebook-toggle {
+                top: max(2.5rem, env(safe-area-inset-top));
+                right: max(5rem, env(safe-area-inset-right));
+            }
+            #currentWordCard:fullscreen .card-fullscreen-toggle,
+            #currentWordCard.is-immersive .card-fullscreen-toggle {
+                right: max(5rem, env(safe-area-inset-right));
+                bottom: max(2.5rem, env(safe-area-inset-bottom));
+            }
+            #currentWordCard.is-immersive.is-landscape-fallback .notebook-toggle {
+                top: max(7rem, env(safe-area-inset-top));
+            }
+            #currentWordCard.is-immersive.is-landscape-fallback .card-fullscreen-toggle {
+                bottom: max(7rem, env(safe-area-inset-bottom));
+            }
         }
 
         @media (max-width: 640px) {
