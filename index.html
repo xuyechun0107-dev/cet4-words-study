@@ -1119,12 +1119,12 @@
             }
             .vocabulary-notebook-widget { top: 8.9rem; right: 0.55rem; }
             .notebook-toggle {
-                top: 0.65rem;
-                right: 0.65rem;
+                top: -1px;
+                right: -1px;
                 left: auto;
+                transform: translate(50%, -50%);
             }
-            #currentWordCard #wordIndex,
-            #currentSentenceCard #phraseIndex { margin-top: 2.65rem; }
+            .notebook-toggle:hover { transform: translate(50%, -50%) scale(1.08); }
             .notebook-modal-header { flex-direction: column; }
             .notebook-modal-actions { width: 100%; }
             .notebook-play-all { flex: 1; justify-content: center; }
