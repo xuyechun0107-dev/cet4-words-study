@@ -9,7 +9,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from .database import Base, SessionLocal, engine
-from .models import Article, Sentence, Word
+from .models import Article, Sentence, Word, Wordbook, WordbookEntry
 
 
 APP_NAME = "CET-4 Study API"
@@ -56,6 +56,32 @@ class ArticlePayload(BaseModel):
     content: str = Field(min_length=1)
     translation: str | None = None
     level: str | None = Field(default=None, max_length=32)
+
+
+class WordbookSummary(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    slug: str
+    name: str
+    description: str | None = None
+    source_name: str
+    source_url: str
+    license_name: str
+    license_url: str
+    item_count: int
+
+
+class WordbookEntryPayload(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    word: str
+    phonetic: str | None = None
+    definition: str
+    example: str | None = None
+
+
+class WordbookPayload(WordbookSummary):
+    items: list[WordbookEntryPayload]
 
 
 def get_db() -> Generator[Session, None, None]:
@@ -115,6 +141,37 @@ def list_articles(
     db: Session = Depends(get_db),
 ) -> list[Article]:
     return list(db.scalars(select(Article).order_by(Article.id).offset(offset).limit(limit)))
+
+
+@app.get("/v1/wordbooks", response_model=list[WordbookSummary])
+def list_wordbooks(db: Session = Depends(get_db)) -> list[Wordbook]:
+    statement = select(Wordbook).order_by(Wordbook.display_order, Wordbook.id)
+    return list(db.scalars(statement))
+
+
+@app.get("/v1/wordbooks/{slug}", response_model=WordbookPayload)
+def get_wordbook(slug: str, db: Session = Depends(get_db)) -> dict[str, object]:
+    wordbook = db.scalar(select(Wordbook).where(Wordbook.slug == slug))
+    if wordbook is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Wordbook not found.")
+    entries = list(
+        db.scalars(
+            select(WordbookEntry)
+            .where(WordbookEntry.wordbook_id == wordbook.id)
+            .order_by(WordbookEntry.rank, WordbookEntry.id)
+        )
+    )
+    return {
+        "slug": wordbook.slug,
+        "name": wordbook.name,
+        "description": wordbook.description,
+        "source_name": wordbook.source_name,
+        "source_url": wordbook.source_url,
+        "license_name": wordbook.license_name,
+        "license_url": wordbook.license_url,
+        "item_count": wordbook.item_count,
+        "items": entries,
+    }
 
 
 @app.post("/v1/admin/words", dependencies=[Depends(require_admin)])

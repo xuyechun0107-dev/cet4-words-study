@@ -704,6 +704,20 @@
             background: var(--blue-soft);
         }
 
+        .shelf-book.loading {
+            cursor: wait;
+            opacity: 0.72;
+        }
+
+        .shelf-book.loading .book-check {
+            opacity: 1;
+            animation: spin 900ms linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
         .book-spine {
             display: grid;
             width: 2.5rem;
@@ -1376,12 +1390,16 @@
         let prevOrderPosBackup = 0;
         let currentWorkspaceView = 'words';
         let customLibraries = [];
+        let remoteWordbooks = [];
+        const remoteWordbookCache = new Map();
+        let loadingLibraryId = '';
         let builtInPhraseItems = [];
         let articleList = [];
         let articleIndex = 0;
         let isArticlePlaying = false;
         const builtInWordItems = cet4Words.map(item => ({ ...item }));
         const activeLibraryIds = loadActiveLibraryIds();
+        const API_BASE_URL = 'https://api-enplay.ningboaoke.com';
         
         // Local Storage Keys
         let CURRENT_INDEX_KEY = 'cet4_current_index';
@@ -1589,7 +1607,12 @@
             if (!libraryListEl) return;
             const builtIn = getBuiltInLibrary(currentWorkspaceView);
             if (!builtIn) return;
-            const libraries = [builtIn, ...customLibraries.filter(item => item.type === currentWorkspaceView)];
+            const remoteLibraries = currentWorkspaceView === 'words' ? remoteWordbooks : [];
+            const libraries = [
+                builtIn,
+                ...remoteLibraries,
+                ...customLibraries.filter(item => item.type === currentWorkspaceView)
+            ];
             libraryListEl.innerHTML = '';
             libraryCountEl.textContent = `${libraries.length} 本`;
 
@@ -1600,7 +1623,12 @@
                 if (activeLibraryIds[currentWorkspaceView] === library.id) {
                     button.classList.add('active');
                 }
+                if (loadingLibraryId === library.id) {
+                    button.classList.add('loading');
+                    button.disabled = true;
+                }
                 button.dataset.libraryId = library.id;
+                if (library.description) button.title = library.description;
 
                 const spine = document.createElement('span');
                 spine.className = 'book-spine';
@@ -1619,26 +1647,64 @@
                 const meta = document.createElement('span');
                 meta.className = 'book-meta';
                 const unit = currentWorkspaceView === 'words' ? '词' : currentWorkspaceView === 'sentences' ? '句' : '篇';
-                meta.textContent = `${library.items.length} ${unit} · ${library.format || '自定义'}`;
+                const itemCount = Array.isArray(library.items) ? library.items.length : library.itemCount || 0;
+                meta.textContent = `${itemCount} ${unit} · ${library.format || '自定义'}`;
                 copy.append(title, meta);
 
                 const check = document.createElement('i');
-                check.className = 'book-check fa fa-check-circle';
+                check.className = loadingLibraryId === library.id
+                    ? 'book-check fa fa-spinner'
+                    : 'book-check fa fa-check-circle';
                 button.append(spine, copy, check);
                 button.addEventListener('click', () => selectLibrary(library.id));
                 libraryListEl.appendChild(button);
             });
         }
 
-        function selectLibrary(libraryId) {
-            const library = libraryId.startsWith('builtin-')
+        async function selectLibrary(libraryId) {
+            let library = libraryId.startsWith('builtin-')
                 ? getBuiltInLibrary(currentWorkspaceView)
-                : customLibraries.find(item => item.id === libraryId && item.type === currentWorkspaceView);
+                : customLibraries.find(item => item.id === libraryId && item.type === currentWorkspaceView)
+                    || remoteWordbooks.find(item => item.id === libraryId && item.type === currentWorkspaceView);
             if (!library) return;
+
+            if (library.remote && !Array.isArray(library.items)) {
+                loadingLibraryId = library.id;
+                renderLibraryShelf();
+                try {
+                    library = await loadRemoteWordbook(library);
+                } catch (error) {
+                    console.error('Unable to load remote wordbook:', error);
+                    window.alert('词书加载失败，请检查网络后重试。');
+                    loadingLibraryId = '';
+                    renderLibraryShelf();
+                    return;
+                }
+                loadingLibraryId = '';
+            }
+
             activeLibraryIds[currentWorkspaceView] = library.id;
             localStorage.setItem('enplay_active_libraries', JSON.stringify(activeLibraryIds));
             applyLibraryData(library);
             renderLibraryShelf();
+        }
+
+        async function loadRemoteWordbook(library) {
+            if (remoteWordbookCache.has(library.id)) {
+                return remoteWordbookCache.get(library.id);
+            }
+            const response = await fetch(`${API_BASE_URL}/v1/wordbooks/${encodeURIComponent(library.slug)}`);
+            if (!response.ok) throw new Error(`Wordbook request failed: ${response.status}`);
+            const payload = await response.json();
+            const loadedLibrary = {
+                ...library,
+                items: normalizeLibraryItems(payload.items || [], 'words'),
+                itemCount: payload.item_count || 0
+            };
+            remoteWordbookCache.set(library.id, loadedLibrary);
+            const catalogIndex = remoteWordbooks.findIndex(item => item.id === library.id);
+            if (catalogIndex !== -1) remoteWordbooks[catalogIndex] = loadedLibrary;
+            return loadedLibrary;
         }
 
         function setLibraryStorageScope(type, libraryId) {
@@ -1685,16 +1751,46 @@
 
         async function initPersonalLibrary() {
             customLibraries = await readAllPersonalLibraries();
+            try {
+                await loadRemoteWordbookCatalog();
+            } catch (error) {
+                console.warn('Remote wordbook catalog is temporarily unavailable:', error);
+                remoteWordbooks = [];
+            }
             for (const type of ['words', 'sentences', 'articles']) {
                 const activeId = activeLibraryIds[type];
                 const custom = customLibraries.find(item => item.id === activeId && item.type === type);
+                const remote = remoteWordbooks.find(item => item.id === activeId && item.type === type);
                 if (custom) {
                     applyLibraryData(custom);
+                } else if (remote) {
+                    currentWorkspaceView = type;
+                    await selectLibrary(remote.id);
                 } else if (typeof activeId !== 'string' || !activeId.startsWith('builtin-')) {
                     activeLibraryIds[type] = `builtin-${type}`;
                 }
             }
+            currentWorkspaceView = getViewFromHash();
             localStorage.setItem('enplay_active_libraries', JSON.stringify(activeLibraryIds));
+            renderLibraryShelf();
+        }
+
+        async function loadRemoteWordbookCatalog() {
+            const response = await fetch(`${API_BASE_URL}/v1/wordbooks`);
+            if (!response.ok) throw new Error(`Wordbook catalog request failed: ${response.status}`);
+            const catalog = await response.json();
+            remoteWordbooks = catalog.map(item => ({
+                id: `remote-${item.slug}`,
+                slug: item.slug,
+                type: 'words',
+                name: item.name,
+                description: item.description,
+                format: `${item.source_name} · ${item.license_name}`,
+                itemCount: item.item_count,
+                sourceUrl: item.source_url,
+                licenseUrl: item.license_url,
+                remote: true
+            }));
             renderLibraryShelf();
         }
 
