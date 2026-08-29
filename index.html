@@ -1732,6 +1732,7 @@
         let notebookPlaybackIndex = 0;
         let notebookPlaybackType = 'word';
         let notebookPlaybackQueue = [];
+        let notebookDisplayedEntry = null;
         const builtInWordItems = cet4Words.map(item => ({ ...item }));
         const activeLibraryIds = loadActiveLibraryIds();
         const API_BASE_URL = 'https://api-enplay.ningboaoke.com';
@@ -1863,6 +1864,12 @@
         function switchWorkspace(view, updateHash = true) {
             if (!['words', 'sentences', 'articles'].includes(view)) {
                 view = 'words';
+            }
+
+            if (!isNotebookPlaying && notebookDisplayedEntry) {
+                notebookDisplayedEntry = null;
+                if (view === 'words') updateWordCard();
+                if (view === 'sentences') updatePhraseCard();
             }
 
             if (view !== 'words') stopPlayback(true);
@@ -2617,6 +2624,7 @@
         }
 
         function updatePhraseCard() {
+            notebookDisplayedEntry = null;
             if (!phraseList.length) {
                 currentPhraseEl.textContent = 'No phrases available';
                 phraseIndexEl.textContent = '0/0';
@@ -2734,9 +2742,14 @@
         }
 
         function togglePhrasePlay() {
+            if (isNotebookPlaying && notebookPlaybackType === 'sentence') {
+                stopVocabularyNotebookPlayback();
+                return;
+            }
             if (isPhrasePlaying) {
                 stopPhrasePlayback(true);
             } else {
+                if (notebookDisplayedEntry && notebookDisplayedEntry.type === 'sentence') updatePhraseCard();
                 startPhrasePlayback();
             }
         }
@@ -2966,6 +2979,9 @@
         }
 
         function getCurrentNotebookEntry() {
+            if (notebookDisplayedEntry && notebookDisplayedEntry.type !== 'sentence') {
+                return { ...notebookDisplayedEntry };
+            }
             const word = cet4Words[currentIndex];
             if (!word) return null;
             const library = getActiveWordLibrary();
@@ -2986,6 +3002,9 @@
         }
 
         function getCurrentPhraseNotebookEntry() {
+            if (notebookDisplayedEntry && notebookDisplayedEntry.type === 'sentence') {
+                return { ...notebookDisplayedEntry };
+            }
             const item = phraseList[phraseIndex];
             if (!item) return null;
             const library = getActiveSentenceLibrary();
@@ -3181,6 +3200,12 @@
                 alert('当前浏览器不支持语音朗读');
                 return;
             }
+            closeVocabularyNotebook();
+            const targetView = type === 'sentence' ? 'sentences' : 'words';
+            switchWorkspace(targetView, false);
+            if (window.location.hash !== `#${targetView}`) {
+                history.replaceState(null, '', `#${targetView}`);
+            }
             stopPlayback(true);
             stopPhrasePlayback(true);
             stopArticlePlayback();
@@ -3194,7 +3219,35 @@
             activeButton.classList.add('playing');
             activeIcon.classList.remove('fa-play');
             activeIcon.classList.add('fa-pause');
+            const playerIcon = type === 'sentence' ? phrasePlayIcon : playIcon;
+            playerIcon.classList.remove('fa-play');
+            playerIcon.classList.add('fa-pause');
             playNextNotebookEntry();
+        }
+
+        function displayNotebookEntry(entry, position, total) {
+            notebookDisplayedEntry = entry;
+            if (entry.type === 'sentence') {
+                currentPhraseEl.textContent = entry.text || '';
+                currentPhraseNoteEl.textContent = entry.translation || '（暂无中文释义）';
+                phraseSceneLabel.textContent = entry.scene || '生词本句子';
+                phraseIndexEl.textContent = `${position}/${total} · 生词本`;
+                phraseLearnedBadge.classList.add('hidden');
+                updatePhraseNotebookToggle();
+                return;
+            }
+
+            currentWordEl.textContent = entry.word || '';
+            phoneticEl.textContent = entry.phonetic || '';
+            englishDefinitionEl.textContent = entry.definitionEn || '';
+            englishDefinitionBlock.classList.toggle('hidden', !entry.definitionEn);
+            definitionEl.textContent = entry.definitionZh || '';
+            definitionBlock.classList.toggle('hidden', !entry.definitionZh);
+            exampleEl.textContent = entry.example || '';
+            exampleBlock.classList.toggle('hidden', !entry.example);
+            wordIndexEl.textContent = `${position}/${total} · 生词本`;
+            learnedBadge.classList.add('hidden');
+            updateWordNotebookToggle();
         }
 
         function playNextNotebookEntry() {
@@ -3205,11 +3258,16 @@
             }
             const entry = notebookPlaybackQueue[notebookPlaybackIndex];
             const isSentence = entry.type === 'sentence';
-            const parts = isSentence ? [entry.text] : [entry.word, entry.definitionEn];
-            if (!isSentence && shouldReadChineseDefinition) parts.push(entry.definitionZh);
-            if (!isSentence) parts.push(entry.example);
-            const spokenParts = parts.filter(value => value && String(value).trim());
-            const activeButton = isSentence ? notebookPlaySentencesBtn : notebookPlayWordsBtn;
+            displayNotebookEntry(entry, notebookPlaybackIndex + 1, notebookPlaybackQueue.length);
+            const parts = isSentence
+                ? [{ text: entry.text, element: currentPhraseEl }]
+                : [
+                    { text: entry.word, element: currentWordEl },
+                    { text: entry.definitionEn, element: englishDefinitionEl },
+                    ...(shouldReadChineseDefinition ? [{ text: entry.definitionZh, element: definitionEl }] : []),
+                    { text: entry.example, element: exampleEl }
+                ];
+            const spokenParts = parts.filter(part => part.text && String(part.text).trim());
             let partIndex = 0;
             const playPart = () => {
                 if (!isNotebookPlaying) return;
@@ -3218,7 +3276,8 @@
                     playNextNotebookEntry();
                     return;
                 }
-                playTextWithHighlight(spokenParts[partIndex++], activeButton, playPart);
+                const part = spokenParts[partIndex++];
+                playTextWithHighlight(part.text, part.element, playPart);
             };
             playPart();
         }
@@ -3233,11 +3292,16 @@
                 icon.classList.remove('fa-pause');
                 icon.classList.add('fa-play');
             });
+            [playIcon, phrasePlayIcon].forEach(icon => {
+                icon.classList.remove('fa-pause');
+                icon.classList.add('fa-play');
+            });
             cancelSpeechSession();
         }
 
         // Update the word card with current word
         function updateWordCard() {
+            notebookDisplayedEntry = null;
             const wordIndex = order[orderPosition] || 0;
             currentIndex = wordIndex;
             const word = cet4Words[wordIndex];
@@ -3338,9 +3402,14 @@
         // Toggle play/pause
         function togglePlay() {
             console.log('Play button clicked');
+            if (isNotebookPlaying && notebookPlaybackType === 'word') {
+                stopVocabularyNotebookPlayback();
+                return;
+            }
             if (isPlaying) {
                 stopPlayback(true);
             } else {
+                if (notebookDisplayedEntry && notebookDisplayedEntry.type !== 'sentence') updateWordCard();
                 continueAutoPlay = true;
                 startPlayback();
             }
