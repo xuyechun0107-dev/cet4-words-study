@@ -615,6 +615,10 @@
         }
 
         .progress-note {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.65rem;
             margin-bottom: 1rem;
             padding: 0.85rem;
             border-radius: 0.9rem;
@@ -624,6 +628,27 @@
             font-weight: 700;
             line-height: 1.5;
         }
+
+        .review-exit-button {
+            flex: 0 0 auto;
+            display: grid;
+            width: 1.5rem;
+            height: 1.5rem;
+            place-items: center;
+            border: 1px solid rgba(36, 87, 214, 0.2);
+            border-radius: 50%;
+            color: var(--blue);
+            background: rgba(255, 255, 255, 0.78);
+            transition: color 180ms ease, background 180ms ease, transform 180ms ease;
+        }
+
+        .review-exit-button:hover {
+            color: white;
+            background: var(--blue);
+            transform: scale(1.06);
+        }
+
+        .review-exit-button.hidden { display: none; }
 
         .setting-field {
             display: grid;
@@ -1257,6 +1282,9 @@
             </div>
             <div class="progress-note">
                 <span id="todayLearned">今日进度：0 个单词</span>
+                <button id="exitWordReviewBtn" class="review-exit-button hidden" type="button" aria-label="退出日期回放" title="返回原词典位置">
+                    <i class="fa fa-times" aria-hidden="true"></i>
+                </button>
             </div>
             <div class="setting-field">
                 <label for="repeatCountInput">重复次数</label>
@@ -1608,6 +1636,7 @@
         const wordIndexEl = document.getElementById('wordIndex');
         const progressEl = document.getElementById('progress');
         const todayLearnedEl = document.getElementById('todayLearned');
+        const exitWordReviewBtn = document.getElementById('exitWordReviewBtn');
         
         const prevBtn = document.getElementById('prevBtn');
         const playBtn = document.getElementById('playBtn');
@@ -1712,6 +1741,7 @@
         let historyDates = [];
         let isReviewMode = false;
         let reviewOrder = [];
+        let reviewDate = '';
         let prevOrderBackup = null;
         let prevOrderPosBackup = 0;
         let currentWorkspaceView = 'words';
@@ -1786,6 +1816,7 @@
             prevBtn.addEventListener('click', goToPreviousWord);
             playBtn.addEventListener('click', togglePlay);
             nextBtn.addEventListener('click', goToNextWord);
+            exitWordReviewBtn.addEventListener('click', exitReviewMode);
             wordLoopCheckbox.addEventListener('change', toggleWordLoop);
             autoPlayCheckbox.addEventListener('change', toggleAutoPlay);
             newWordsOnlyCheckbox.addEventListener('change', toggleNewWordsOnly);
@@ -1900,6 +1931,7 @@
                 document.title = '句子播放器 · Enplay';
             } else if (view === 'articles') {
                 historyButtonLabel.textContent = '学习记录';
+                exitWordReviewBtn.classList.add('hidden');
                 todayLearnedEl.textContent = `当前书库：${articleList.length} 篇`;
                 document.title = '文章播放器 · Enplay';
             } else {
@@ -1916,6 +1948,7 @@
         }
 
         function updateTodaySentenceCount() {
+            exitWordReviewBtn.classList.add('hidden');
             const today = new Date().toISOString().split('T')[0];
             const learned = getPhraseLearnedByDate();
             const count = new Set(learned[today] || []).size;
@@ -2100,6 +2133,10 @@
                 orderPosition = loadedOrder.position;
                 currentIndex = order[orderPosition] || 0;
                 isReviewMode = false;
+                reviewOrder = [];
+                reviewDate = '';
+                prevOrderBackup = null;
+                prevOrderPosBackup = 0;
                 updateWordCard();
                 updateProgress();
                 updateTodayLearnedCount();
@@ -2889,9 +2926,11 @@
         
         // Save current state to localStorage
         function saveState() {
-            localStorage.setItem(CURRENT_INDEX_KEY, currentIndex.toString());
-            localStorage.setItem(ORDER_KEY, JSON.stringify(order));
-            localStorage.setItem(ORDER_POSITION_KEY, orderPosition.toString());
+            if (!isReviewMode) {
+                localStorage.setItem(CURRENT_INDEX_KEY, currentIndex.toString());
+                localStorage.setItem(ORDER_KEY, JSON.stringify(order));
+                localStorage.setItem(ORDER_POSITION_KEY, orderPosition.toString());
+            }
             localStorage.setItem(AUTO_PLAY_KEY, isAutoPlaying.toString());
             localStorage.setItem(WORD_LOOP_KEY, isWordLooping.toString());
             localStorage.setItem(NEW_WORDS_ONLY_KEY, isNewWordsOnly.toString());
@@ -3419,6 +3458,10 @@
 
         // Update the top-right count badge using learned count
         function updateWordIndexLabel() {
+            if (isReviewMode) {
+                wordIndexEl.textContent = `${orderPosition + 1}/${reviewOrder.length}`;
+                return;
+            }
             const learnedCount = getAllLearnedSet().size;
             wordIndexEl.textContent = `${learnedCount}/${cet4Words.length}`;
         }
@@ -3940,6 +3983,19 @@
         
         // Update today's learned count
         function updateTodayLearnedCount() {
+            exitWordReviewBtn.classList.toggle('hidden', !isReviewMode);
+            if (isReviewMode) {
+                const [year, month, day] = reviewDate.split('-');
+                const fullDate = year && month && day
+                    ? `${year}年${parseInt(month, 10)}月${parseInt(day, 10)}日`
+                    : '日期记录';
+                const compactDate = month && day
+                    ? `${parseInt(month, 10)}月${parseInt(day, 10)}日`
+                    : '日期记录';
+                todayLearnedEl.textContent = `${compactDate} · ${reviewOrder.length} 个单词`;
+                exitWordReviewBtn.title = `退出${fullDate}回放，返回原词典位置`;
+                return;
+            }
             const today = new Date().toISOString().split('T')[0];
             const learnedWords = JSON.parse(localStorage.getItem(LEARNED_WORDS_KEY) || '{}');
             const todaySet = getTodayLearnedSet();
@@ -4247,7 +4303,18 @@
             
             // Check if the date exists and has words
             if (learnedWords[date] && Array.isArray(learnedWords[date]) && learnedWords[date].length > 0) {
-                enterReviewMode(learnedWords[date]);
+                let wordsForDate = Array.from(new Set(learnedWords[date]));
+                const today = new Date().toISOString().split('T')[0];
+                if (date === today) {
+                    const historical = getHistoricalLearnedSet();
+                    wordsForDate = wordsForDate.filter(index => !historical.has(index));
+                }
+                wordsForDate = wordsForDate.filter(index => index >= 0 && index < cet4Words.length);
+                if (!wordsForDate.length) {
+                    alert(`No words found for ${date}.`);
+                    return;
+                }
+                enterReviewMode(wordsForDate, date);
                 closeHistoryModal();
                 
                 setTimeout(() => {
@@ -4261,22 +4328,28 @@
             }
         }
 
-        function enterReviewMode(indices) {
+        function enterReviewMode(indices, date = '') {
+            if (!isReviewMode) {
+                prevOrderBackup = order.slice();
+                prevOrderPosBackup = orderPosition;
+            }
             isReviewMode = true;
             reviewOrder = indices.slice();
-            prevOrderBackup = order.slice();
-            prevOrderPosBackup = orderPosition;
+            reviewDate = date;
             order = reviewOrder;
             orderPosition = 0;
             updateWordCard();
             updateProgress();
+            updateTodayLearnedCount();
             saveState();
         }
 
         function exitReviewMode() {
             if (!isReviewMode) return;
+            stopPlayback(true);
             isReviewMode = false;
             reviewOrder = [];
+            reviewDate = '';
             if (prevOrderBackup && prevOrderBackup.length === cet4Words.length) {
                 order = prevOrderBackup;
                 orderPosition = prevOrderPosBackup;
@@ -4288,6 +4361,7 @@
             prevOrderPosBackup = 0;
             updateWordCard();
             updateProgress();
+            updateTodayLearnedCount();
             saveState();
         }
 
