@@ -800,6 +800,243 @@
             text-align: center;
         }
 
+        .notebook-toggle {
+            position: absolute;
+            top: 1.25rem;
+            left: -1.05rem;
+            z-index: 2;
+            display: grid;
+            width: 2.25rem;
+            height: 2.25rem;
+            place-items: center;
+            border: 3px solid var(--paper);
+            border-radius: 50%;
+            color: var(--blue);
+            background: white;
+            box-shadow: 0 8px 22px rgba(31, 47, 81, 0.16);
+            transition: color 180ms ease, background 180ms ease, transform 180ms ease, box-shadow 180ms ease;
+        }
+
+        .notebook-toggle:hover {
+            transform: scale(1.08);
+            box-shadow: 0 11px 28px rgba(31, 47, 81, 0.2);
+        }
+
+        .notebook-toggle.saved {
+            color: white;
+            background: var(--blue);
+        }
+
+        .vocabulary-notebook-widget {
+            position: fixed;
+            top: 6.2rem;
+            right: max(1rem, calc((100vw - 96rem) / 2 + 0.75rem));
+            z-index: 45;
+            display: grid;
+            justify-items: center;
+            gap: 0.45rem;
+            width: 4.7rem;
+        }
+
+        .notebook-orb {
+            position: relative;
+            display: grid;
+            width: 3.75rem;
+            height: 3.75rem;
+            place-items: center;
+            border: 1px solid rgba(255, 255, 255, 0.72);
+            border-radius: 1.2rem;
+            color: white;
+            background: var(--ink);
+            box-shadow: 0 16px 36px rgba(23, 35, 60, 0.24);
+            font-size: 1.25rem;
+            transition: transform 180ms ease, background 180ms ease, box-shadow 180ms ease;
+        }
+
+        .notebook-orb:hover {
+            transform: translateY(-2px) rotate(-2deg);
+            background: var(--blue);
+            box-shadow: 0 19px 42px rgba(36, 87, 214, 0.3);
+        }
+
+        .notebook-orb::after {
+            content: '';
+            position: absolute;
+            right: 0.65rem;
+            bottom: 0.75rem;
+            width: 0.42rem;
+            height: 1.15rem;
+            border-radius: 0.2rem 0.2rem 0 0;
+            background: var(--mint);
+            clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 75%, 0 100%);
+        }
+
+        .notebook-count {
+            position: absolute;
+            top: -0.45rem;
+            right: -0.45rem;
+            display: grid;
+            min-width: 1.5rem;
+            height: 1.5rem;
+            padding: 0 0.35rem;
+            place-items: center;
+            border: 2px solid white;
+            border-radius: 999px;
+            color: white;
+            background: var(--blue);
+            font-size: 0.65rem;
+            font-weight: 800;
+        }
+
+        .notebook-quick-actions {
+            display: flex;
+            gap: 0.3rem;
+            padding: 0.3rem;
+            border: 1px solid rgba(255, 255, 255, 0.92);
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.86);
+            box-shadow: 0 9px 24px rgba(31, 47, 81, 0.12);
+            backdrop-filter: blur(12px);
+        }
+
+        .notebook-quick-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.38rem 0.48rem;
+            border-radius: 999px;
+            color: var(--muted);
+            font-size: 0.62rem;
+            font-weight: 800;
+            line-height: 1;
+            transition: color 160ms ease, background 160ms ease;
+        }
+
+        .notebook-quick-button:hover,
+        .notebook-quick-button.playing {
+            color: white;
+            background: var(--blue);
+        }
+
+        .notebook-modal-content {
+            width: min(44rem, calc(100vw - 2rem));
+            max-height: min(80vh, 46rem);
+            overflow: hidden;
+            padding: 0 !important;
+            border: 1px solid rgba(255, 255, 255, 0.96);
+            border-radius: 1.35rem !important;
+            background: rgba(255, 255, 255, 0.96) !important;
+            box-shadow: 0 34px 90px rgba(23, 35, 60, 0.22) !important;
+        }
+
+        .notebook-modal-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 1rem;
+            padding: 1.5rem 1.5rem 1.15rem;
+            border-bottom: 1px solid var(--line);
+            background: linear-gradient(135deg, rgba(234, 240, 255, 0.88), rgba(255, 255, 255, 0.92));
+        }
+
+        .notebook-modal-header h2 {
+            margin-top: 0.15rem;
+            font-family: 'Newsreader', 'Noto Sans SC', serif;
+            font-size: 1.75rem;
+            font-weight: 700;
+        }
+
+        .notebook-list {
+            display: grid;
+            gap: 0.7rem;
+            max-height: calc(min(80vh, 46rem) - 7.5rem);
+            padding: 1rem 1.25rem 1.35rem;
+            overflow-y: auto;
+        }
+
+        .notebook-entry {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto;
+            gap: 0.8rem;
+            padding: 1rem;
+            border: 1px solid var(--line);
+            border-radius: 1rem;
+            background: white;
+            transition: border-color 180ms ease, transform 180ms ease, box-shadow 180ms ease;
+        }
+
+        .notebook-entry:hover {
+            transform: translateY(-1px);
+            border-color: rgba(36, 87, 214, 0.25);
+            box-shadow: 0 10px 26px rgba(31, 47, 81, 0.08);
+        }
+
+        .notebook-entry-title {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: baseline;
+            gap: 0.55rem;
+        }
+
+        .notebook-entry-title strong {
+            color: var(--ink);
+            font-family: 'Newsreader', serif;
+            font-size: 1.35rem;
+        }
+
+        .notebook-entry-title span,
+        .notebook-entry-copy,
+        .notebook-entry-example {
+            color: var(--muted);
+            font-size: 0.75rem;
+            line-height: 1.55;
+        }
+
+        .notebook-entry-copy { margin-top: 0.45rem; }
+        .notebook-entry-example { margin-top: 0.35rem; font-style: italic; }
+
+        .notebook-source {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            margin-top: 0.65rem;
+            padding: 0.28rem 0.5rem;
+            border-radius: 999px;
+            color: var(--blue);
+            background: var(--blue-soft);
+            font-size: 0.64rem;
+            font-weight: 800;
+        }
+
+        .notebook-remove {
+            width: 2rem;
+            height: 2rem;
+            border-radius: 0.65rem;
+            color: #9aa3b5;
+            transition: color 160ms ease, background 160ms ease;
+        }
+
+        .notebook-remove:hover {
+            color: #dc3545;
+            background: #fff0f1;
+        }
+
+        .notebook-empty {
+            display: grid;
+            min-height: 14rem;
+            place-items: center;
+            padding: 2rem;
+            color: var(--muted);
+            text-align: center;
+        }
+
+        .notebook-empty i {
+            display: block;
+            margin-bottom: 0.75rem;
+            color: rgba(36, 87, 214, 0.2);
+            font-size: 3rem;
+        }
+
         .upload-dropzone {
             display: grid;
             min-height: 8rem;
@@ -860,6 +1097,8 @@
                 grid-template-areas: 'canvas' 'controls' 'shelf';
                 padding: 0.75rem;
             }
+            .vocabulary-notebook-widget { top: 8.9rem; right: 0.55rem; transform: scale(0.9); transform-origin: top right; }
+            .notebook-toggle { left: 0.65rem; top: 0.65rem; }
         }
 
         @media (max-width: 420px) {
@@ -1054,7 +1293,10 @@
 
             <div class="player-stage">
         <!-- Word Card -->
-        <div class="word-card w-full p-8 mb-8 animate-fade-in">
+        <div id="currentWordCard" class="word-card relative w-full p-8 mb-8 animate-fade-in">
+            <button id="wordNotebookToggle" class="notebook-toggle" type="button" aria-label="加入生词本" title="加入生词本">
+                <i class="fa fa-plus" aria-hidden="true"></i>
+            </button>
             <div class="flex justify-between items-start mb-4">
                 <div>
                     <div class="flex items-center">
@@ -1220,6 +1462,37 @@
         </aside>
     </main>
 
+    <aside id="vocabularyNotebookWidget" class="vocabulary-notebook-widget" aria-label="生词本快捷工具">
+        <button id="notebookOrb" class="notebook-orb" type="button" aria-label="打开生词本" title="打开生词本">
+            <i class="fa fa-book" aria-hidden="true"></i>
+            <span id="notebookCount" class="notebook-count" aria-label="生词数量">0</span>
+        </button>
+        <div class="notebook-quick-actions" aria-label="生词本操作">
+            <button id="notebookViewBtn" class="notebook-quick-button" type="button" aria-label="查看生词本">
+                <i class="fa fa-eye" aria-hidden="true"></i><span>查看</span>
+            </button>
+            <button id="notebookPlayBtn" class="notebook-quick-button" type="button" aria-label="播放生词本">
+                <i id="notebookPlayIcon" class="fa fa-play" aria-hidden="true"></i><span>播放</span>
+            </button>
+        </div>
+    </aside>
+
+    <div id="vocabularyNotebookModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="notebookModalTitle">
+        <div class="modal-content notebook-modal-content">
+            <div class="notebook-modal-header">
+                <div>
+                    <span class="panel-kicker">Vocabulary Notebook</span>
+                    <h2 id="notebookModalTitle">我的生词本</h2>
+                    <p id="notebookSummary" class="text-xs text-gray-500 mt-1">共 0 个单词</p>
+                </div>
+                <button id="closeNotebookModal" class="text-gray-400 hover:text-gray-700" type="button" aria-label="关闭生词本">
+                    <i class="fa fa-times text-xl" aria-hidden="true"></i>
+                </button>
+            </div>
+            <div id="notebookList" class="notebook-list"></div>
+        </div>
+    </div>
+
     <!-- History Modal -->
     <div id="historyModal" class="modal">
         <div class="modal-content w-full max-w-2xl max-h-[80vh]">
@@ -1364,6 +1637,16 @@
         const articlePlayBtn = document.getElementById('articlePlayBtn');
         const articleNextBtn = document.getElementById('articleNextBtn');
         const articlePlayIcon = document.getElementById('articlePlayIcon');
+        const wordNotebookToggle = document.getElementById('wordNotebookToggle');
+        const notebookOrb = document.getElementById('notebookOrb');
+        const notebookCountEl = document.getElementById('notebookCount');
+        const notebookViewBtn = document.getElementById('notebookViewBtn');
+        const notebookPlayBtn = document.getElementById('notebookPlayBtn');
+        const notebookPlayIcon = document.getElementById('notebookPlayIcon');
+        const vocabularyNotebookModal = document.getElementById('vocabularyNotebookModal');
+        const closeNotebookModalBtn = document.getElementById('closeNotebookModal');
+        const notebookSummaryEl = document.getElementById('notebookSummary');
+        const notebookListEl = document.getElementById('notebookList');
         
         const historyBtn = document.getElementById('historyBtn');
         const historyModal = document.getElementById('historyModal');
@@ -1417,6 +1700,8 @@
         let speechCallbackTimer = null;
         let playbackStartTimer = null;
         let librarySelectionId = 0;
+        let isNotebookPlaying = false;
+        let notebookPlaybackIndex = 0;
         const builtInWordItems = cet4Words.map(item => ({ ...item }));
         const activeLibraryIds = loadActiveLibraryIds();
         const API_BASE_URL = 'https://api-enplay.ningboaoke.com';
@@ -1434,6 +1719,8 @@
         const PLAY_REPEAT_KEY = 'cet4_play_repeat_count';
         const PLAY_RATE_KEY = 'cet4_play_rate';
         const VOICE_PREF_KEY = 'cet4_voice_pref';
+        const VOCABULARY_NOTEBOOK_KEY = 'enplay_vocabulary_notebook_v1';
+        let vocabularyNotebook = loadVocabularyNotebook();
         
         // Initialize the app
         function init() {
@@ -1447,6 +1734,7 @@
             
             // Update UI with current word
             updateWordCard();
+            renderVocabularyNotebook();
 
             // Init phrases
             initPhrases();
@@ -1474,6 +1762,15 @@
             rateSelect.addEventListener('change', updateRate);
             voiceSelect.addEventListener('change', updateVoicePreference);
             wordSpeakBtn.addEventListener('click', speakCurrentWordOnce);
+            wordNotebookToggle.addEventListener('click', toggleCurrentWordNotebook);
+            notebookOrb.addEventListener('click', openVocabularyNotebook);
+            notebookViewBtn.addEventListener('click', openVocabularyNotebook);
+            notebookPlayBtn.addEventListener('click', toggleVocabularyNotebookPlayback);
+            closeNotebookModalBtn.addEventListener('click', closeVocabularyNotebook);
+            vocabularyNotebookModal.addEventListener('click', (event) => {
+                if (event.target === vocabularyNotebookModal) closeVocabularyNotebook();
+            });
+            notebookListEl.addEventListener('click', handleNotebookListClick);
             historyFilter.addEventListener('change', onHistoryFilterChange);
             historyTypeSelect.addEventListener('change', () => {
                 if (historyModal.style.display === 'block') {
@@ -2093,6 +2390,7 @@
             stopArticlePlayback();
             stopPlayback();
             stopPhrasePlayback();
+            stopVocabularyNotebookPlayback();
             isArticlePlaying = true;
             articlePlayIcon.classList.replace('fa-play', 'fa-pause');
             const article = articleList[articleIndex];
@@ -2102,6 +2400,7 @@
         }
 
         function stopArticlePlayback() {
+            if (isNotebookPlaying) stopVocabularyNotebookPlayback();
             isArticlePlaying = false;
             articlePlayIcon.classList.remove('fa-pause');
             articlePlayIcon.classList.add('fa-play');
@@ -2414,6 +2713,7 @@
             // Stop word playback to keep audio mutually exclusive
             stopPlayback();
             stopArticlePlayback();
+            stopVocabularyNotebookPlayback();
             isPhrasePlaying = true;
             continueAutoPlay = true;
             phrasePlayCount = 0;
@@ -2458,6 +2758,7 @@
         }
 
         function stopPhrasePlayback(manual = false) {
+            if (isNotebookPlaying) stopVocabularyNotebookPlayback();
             isPhrasePlaying = false;
             phrasePlayIcon.classList.remove('fa-pause');
             phrasePlayIcon.classList.add('fa-play');
@@ -2588,6 +2889,241 @@
             return arr;
         }
         
+        function loadVocabularyNotebook() {
+            try {
+                const saved = JSON.parse(localStorage.getItem(VOCABULARY_NOTEBOOK_KEY) || '[]');
+                return Array.isArray(saved) ? saved.filter(item => item && item.id && item.word) : [];
+            } catch (error) {
+                console.warn('Unable to read vocabulary notebook:', error);
+                return [];
+            }
+        }
+
+        function saveVocabularyNotebook() {
+            localStorage.setItem(VOCABULARY_NOTEBOOK_KEY, JSON.stringify(vocabularyNotebook));
+        }
+
+        function getActiveWordLibrary() {
+            const libraryId = activeLibraryIds.words || 'builtin-words';
+            if (libraryId === 'builtin-words') return getBuiltInLibrary('words');
+            return remoteWordbooks.find(item => item.id === libraryId)
+                || customLibraries.find(item => item.id === libraryId && item.type === 'words')
+                || getBuiltInLibrary('words');
+        }
+
+        function getWordDefinitionParts(word) {
+            const baseDefinition = word.definition || '';
+            const baseDefinitionIsChinese = /[\u3400-\u9fff]/.test(baseDefinition);
+            return {
+                english: word.definitionEn || word.definition_en || (!baseDefinitionIsChinese ? baseDefinition : ''),
+                chinese: word.definitionZh || word.definition_zh || (baseDefinitionIsChinese ? baseDefinition : '')
+            };
+        }
+
+        function getCurrentNotebookEntry() {
+            const word = cet4Words[currentIndex];
+            if (!word) return null;
+            const library = getActiveWordLibrary();
+            const sourceId = library.id || 'builtin-words';
+            const definitions = getWordDefinitionParts(word);
+            return {
+                id: `${sourceId}::${String(word.word).trim().toLowerCase()}`,
+                word: word.word,
+                phonetic: word.phonetic || '',
+                definitionEn: definitions.english || '',
+                definitionZh: definitions.chinese || '',
+                example: word.example || '',
+                sourceId,
+                sourceName: library.name || '未知词库',
+                addedAt: new Date().toISOString()
+            };
+        }
+
+        function isCurrentWordInNotebook() {
+            const entry = getCurrentNotebookEntry();
+            return Boolean(entry && vocabularyNotebook.some(item => item.id === entry.id));
+        }
+
+        function updateWordNotebookToggle() {
+            const isSaved = isCurrentWordInNotebook();
+            wordNotebookToggle.classList.toggle('saved', isSaved);
+            wordNotebookToggle.setAttribute('aria-label', isSaved ? '移出生词本' : '加入生词本');
+            wordNotebookToggle.title = isSaved ? '移出生词本' : '加入生词本';
+            const icon = wordNotebookToggle.querySelector('i');
+            icon.classList.toggle('fa-plus', !isSaved);
+            icon.classList.toggle('fa-minus', isSaved);
+        }
+
+        function toggleCurrentWordNotebook() {
+            const entry = getCurrentNotebookEntry();
+            if (!entry) return;
+            const existingIndex = vocabularyNotebook.findIndex(item => item.id === entry.id);
+            if (existingIndex === -1) {
+                vocabularyNotebook.unshift(entry);
+            } else {
+                vocabularyNotebook.splice(existingIndex, 1);
+                if (isNotebookPlaying) stopVocabularyNotebookPlayback();
+            }
+            saveVocabularyNotebook();
+            renderVocabularyNotebook();
+            updateWordNotebookToggle();
+        }
+
+        function renderVocabularyNotebook() {
+            notebookCountEl.textContent = vocabularyNotebook.length > 99 ? '99+' : String(vocabularyNotebook.length);
+            notebookSummaryEl.textContent = `共 ${vocabularyNotebook.length} 个单词`;
+            notebookListEl.innerHTML = '';
+
+            if (!vocabularyNotebook.length) {
+                const empty = document.createElement('div');
+                empty.className = 'notebook-empty';
+                const message = document.createElement('div');
+                const icon = document.createElement('i');
+                icon.className = 'fa fa-bookmark-o';
+                icon.setAttribute('aria-hidden', 'true');
+                const title = document.createElement('strong');
+                title.className = 'block text-dark';
+                title.textContent = '还没有收藏生词';
+                const note = document.createElement('p');
+                note.className = 'text-xs mt-2';
+                note.textContent = '点击单词卡左上角的 +，把需要复习的词收进来。';
+                message.append(icon, title, note);
+                empty.appendChild(message);
+                notebookListEl.appendChild(empty);
+                return;
+            }
+
+            vocabularyNotebook.forEach(entry => {
+                const item = document.createElement('article');
+                item.className = 'notebook-entry';
+                const content = document.createElement('div');
+                const heading = document.createElement('div');
+                heading.className = 'notebook-entry-title';
+                const word = document.createElement('strong');
+                word.textContent = entry.word;
+                const phonetic = document.createElement('span');
+                phonetic.textContent = entry.phonetic || '';
+                heading.append(word, phonetic);
+                content.appendChild(heading);
+
+                const definitionText = [entry.definitionEn, entry.definitionZh].filter(Boolean).join(' · ');
+                if (definitionText) {
+                    const definition = document.createElement('p');
+                    definition.className = 'notebook-entry-copy';
+                    definition.textContent = definitionText;
+                    content.appendChild(definition);
+                }
+                if (entry.example) {
+                    const example = document.createElement('p');
+                    example.className = 'notebook-entry-example';
+                    example.textContent = entry.example;
+                    content.appendChild(example);
+                }
+
+                const source = document.createElement('span');
+                source.className = 'notebook-source';
+                const sourceIcon = document.createElement('i');
+                sourceIcon.className = 'fa fa-book';
+                sourceIcon.setAttribute('aria-hidden', 'true');
+                source.append(sourceIcon, document.createTextNode(`来源：${entry.sourceName || '未知词库'}`));
+                content.appendChild(source);
+
+                const remove = document.createElement('button');
+                remove.type = 'button';
+                remove.className = 'notebook-remove';
+                remove.dataset.notebookId = entry.id;
+                remove.setAttribute('aria-label', `移除 ${entry.word}`);
+                remove.title = '移出生词本';
+                remove.innerHTML = '<i class="fa fa-trash-o" aria-hidden="true"></i>';
+                item.append(content, remove);
+                notebookListEl.appendChild(item);
+            });
+        }
+
+        function handleNotebookListClick(event) {
+            const removeButton = event.target.closest('[data-notebook-id]');
+            if (!removeButton) return;
+            vocabularyNotebook = vocabularyNotebook.filter(item => item.id !== removeButton.dataset.notebookId);
+            if (isNotebookPlaying) stopVocabularyNotebookPlayback();
+            saveVocabularyNotebook();
+            renderVocabularyNotebook();
+            updateWordNotebookToggle();
+        }
+
+        function openVocabularyNotebook() {
+            renderVocabularyNotebook();
+            vocabularyNotebookModal.style.display = 'block';
+            setTimeout(() => vocabularyNotebookModal.classList.add('active'), 10);
+        }
+
+        function closeVocabularyNotebook() {
+            vocabularyNotebookModal.classList.remove('active');
+            setTimeout(() => {
+                vocabularyNotebookModal.style.display = 'none';
+            }, 300);
+        }
+
+        function toggleVocabularyNotebookPlayback() {
+            if (isNotebookPlaying) {
+                stopVocabularyNotebookPlayback();
+            } else {
+                startVocabularyNotebookPlayback();
+            }
+        }
+
+        function startVocabularyNotebookPlayback() {
+            if (!vocabularyNotebook.length) {
+                openVocabularyNotebook();
+                return;
+            }
+            if (!isSpeechAvailable) {
+                alert('当前浏览器不支持语音朗读');
+                return;
+            }
+            stopPlayback(true);
+            stopPhrasePlayback(true);
+            stopArticlePlayback();
+            stopVocabularyNotebookPlayback();
+            isNotebookPlaying = true;
+            notebookPlaybackIndex = 0;
+            notebookPlayBtn.classList.add('playing');
+            notebookPlayIcon.classList.remove('fa-play');
+            notebookPlayIcon.classList.add('fa-pause');
+            playNextNotebookEntry();
+        }
+
+        function playNextNotebookEntry() {
+            if (!isNotebookPlaying) return;
+            if (notebookPlaybackIndex >= vocabularyNotebook.length) {
+                stopVocabularyNotebookPlayback();
+                return;
+            }
+            const entry = vocabularyNotebook[notebookPlaybackIndex];
+            const parts = [entry.word, entry.definitionEn];
+            if (shouldReadChineseDefinition) parts.push(entry.definitionZh);
+            parts.push(entry.example);
+            const spokenParts = parts.filter(value => value && String(value).trim());
+            let partIndex = 0;
+            const playPart = () => {
+                if (!isNotebookPlaying) return;
+                if (partIndex >= spokenParts.length) {
+                    notebookPlaybackIndex++;
+                    playNextNotebookEntry();
+                    return;
+                }
+                playTextWithHighlight(spokenParts[partIndex++], notebookPlayBtn, playPart);
+            };
+            playPart();
+        }
+
+        function stopVocabularyNotebookPlayback() {
+            isNotebookPlaying = false;
+            notebookPlayBtn.classList.remove('playing', 'speaking');
+            notebookPlayIcon.classList.remove('fa-pause');
+            notebookPlayIcon.classList.add('fa-play');
+            cancelSpeechSession();
+        }
+
         // Update the word card with current word
         function updateWordCard() {
             const wordIndex = order[orderPosition] || 0;
@@ -2610,6 +3146,7 @@
             exampleEl.textContent = word.example || '';
             exampleBlock.classList.toggle('hidden', !word.example);
             updateWordIndexLabel();
+            updateWordNotebookToggle();
             
             // Check if word is learned by its index and show/hide badge
             const isLearned = getAllLearnedSet().has(currentIndex);
@@ -2704,6 +3241,7 @@
             // Stop phrase playback to keep audio exclusive
             stopPhrasePlayback();
             stopArticlePlayback();
+            stopVocabularyNotebookPlayback();
             isPlaying = true;
             playIcon.classList.remove('fa-play');
             playIcon.classList.add('fa-pause');
@@ -2728,6 +3266,7 @@
         // Stop playing
         function stopPlayback(manual = false) {
             console.log('Stopping playback');
+            if (isNotebookPlaying) stopVocabularyNotebookPlayback();
             isPlaying = false;
             playIcon.classList.remove('fa-pause');
             playIcon.classList.add('fa-play');
@@ -2965,7 +3504,8 @@
                 exampleEl,
                 currentPhraseEl,
                 articleTitleEl,
-                articleContentEl
+                articleContentEl,
+                notebookPlayBtn
             ].forEach(element => element && element.classList.remove('speaking'));
         }
         
@@ -3021,6 +3561,7 @@
             stopPlayback(true);
             stopPhrasePlayback(true);
             stopArticlePlayback();
+            stopVocabularyNotebookPlayback();
             if (!isSpeechAvailable) {
                 alert('Your browser does not support speech synthesis');
                 return;
