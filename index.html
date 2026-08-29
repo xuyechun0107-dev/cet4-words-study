@@ -1398,6 +1398,11 @@
         let articleList = [];
         let articleIndex = 0;
         let isArticlePlaying = false;
+        let speechSessionId = 0;
+        let speechUtteranceId = 0;
+        let speechCallbackTimer = null;
+        let playbackStartTimer = null;
+        let librarySelectionId = 0;
         const builtInWordItems = cet4Words.map(item => ({ ...item }));
         const activeLibraryIds = loadActiveLibraryIds();
         const API_BASE_URL = 'https://api-enplay.ningboaoke.com';
@@ -1663,6 +1668,16 @@
         }
 
         async function selectLibrary(libraryId) {
+            const selectionId = ++librarySelectionId;
+            loadingLibraryId = '';
+            if (currentWorkspaceView === 'words') {
+                stopPlayback(true);
+            } else if (currentWorkspaceView === 'sentences') {
+                stopPhrasePlayback(true);
+            } else {
+                stopArticlePlayback();
+            }
+
             let library = libraryId.startsWith('builtin-')
                 ? getBuiltInLibrary(currentWorkspaceView)
                 : customLibraries.find(item => item.id === libraryId && item.type === currentWorkspaceView)
@@ -1675,12 +1690,14 @@
                 try {
                     library = await loadRemoteWordbook(library);
                 } catch (error) {
+                    if (selectionId !== librarySelectionId) return;
                     console.error('Unable to load remote wordbook:', error);
                     window.alert('词书加载失败，请检查网络后重试。');
                     loadingLibraryId = '';
                     renderLibraryShelf();
                     return;
                 }
+                if (selectionId !== librarySelectionId) return;
                 loadingLibraryId = '';
             }
 
@@ -2055,6 +2072,9 @@
                 return;
             }
             if (!articleList.length || !isSpeechAvailable) return;
+            stopArticlePlayback();
+            stopPlayback();
+            stopPhrasePlayback();
             isArticlePlaying = true;
             articlePlayIcon.classList.replace('fa-play', 'fa-pause');
             const article = articleList[articleIndex];
@@ -2067,8 +2087,7 @@
             isArticlePlaying = false;
             articlePlayIcon.classList.remove('fa-pause');
             articlePlayIcon.classList.add('fa-play');
-            if (isSpeechAvailable) window.speechSynthesis.cancel();
-            removeSpeakingHighlights();
+            cancelSpeechSession();
         }
 
         // Check if speech synthesis is supported
@@ -2373,8 +2392,10 @@
 
         function startPhrasePlayback() {
             if (!phraseList.length) return;
+            stopPhrasePlayback();
             // Stop word playback to keep audio mutually exclusive
             stopPlayback();
+            stopArticlePlayback();
             isPhrasePlaying = true;
             continueAutoPlay = true;
             phrasePlayCount = 0;
@@ -2398,7 +2419,8 @@
                     stopPhrasePlayback();
                     if (isWordLooping) {
                         phrasePlayCount = 0;
-                        setTimeout(() => {
+                        phraseRepeatTimer = setTimeout(() => {
+                            phraseRepeatTimer = null;
                             if (continueAutoPlay) startPhrasePlayback();
                         }, 1000);
                     } else {
@@ -2406,7 +2428,8 @@
                         if (autoPlaySnapshot) {
                             const moved = goToNextPhrase({ fromAutoPlay: true });
                             if (moved) {
-                                setTimeout(() => {
+                                phraseAutoPlayTimer = setTimeout(() => {
+                                    phraseAutoPlayTimer = null;
                                     if (isAutoPlaying && continueAutoPlay) startPhrasePlayback();
                                 }, 500);
                             }
@@ -2429,9 +2452,7 @@
                 clearTimeout(phraseAutoPlayTimer);
                 phraseAutoPlayTimer = null;
             }
-            if (isSpeechAvailable) {
-                window.speechSynthesis.cancel();
-            }
+            cancelSpeechSession();
         }
         
         // Load saved state from localStorage
@@ -2643,8 +2664,10 @@
         // Start playing the current word
         function startPlayback() {
             console.log('Starting playback');
+            stopPlayback();
             // Stop phrase playback to keep audio exclusive
             stopPhrasePlayback();
+            stopArticlePlayback();
             isPlaying = true;
             playIcon.classList.remove('fa-play');
             playIcon.classList.add('fa-pause');
@@ -2659,7 +2682,9 @@
             }
             
             // Start playing the word after a small delay to ensure UI updates
-            setTimeout(() => {
+            playbackStartTimer = setTimeout(() => {
+                playbackStartTimer = null;
+                if (!isPlaying) return;
                 playCurrentWord();
             }, 100);
         }
@@ -2687,15 +2712,17 @@
                 clearTimeout(repeatTimer);
                 repeatTimer = null;
             }
-            
-            // Cancel any speech
-            if (isSpeechAvailable) {
-                window.speechSynthesis.cancel();
+            if (playbackStartTimer) {
+                clearTimeout(playbackStartTimer);
+                playbackStartTimer = null;
             }
+
+            cancelSpeechSession();
         }
         
         // Play the current word, definition, and example
         function playCurrentWord() {
+            if (!isPlaying) return;
             const word = cet4Words[currentIndex];
             
             if (!isSpeechAvailable) {
@@ -2731,15 +2758,17 @@
                             if (isWordLooping) {
                                 playCount = 0;
                                 console.log('Word loop enabled, restarting playback');
-                                setTimeout(() => {
-                                    startPlayback();
+                                repeatTimer = setTimeout(() => {
+                                    repeatTimer = null;
+                                    if (isWordLooping && continueAutoPlay) startPlayback();
                                 }, 1000);
                             } 
                             // Otherwise, go to next word if auto-play is enabled
                             else if (isAutoPlaying) {
                                 console.log('Auto-play enabled, moving to next word');
                                 const autoPlaySnapshot = isAutoPlaying && continueAutoPlay;
-                                setTimeout(() => {
+                                autoPlayTimer = setTimeout(() => {
+                                    autoPlayTimer = null;
                                     // Respect latest setting; stop if user unchecked during this word
                                     if (!autoPlaySnapshot || !isAutoPlaying || !continueAutoPlay) {
                                         console.log('Auto-play turned off before advancing');
@@ -2747,7 +2776,8 @@
                                     }
                                     const moved = goToNextWord({ fromAutoPlay: true });
                                     if (moved && isAutoPlaying && continueAutoPlay) {
-                                        setTimeout(() => {
+                                        autoPlayTimer = setTimeout(() => {
+                                            autoPlayTimer = null;
                                             if (isAutoPlaying && continueAutoPlay) startPlayback();
                                         }, 500);
                                     } else {
@@ -2764,16 +2794,31 @@
         // Play text with visual highlight
         function playTextWithHighlight(text, element, callback) {
             console.log('playTextWithHighlight called with text:', text);
+            const sessionId = speechSessionId;
+            const utteranceId = ++speechUtteranceId;
+
+            const isCurrentSpeech = () => (
+                sessionId === speechSessionId && utteranceId === speechUtteranceId
+            );
+
+            const runCallback = (delay = 0) => {
+                if (!callback || !isCurrentSpeech()) return;
+                if (speechCallbackTimer) clearTimeout(speechCallbackTimer);
+                speechCallbackTimer = setTimeout(() => {
+                    speechCallbackTimer = null;
+                    if (isCurrentSpeech()) callback();
+                }, delay);
+            };
 
             if (!text || !String(text).trim()) {
                 element.classList.remove('speaking');
-                if (callback) callback();
+                runCallback();
                 return;
             }
             
             if (!isSpeechAvailable) {
                 console.log('Speech synthesis not available');
-                if (callback) callback();
+                runCallback();
                 return;
             }
             
@@ -2809,44 +2854,23 @@
                 
                 // When speech ends
                 utterance.onend = function() {
+                    if (!isCurrentSpeech()) return;
                     console.log('Speech ended for text:', text);
                     // Remove speaking highlight
                     element.classList.remove('speaking');
                     
                     // Call the callback
-                    if (callback) {
-                        setTimeout(callback, 300); // Small delay to ensure smooth transition
-                    }
+                    runCallback(300);
                 };
                 
                 utterance.onerror = function(event) {
-                    console.error('Speech error:', event.error);
+                    if (!isCurrentSpeech()) return;
                     // Remove speaking highlight
                     element.classList.remove('speaking');
-                    
-                    // Try fallback method
-                    try {
-                        // Try with different voice
-                        const voices = window.speechSynthesis.getVoices();
-                        console.log('Available voices:', voices.length);
-                        
-                        if (voices.length > 0) {
-                            // Try to find an appropriate voice
-                            const voice = voices.find(v => 
-                                v.lang.includes(hasChinese ? 'zh' : 'en')
-                            ) || voices[0];
-                            
-                            utterance.voice = voice;
-                            console.log('Trying with voice:', voice.name, voice.lang);
-                            window.speechSynthesis.speak(utterance);
-                            return;
-                        }
-                    } catch (fallbackError) {
-                        console.error('Fallback speech error:', fallbackError);
-                    }
-                    
-                    // Call the callback even if there's an error
-                    if (callback) callback();
+
+                    if (event.error === 'canceled' || event.error === 'interrupted') return;
+                    console.error('Speech error:', event.error);
+                    runCallback();
                 };
                 
                 utterance.onstart = function() {
@@ -2866,20 +2890,37 @@
                 window.speechSynthesis.speak(utterance);
                 
             } catch (error) {
+                if (!isCurrentSpeech()) return;
                 console.error('Error in speech synthesis:', error);
                 // Remove speaking highlight
                 element.classList.remove('speaking');
                 
                 // Call the callback
-                if (callback) callback();
+                runCallback();
             }
+        }
+
+        function cancelSpeechSession() {
+            speechSessionId++;
+            speechUtteranceId++;
+            if (speechCallbackTimer) {
+                clearTimeout(speechCallbackTimer);
+                speechCallbackTimer = null;
+            }
+            if (isSpeechAvailable) window.speechSynthesis.cancel();
+            removeSpeakingHighlights();
         }
         
         // Remove all speaking highlights
         function removeSpeakingHighlights() {
-            currentWordEl.classList.remove('speaking');
-            definitionEl.classList.remove('speaking');
-            exampleEl.classList.remove('speaking');
+            [
+                currentWordEl,
+                definitionEl,
+                exampleEl,
+                currentPhraseEl,
+                articleTitleEl,
+                articleContentEl
+            ].forEach(element => element && element.classList.remove('speaking'));
         }
         
         // Toggle word loop
@@ -2927,13 +2968,16 @@
         function speakCurrentWordOnce() {
             console.log('Speak word button clicked');
             stopPlayback(true);
+            stopPhrasePlayback(true);
+            stopArticlePlayback();
             if (!isSpeechAvailable) {
                 alert('Your browser does not support speech synthesis');
                 return;
             }
             const word = cet4Words[currentIndex];
             // Small delay to ensure stop takes effect
-            setTimeout(() => {
+            playbackStartTimer = setTimeout(() => {
+                playbackStartTimer = null;
                 playTextWithHighlight(word.word, currentWordEl, () => {});
             }, 100);
         }
