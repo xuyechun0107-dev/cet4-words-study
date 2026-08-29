@@ -854,10 +854,8 @@
         }
 
         .card-fullscreen-toggle {
-            position: absolute;
-            right: 1rem;
-            bottom: 1rem;
-            z-index: 3;
+            position: static;
+            flex: 0 0 auto;
             display: grid;
             width: 2.5rem;
             height: 2.5rem;
@@ -880,6 +878,18 @@
         .card-fullscreen-toggle:focus-visible {
             outline: 3px solid rgba(36, 87, 214, 0.24);
             outline-offset: 3px;
+        }
+
+        .example-heading-row {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            gap: 1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .example-heading-row h3 {
+            margin: 0;
         }
 
         #currentWordCard:fullscreen,
@@ -954,12 +964,6 @@
         #currentWordCard:fullscreen .notebook-toggle:hover,
         #currentWordCard.is-immersive .notebook-toggle:hover {
             transform: scale(1.08);
-        }
-
-        #currentWordCard:fullscreen .card-fullscreen-toggle,
-        #currentWordCard.is-immersive .card-fullscreen-toggle {
-            right: 1.25rem;
-            bottom: 1.25rem;
         }
 
         body.word-card-immersive-open {
@@ -1500,9 +1504,6 @@
             <button id="wordNotebookToggle" class="notebook-toggle" type="button" aria-label="加入生词本" title="加入生词本">
                 <i class="fa fa-plus" aria-hidden="true"></i>
             </button>
-            <button id="wordFullscreenBtn" class="card-fullscreen-toggle" type="button" aria-label="全屏查看单词" title="全屏查看" aria-pressed="false">
-                <i id="wordFullscreenIcon" class="fa fa-expand" aria-hidden="true"></i>
-            </button>
             <div class="flex justify-between items-start mb-4">
                 <div>
                     <div class="flex items-center">
@@ -1530,7 +1531,12 @@
             </div>
             
             <div id="exampleBlock">
-                <h3 class="text-lg font-semibold mb-2 text-gray-700">Example</h3>
+                <div class="example-heading-row">
+                    <h3 class="text-lg font-semibold text-gray-700">Example</h3>
+                    <button id="wordFullscreenBtn" class="card-fullscreen-toggle" type="button" aria-label="全屏查看单词" title="全屏查看" aria-pressed="false">
+                        <i id="wordFullscreenIcon" class="fa fa-expand" aria-hidden="true"></i>
+                    </button>
+                </div>
                 <p id="example" class="text-lg italic text-gray-600">The climbers had to abandon their attempt to reach the summit due to the bad weather.</p>
             </div>
         </div>
