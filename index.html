@@ -926,6 +926,13 @@
             text-align: center;
         }
 
+        .format-note a {
+            color: var(--blue);
+            font-weight: 700;
+            text-decoration: underline;
+            text-underline-offset: 2px;
+        }
+
         .notebook-toggle {
             position: absolute;
             top: -1px;
@@ -1824,6 +1831,11 @@
                     <i class="fa fa-plus"></i><span>导入内容库</span>
                 </button>
                 <p class="format-note">本机书架支持 UTF‑8 CSV / TSV / JSON；文章也支持 TXT / Markdown。</p>
+                <p id="sentenceSourceNote" class="format-note hidden">
+                    扩展句库文本来源
+                    <a href="https://tatoeba.org" target="_blank" rel="noopener noreferrer">Tatoeba</a>，采用
+                    <a href="https://creativecommons.org/licenses/by/2.0/fr/" target="_blank" rel="noopener noreferrer">CC BY 2.0 FR</a>。
+                </p>
             </div>
         </aside>
     </main>
@@ -1933,6 +1945,7 @@
     <!-- Word Data -->
     <script src="words.js"></script>
     <script src="phrases_normalized.js"></script>
+    <script src="sentences_tatoeba.js"></script>
     
     <!-- Main Script -->
     <script>
@@ -1997,6 +2010,7 @@
         const historyButtonLabel = document.getElementById('historyButtonLabel');
         const libraryListEl = document.getElementById('libraryList');
         const libraryCountEl = document.getElementById('libraryCount');
+        const sentenceSourceNote = document.getElementById('sentenceSourceNote');
         const uploadLibraryBtn = document.getElementById('uploadLibraryBtn');
         const uploadLibraryModal = document.getElementById('uploadLibraryModal');
         const closeUploadModalBtn = document.getElementById('closeUploadModal');
@@ -2453,8 +2467,8 @@
             }
         }
 
-        function getBuiltInLibrary(type) {
-            const libraries = {
+        function getBuiltInLibraries(type) {
+            const primaryLibraries = {
                 words: {
                     id: 'builtin-words',
                     type: 'words',
@@ -2477,21 +2491,35 @@
                     items: []
                 }
             };
-            return libraries[type];
+            const primaryLibrary = primaryLibraries[type];
+            if (!primaryLibrary) return [];
+            if (type !== 'sentences') return [primaryLibrary];
+            const extensions = Array.isArray(window.TATOEBA_SENTENCE_LIBRARIES)
+                ? window.TATOEBA_SENTENCE_LIBRARIES
+                    .filter(library => library && library.type === 'sentences' && Array.isArray(library.items))
+                : [];
+            return [primaryLibrary, ...extensions];
+        }
+
+        function getBuiltInLibrary(type, libraryId = '') {
+            const libraries = getBuiltInLibraries(type);
+            if (!libraryId) return libraries[0];
+            return libraries.find(library => library.id === libraryId) || libraries[0];
         }
 
         function renderLibraryShelf() {
             if (!libraryListEl) return;
-            const builtIn = getBuiltInLibrary(currentWorkspaceView);
-            if (!builtIn) return;
+            const builtInLibraries = getBuiltInLibraries(currentWorkspaceView);
+            if (!builtInLibraries.length) return;
             const remoteLibraries = currentWorkspaceView === 'words' ? remoteWordbooks : [];
             const libraries = [
-                builtIn,
+                ...builtInLibraries,
                 ...remoteLibraries,
                 ...customLibraries.filter(item => item.type === currentWorkspaceView)
             ];
             libraryListEl.innerHTML = '';
             libraryCountEl.textContent = `${libraries.length} 本`;
+            sentenceSourceNote.classList.toggle('hidden', currentWorkspaceView !== 'sentences');
 
             libraries.forEach(library => {
                 const button = document.createElement('button');
@@ -2550,7 +2578,7 @@
             }
 
             let library = libraryId.startsWith('builtin-')
-                ? getBuiltInLibrary(currentWorkspaceView)
+                ? getBuiltInLibrary(currentWorkspaceView, libraryId)
                 : customLibraries.find(item => item.id === libraryId && item.type === currentWorkspaceView)
                     || remoteWordbooks.find(item => item.id === libraryId && item.type === currentWorkspaceView);
             if (!library) return;
@@ -2597,7 +2625,8 @@
         }
 
         function setLibraryStorageScope(type, libraryId) {
-            const suffix = libraryId.startsWith('builtin-') ? '' : `:${libraryId}`;
+            const primaryBuiltInId = `builtin-${type}`;
+            const suffix = libraryId === primaryBuiltInId ? '' : `:${libraryId}`;
             if (type === 'words') {
                 CURRENT_INDEX_KEY = `cet4_current_index${suffix}`;
                 ORDER_KEY = `cet4_word_order${suffix}`;
@@ -2654,12 +2683,17 @@
                 const activeId = activeLibraryIds[type];
                 const custom = customLibraries.find(item => item.id === activeId && item.type === type);
                 const remote = remoteWordbooks.find(item => item.id === activeId && item.type === type);
+                const builtIn = typeof activeId === 'string' && activeId.startsWith('builtin-')
+                    ? getBuiltInLibrary(type, activeId)
+                    : null;
                 if (custom) {
                     applyLibraryData(custom);
                 } else if (remote) {
                     currentWorkspaceView = type;
                     await selectLibrary(remote.id);
-                } else if (typeof activeId !== 'string' || !activeId.startsWith('builtin-')) {
+                } else if (builtIn && builtIn.id === activeId && activeId !== `builtin-${type}`) {
+                    applyLibraryData(builtIn);
+                } else if (!builtIn || builtIn.id !== activeId) {
                     activeLibraryIds[type] = `builtin-${type}`;
                 }
             }
@@ -3221,6 +3255,23 @@
         // Format category key to readable label
         function formatPhraseCategory(key) {
             if (!key) return '';
+            const categoryLabels = {
+                greetingsSocial: '问候与社交',
+                dailyRoutine: '日常起居',
+                diningFood: '饮食与餐厅',
+                familyFriends: '家人与朋友',
+                foodDining: '饮食与餐厅',
+                shoppingMoney: '购物与消费',
+                travelTransport: '旅行与交通',
+                workBusiness: '工作与商务',
+                schoolStudy: '学校与学习',
+                healthWellness: '健康与休息',
+                weatherTime: '天气与时间',
+                technologyCommunication: '科技与沟通',
+                feelingsOpinions: '感受与观点',
+                generalConversation: '常用表达'
+            };
+            if (categoryLabels[key]) return categoryLabels[key];
             const spaced = key.replace(/([A-Z])/g, ' $1').trim();
             return spaced.charAt(0).toUpperCase() + spaced.slice(1);
         }
@@ -3642,7 +3693,8 @@
 
         function getActiveSentenceLibrary() {
             const libraryId = activeLibraryIds.sentences || 'builtin-sentences';
-            if (libraryId === 'builtin-sentences') return getBuiltInLibrary('sentences');
+            const builtIn = getBuiltInLibrary('sentences', libraryId);
+            if (builtIn && builtIn.id === libraryId) return builtIn;
             return customLibraries.find(item => item.id === libraryId && item.type === 'sentences')
                 || getBuiltInLibrary('sentences');
         }
