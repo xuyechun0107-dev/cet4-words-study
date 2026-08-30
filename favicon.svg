@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title">
+  <title id="title">Enplay</title>
+  <rect x="3" y="3" width="58" height="58" rx="18" fill="#17233c"/>
+  <path d="M18 33v-3c0-8 6.3-14 14-14s14 6 14 14v3" fill="none" stroke="#f6f8fc" stroke-width="5" stroke-linecap="round"/>
+  <rect x="15" y="30" width="9" height="15" rx="4.5" fill="#f6f8fc"/>
+  <rect x="40" y="30" width="9" height="15" rx="4.5" fill="#f6f8fc"/>
+</svg>
