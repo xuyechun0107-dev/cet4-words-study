@@ -1879,6 +1879,18 @@
     
     <!-- Main Script -->
     <script>
+        const HTML_ESCAPE_MAP = {
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#39;'
+        };
+
+        function escapeHtml(value) {
+            return String(value ?? '').replace(/[&<>"']/g, character => HTML_ESCAPE_MAP[character]);
+        }
+
         // DOM Elements
         const currentWordEl = document.getElementById('currentWord');
         const phoneticEl = document.getElementById('phonetic');
@@ -2979,7 +2991,10 @@
                 return;
             }
             searchResults.innerHTML = searchMatches.map((w) => {
-                return `<div class="px-3 py-2 hover:bg-gray-100 cursor-pointer focus:bg-gray-200" tabindex="0" data-word="${w.word.toLowerCase()}">${w.word} <span class="text-sm text-gray-500">${w.phonetic || ''}</span></div>`;
+                const word = escapeHtml(w.word);
+                const normalizedWord = escapeHtml(w.word.toLowerCase());
+                const phonetic = escapeHtml(w.phonetic || '');
+                return `<div class="px-3 py-2 hover:bg-gray-100 cursor-pointer focus:bg-gray-200" tabindex="0" data-word="${normalizedWord}">${word} <span class="text-sm text-gray-500">${phonetic}</span></div>`;
             }).join('');
             searchResults.classList.remove('hidden');
         }
@@ -4662,10 +4677,10 @@
                         listItem.innerHTML = `
                             <div class="flex items-start justify-between">
                                 <div>
-                                    <h3 class="font-semibold">${item.text}</h3>
-                                    <p class="text-xs text-gray-500 mt-1">${formatPhraseCategory(item.scene)}</p>
+                                    <h3 class="font-semibold">${escapeHtml(item.text)}</h3>
+                                    <p class="text-xs text-gray-500 mt-1">${escapeHtml(formatPhraseCategory(item.scene))}</p>
                                 </div>
-                                <button class="delete-phrase-btn text-red-500 hover:text-red-700 transition-all-300" data-date="${date}" data-key="${getPhraseKey(item.scene, item.idx)}">
+                                <button class="delete-phrase-btn text-red-500 hover:text-red-700 transition-all-300" data-date="${escapeHtml(date)}" data-key="${escapeHtml(getPhraseKey(item.scene, item.idx))}">
                                     <i class="fa fa-trash-o"></i>
                                 </button>
                             </div>
@@ -4706,12 +4721,12 @@
                         listItem.setAttribute('data-index', index);
                         listItem.innerHTML = `
                             <div class="flex items-start justify-between">
-                                <h3 class="font-semibold">${wordData.word} <span class="text-gray-500 text-sm">${wordData.phonetic}</span></h3>
-                                <button class="delete-word-btn text-red-500 hover:text-red-700 transition-all-300" data-date="${date}" data-index="${index}">
+                                <h3 class="font-semibold">${escapeHtml(wordData.word)} <span class="text-gray-500 text-sm">${escapeHtml(wordData.phonetic)}</span></h3>
+                                <button class="delete-word-btn text-red-500 hover:text-red-700 transition-all-300" data-date="${escapeHtml(date)}" data-index="${index}">
                                     <i class="fa fa-trash-o"></i>
                                 </button>
                             </div>
-                            <p class="text-sm text-gray-600 mt-1">${wordData.definition}</p>
+                            <p class="text-sm text-gray-600 mt-1">${escapeHtml(wordData.definition)}</p>
                         `;
 
                         listItem.addEventListener('click', function(e) {
@@ -4801,9 +4816,9 @@
                             listItem.className = 'p-3 bg-neutral rounded-lg hover:bg-gray-200 transition-all-300';
                             listItem.innerHTML = `
                                 <div class="flex items-start">
-                                    <h3 class="font-semibold">${wordData.word} <span class="text-gray-500 text-sm">${wordData.phonetic}</span></h3>
+                                    <h3 class="font-semibold">${escapeHtml(wordData.word)} <span class="text-gray-500 text-sm">${escapeHtml(wordData.phonetic)}</span></h3>
                                 </div>
-                                <p class="text-sm text-gray-600 mt-1">${wordData.definition}</p>
+                                <p class="text-sm text-gray-600 mt-1">${escapeHtml(wordData.definition)}</p>
                             `;
                             wordsContainer.appendChild(listItem);
                         });

@@ -1,10 +1,17 @@
+import hashlib
 import os
 import secrets
+import time
+from collections import defaultdict
 from collections.abc import Generator
+from typing import Annotated
 
-from fastapi import Depends, FastAPI, Header, HTTPException, Query, status
+from fastapi import Body, Depends, FastAPI, Header, HTTPException, Query, Request, Response, status
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.gzip import GZipMiddleware
+from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
+from starlette.middleware.trustedhost import TrustedHostMiddleware
 from pydantic import BaseModel, ConfigDict, Field
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -23,8 +30,25 @@ ALLOWED_ORIGINS = [
     if origin.strip()
 ]
 AUDIO_ROOT = os.getenv("AUDIO_ROOT", "/app/audio")
+ALLOWED_HOSTS = [
+    host.strip()
+    for host in os.getenv(
+        "ALLOWED_HOSTS", "api-enplay.ningboaoke.com,localhost,127.0.0.1"
+    ).split(",")
+    if host.strip()
+]
+MAX_BODY_BYTES = int(os.getenv("MAX_BODY_BYTES", str(5 * 1024 * 1024)))
+ENABLE_DOCS = os.getenv("ENABLE_DOCS", "false").lower() == "true"
 
-app = FastAPI(title=APP_NAME, version="0.1.0")
+app = FastAPI(
+    title=APP_NAME,
+    version="0.2.0",
+    docs_url="/docs" if ENABLE_DOCS else None,
+    redoc_url="/redoc" if ENABLE_DOCS else None,
+    openapi_url="/openapi.json" if ENABLE_DOCS else None,
+)
+app.add_middleware(GZipMiddleware, minimum_size=1000, compresslevel=5)
+app.add_middleware(TrustedHostMiddleware, allowed_hosts=ALLOWED_HOSTS)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=ALLOWED_ORIGINS,
@@ -32,6 +56,86 @@ app.add_middleware(
     allow_methods=["GET", "POST", "OPTIONS"],
     allow_headers=["Content-Type", "X-Admin-Token"],
 )
+
+RATE_LIMITS = {
+    "admin": (20, 60),
+    "wordbooks": (120, 60),
+    "audio": (600, 60),
+}
+rate_windows: dict[tuple[str, str], list[float | int]] = defaultdict(lambda: [0.0, 0])
+wordbook_cache: dict[str, tuple[bytes, str]] = {}
+
+
+def request_scope(path: str) -> str | None:
+    if path.startswith("/v1/admin/"):
+        return "admin"
+    if path.startswith("/v1/wordbooks"):
+        return "wordbooks"
+    if path.startswith("/audio/"):
+        return "audio"
+    return None
+
+
+@app.middleware("http")
+async def protect_api(request: Request, call_next):
+    content_length = request.headers.get("content-length")
+    if content_length:
+        try:
+            if int(content_length) > MAX_BODY_BYTES:
+                return JSONResponse(
+                    status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+                    content={"detail": "Request body is too large."},
+                )
+        except ValueError:
+            return JSONResponse(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                content={"detail": "Invalid Content-Length header."},
+            )
+
+    scope = request_scope(request.url.path)
+    if scope:
+        now = time.monotonic()
+        ip_address = request.headers.get("cf-connecting-ip")
+        if not ip_address:
+            ip_address = request.client.host if request.client else "unknown"
+        limit, window_seconds = RATE_LIMITS[scope]
+        window = rate_windows[(scope, ip_address)]
+        if now - float(window[0]) >= window_seconds:
+            window[:] = [now, 0]
+        window[1] = int(window[1]) + 1
+        if int(window[1]) > limit:
+            retry_after = max(1, int(window_seconds - (now - float(window[0]))))
+            return JSONResponse(
+                status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+                content={"detail": "Too many requests. Please try again later."},
+                headers={"Retry-After": str(retry_after)},
+            )
+        if len(rate_windows) > 50_000:
+            expired = [
+                key
+                for key, value in rate_windows.items()
+                if now - float(value[0]) >= RATE_LIMITS[key[0]][1]
+            ]
+            for key in expired:
+                rate_windows.pop(key, None)
+
+    response = await call_next(request)
+    response.headers["Strict-Transport-Security"] = "max-age=31536000"
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["Referrer-Policy"] = "no-referrer"
+    response.headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=()"
+    response.headers["Content-Security-Policy"] = "default-src 'none'; frame-ancestors 'none'"
+    if (
+        request.method == "GET"
+        and response.status_code == status.HTTP_200_OK
+        and request.url.path.startswith("/v1/wordbooks")
+    ):
+        response.headers["Cache-Control"] = (
+            "public, max-age=300, s-maxage=86400, stale-while-revalidate=604800"
+        )
+    return response
+
 app.mount("/audio", StaticFiles(directory=AUDIO_ROOT, check_dir=False), name="audio")
 
 
@@ -40,24 +144,24 @@ class WordPayload(BaseModel):
 
     text: str = Field(min_length=1, max_length=120)
     phonetic: str | None = Field(default=None, max_length=255)
-    definition: str = Field(min_length=1)
-    example: str | None = None
+    definition: str = Field(min_length=1, max_length=5000)
+    example: str | None = Field(default=None, max_length=5000)
 
 
 class SentencePayload(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     scene: str | None = Field(default=None, max_length=120)
-    text: str = Field(min_length=1)
-    translation: str | None = None
+    text: str = Field(min_length=1, max_length=5000)
+    translation: str | None = Field(default=None, max_length=10000)
 
 
 class ArticlePayload(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     title: str = Field(min_length=1, max_length=255)
-    content: str = Field(min_length=1)
-    translation: str | None = None
+    content: str = Field(min_length=1, max_length=200000)
+    translation: str | None = Field(default=None, max_length=200000)
     level: str | None = Field(default=None, max_length=32)
 
 
@@ -154,7 +258,18 @@ def list_wordbooks(db: Session = Depends(get_db)) -> list[Wordbook]:
 
 
 @app.get("/v1/wordbooks/{slug}", response_model=WordbookPayload)
-def get_wordbook(slug: str, db: Session = Depends(get_db)) -> dict[str, object]:
+def get_wordbook(
+    slug: str,
+    request: Request,
+    db: Session = Depends(get_db),
+) -> Response:
+    cached = wordbook_cache.get(slug)
+    if cached is not None:
+        payload, etag = cached
+        if request.headers.get("if-none-match") == etag:
+            return Response(status_code=status.HTTP_304_NOT_MODIFIED, headers={"ETag": etag})
+        return Response(content=payload, media_type="application/json", headers={"ETag": etag})
+
     wordbook = db.scalar(select(Wordbook).where(Wordbook.slug == slug))
     if wordbook is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Wordbook not found.")
@@ -165,7 +280,7 @@ def get_wordbook(slug: str, db: Session = Depends(get_db)) -> dict[str, object]:
             .order_by(WordbookEntry.rank, WordbookEntry.id)
         )
     )
-    return {
+    data = {
         "slug": wordbook.slug,
         "name": wordbook.name,
         "description": wordbook.description,
@@ -176,10 +291,17 @@ def get_wordbook(slug: str, db: Session = Depends(get_db)) -> dict[str, object]:
         "item_count": wordbook.item_count,
         "items": entries,
     }
+    payload = WordbookPayload.model_validate(data).model_dump_json().encode("utf-8")
+    etag = f'"{hashlib.sha256(payload).hexdigest()}"'
+    wordbook_cache[slug] = (payload, etag)
+    return Response(content=payload, media_type="application/json", headers={"ETag": etag})
 
 
 @app.post("/v1/admin/words", dependencies=[Depends(require_admin)])
-def import_words(items: list[WordPayload], db: Session = Depends(get_db)) -> dict[str, int]:
+def import_words(
+    items: Annotated[list[WordPayload], Body(min_length=1, max_length=1000)],
+    db: Session = Depends(get_db),
+) -> dict[str, int]:
     created = 0
     updated = 0
     for item in items:
@@ -198,7 +320,8 @@ def import_words(items: list[WordPayload], db: Session = Depends(get_db)) -> dic
 
 @app.post("/v1/admin/sentences", dependencies=[Depends(require_admin)])
 def import_sentences(
-    items: list[SentencePayload], db: Session = Depends(get_db)
+    items: Annotated[list[SentencePayload], Body(min_length=1, max_length=1000)],
+    db: Session = Depends(get_db),
 ) -> dict[str, int]:
     db.add_all(Sentence(**item.model_dump()) for item in items)
     db.commit()
@@ -206,7 +329,10 @@ def import_sentences(
 
 
 @app.post("/v1/admin/articles", dependencies=[Depends(require_admin)])
-def import_articles(items: list[ArticlePayload], db: Session = Depends(get_db)) -> dict[str, int]:
+def import_articles(
+    items: Annotated[list[ArticlePayload], Body(min_length=1, max_length=1000)],
+    db: Session = Depends(get_db),
+) -> dict[str, int]:
     db.add_all(Article(**item.model_dump()) for item in items)
     db.commit()
     return {"created": len(items)}
