@@ -1000,8 +1000,28 @@
             margin: 0;
         }
 
+        .sentence-player-footer {
+            display: grid;
+            grid-template-columns: 2.5rem minmax(0, 1fr) 2.5rem;
+            align-items: center;
+            gap: 0.75rem;
+            width: 100%;
+        }
+
+        .sentence-player-controls {
+            grid-column: 2;
+            justify-self: center;
+        }
+
+        .sentence-player-footer .card-fullscreen-toggle {
+            grid-column: 3;
+            justify-self: end;
+        }
+
         #currentWordCard:fullscreen,
-        #currentWordCard.is-immersive {
+        #currentWordCard.is-immersive,
+        #currentSentenceCard:fullscreen,
+        #currentSentenceCard.is-immersive {
             width: 100vw;
             max-width: none;
             height: 100vh;
@@ -1020,17 +1040,22 @@
         }
 
         #currentWordCard:fullscreen:hover,
-        #currentWordCard.is-immersive:hover {
+        #currentWordCard.is-immersive:hover,
+        #currentSentenceCard:fullscreen:hover,
+        #currentSentenceCard.is-immersive:hover {
             transform: none;
             box-shadow: none;
         }
 
-        #currentWordCard:fullscreen::backdrop {
+        #currentWordCard:fullscreen::backdrop,
+        #currentSentenceCard:fullscreen::backdrop {
             background: var(--paper);
         }
 
         #currentWordCard:fullscreen > :not(button),
-        #currentWordCard.is-immersive > :not(button) {
+        #currentWordCard.is-immersive > :not(button),
+        #currentSentenceCard:fullscreen > :not(button),
+        #currentSentenceCard.is-immersive > :not(button) {
             width: 100%;
         }
 
@@ -1062,20 +1087,45 @@
             line-height: 1.5;
         }
 
+        #currentSentenceCard:fullscreen h2,
+        #currentSentenceCard.is-immersive h2 {
+            font-size: clamp(1.5rem, 2.6vw, 2.2rem);
+        }
+
+        #currentSentenceCard:fullscreen #currentPhrase,
+        #currentSentenceCard.is-immersive #currentPhrase {
+            max-width: 32ch;
+            font-size: clamp(2.2rem, 5vw, 4.5rem);
+            line-height: 1.35;
+        }
+
+        #currentSentenceCard:fullscreen #currentPhraseNote,
+        #currentSentenceCard.is-immersive #currentPhraseNote {
+            max-width: 60ch;
+            font-size: clamp(1.25rem, 2.2vw, 2rem);
+            line-height: 1.55;
+        }
+
         #currentWordCard:fullscreen .notebook-toggle,
-        #currentWordCard.is-immersive .notebook-toggle {
+        #currentWordCard.is-immersive .notebook-toggle,
+        #currentSentenceCard:fullscreen .notebook-toggle,
+        #currentSentenceCard.is-immersive .notebook-toggle {
             top: 1.25rem;
             right: 1.25rem;
             transform: none;
         }
 
         #currentWordCard:fullscreen .notebook-toggle:hover,
-        #currentWordCard.is-immersive .notebook-toggle:hover {
+        #currentWordCard.is-immersive .notebook-toggle:hover,
+        #currentSentenceCard:fullscreen .notebook-toggle:hover,
+        #currentSentenceCard.is-immersive .notebook-toggle:hover {
             transform: scale(1.08);
         }
 
         #currentWordCard:fullscreen .card-fullscreen-toggle,
-        #currentWordCard.is-immersive .card-fullscreen-toggle {
+        #currentWordCard.is-immersive .card-fullscreen-toggle,
+        #currentSentenceCard:fullscreen .card-fullscreen-toggle,
+        #currentSentenceCard.is-immersive .card-fullscreen-toggle {
             position: absolute;
             right: 1.25rem;
             bottom: 1.25rem;
@@ -1085,13 +1135,15 @@
             overflow: hidden;
         }
 
-        #currentWordCard.is-immersive {
+        #currentWordCard.is-immersive,
+        #currentSentenceCard.is-immersive {
             position: fixed;
             inset: 0;
             z-index: 2000;
         }
 
-        #currentWordCard.is-immersive.is-landscape-fallback {
+        #currentWordCard.is-immersive.is-landscape-fallback,
+        #currentSentenceCard.is-immersive.is-landscape-fallback {
             top: 50%;
             left: 50%;
             width: 100vh;
@@ -1369,14 +1421,17 @@
             .control-panel,
             .library-shelf { position: static; }
             #currentWordCard:fullscreen,
-            #currentWordCard.is-immersive {
+            #currentWordCard.is-immersive,
+            #currentSentenceCard:fullscreen,
+            #currentSentenceCard.is-immersive {
                 padding:
                     max(2.5rem, env(safe-area-inset-top))
                     max(5rem, env(safe-area-inset-right))
                     max(2.5rem, env(safe-area-inset-bottom))
                     max(5rem, env(safe-area-inset-left)) !important;
             }
-            #currentWordCard.is-immersive.is-landscape-fallback {
+            #currentWordCard.is-immersive.is-landscape-fallback,
+            #currentSentenceCard.is-immersive.is-landscape-fallback {
                 padding:
                     max(4.5rem, env(safe-area-inset-top))
                     max(5rem, env(safe-area-inset-right))
@@ -1384,19 +1439,25 @@
                     max(5rem, env(safe-area-inset-left)) !important;
             }
             #currentWordCard:fullscreen .notebook-toggle,
-            #currentWordCard.is-immersive .notebook-toggle {
+            #currentWordCard.is-immersive .notebook-toggle,
+            #currentSentenceCard:fullscreen .notebook-toggle,
+            #currentSentenceCard.is-immersive .notebook-toggle {
                 top: max(2.5rem, env(safe-area-inset-top));
                 right: max(5rem, env(safe-area-inset-right));
             }
             #currentWordCard:fullscreen .card-fullscreen-toggle,
-            #currentWordCard.is-immersive .card-fullscreen-toggle {
+            #currentWordCard.is-immersive .card-fullscreen-toggle,
+            #currentSentenceCard:fullscreen .card-fullscreen-toggle,
+            #currentSentenceCard.is-immersive .card-fullscreen-toggle {
                 right: max(5rem, env(safe-area-inset-right));
                 bottom: max(2.5rem, env(safe-area-inset-bottom));
             }
-            #currentWordCard.is-immersive.is-landscape-fallback .notebook-toggle {
+            #currentWordCard.is-immersive.is-landscape-fallback .notebook-toggle,
+            #currentSentenceCard.is-immersive.is-landscape-fallback .notebook-toggle {
                 top: max(7rem, env(safe-area-inset-top));
             }
-            #currentWordCard.is-immersive.is-landscape-fallback .card-fullscreen-toggle {
+            #currentWordCard.is-immersive.is-landscape-fallback .card-fullscreen-toggle,
+            #currentSentenceCard.is-immersive.is-landscape-fallback .card-fullscreen-toggle {
                 bottom: max(7rem, env(safe-area-inset-bottom));
             }
         }
@@ -1757,15 +1818,20 @@
                 </div>
                 <p id="currentPhraseNote" class="text-sm text-gray-600 mt-2"></p>
             </div>
-            <div class="flex items-center justify-center gap-6 w-full">
-                <button id="phrasePrevBtn" class="control-btn prev-btn">
-                    <i class="fa fa-step-backward text-xl"></i>
-                </button>
-                <button id="phrasePlayBtn" class="control-btn play-btn">
-                    <i id="phrasePlayIcon" class="fa fa-play text-xl"></i>
-                </button>
-                <button id="phraseNextBtn" class="control-btn next-btn">
-                    <i class="fa fa-step-forward text-xl"></i>
+            <div class="sentence-player-footer">
+                <div class="sentence-player-controls flex items-center justify-center gap-6">
+                    <button id="phrasePrevBtn" class="control-btn prev-btn">
+                        <i class="fa fa-step-backward text-xl"></i>
+                    </button>
+                    <button id="phrasePlayBtn" class="control-btn play-btn">
+                        <i id="phrasePlayIcon" class="fa fa-play text-xl"></i>
+                    </button>
+                    <button id="phraseNextBtn" class="control-btn next-btn">
+                        <i class="fa fa-step-forward text-xl"></i>
+                    </button>
+                </div>
+                <button id="sentenceFullscreenBtn" class="card-fullscreen-toggle" type="button" aria-label="全屏查看句子" title="全屏查看" aria-pressed="false">
+                    <i id="sentenceFullscreenIcon" class="fa fa-expand" aria-hidden="true"></i>
                 </button>
             </div>
         </div>
@@ -2039,6 +2105,9 @@
         const currentWordCard = document.getElementById('currentWordCard');
         const wordFullscreenBtn = document.getElementById('wordFullscreenBtn');
         const wordFullscreenIcon = document.getElementById('wordFullscreenIcon');
+        const currentSentenceCard = document.getElementById('currentSentenceCard');
+        const sentenceFullscreenBtn = document.getElementById('sentenceFullscreenBtn');
+        const sentenceFullscreenIcon = document.getElementById('sentenceFullscreenIcon');
         const phraseNotebookToggle = document.getElementById('phraseNotebookToggle');
         const notebookOrb = document.getElementById('notebookOrb');
         const notebookCountEl = document.getElementById('notebookCount');
@@ -2122,10 +2191,11 @@
         let notebookEntryPlayCount = 0;
         let notebookRepeatTimer = null;
         let isWordCardFallbackFullscreen = false;
+        let isSentenceCardFallbackFullscreen = false;
         const builtInWordItems = cet4Words.map(item => ({ ...item }));
         const activeLibraryIds = loadActiveLibraryIds();
         const API_BASE_URL = 'https://api-enplay.ningboaoke.com';
-        const AUDIO_LIBRARY_VERSION = '20260830-full1';
+        const AUDIO_LIBRARY_VERSION = '20260830-loudness1';
         
         // Local Storage Keys
         let CURRENT_INDEX_KEY = 'cet4_current_index';
@@ -2194,11 +2264,12 @@
             wordSpeakBtn.addEventListener('click', speakCurrentWordOnce);
             wordNotebookToggle.addEventListener('click', toggleCurrentWordNotebook);
             wordFullscreenBtn.addEventListener('click', toggleWordCardFullscreen);
-            document.addEventListener('fullscreenchange', handleWordCardFullscreenChange);
-            document.addEventListener('webkitfullscreenchange', handleWordCardFullscreenChange);
-            document.addEventListener('keydown', handleWordCardFullscreenKeydown);
-            window.addEventListener('resize', syncWordCardFallbackOrientation);
-            window.addEventListener('orientationchange', syncWordCardFallbackOrientation);
+            sentenceFullscreenBtn.addEventListener('click', toggleSentenceCardFullscreen);
+            document.addEventListener('fullscreenchange', handleCardFullscreenChange);
+            document.addEventListener('webkitfullscreenchange', handleCardFullscreenChange);
+            document.addEventListener('keydown', handleCardFullscreenKeydown);
+            window.addEventListener('resize', syncCardFallbackOrientation);
+            window.addEventListener('orientationchange', syncCardFallbackOrientation);
             phraseNotebookToggle.addEventListener('click', toggleCurrentPhraseNotebook);
             notebookOrb.addEventListener('click', openVocabularyNotebook);
             notebookPlayWordsBtn.addEventListener('click', () => toggleVocabularyNotebookPlayback('word'));
@@ -2290,7 +2361,7 @@
         function exitWordCardFallback() {
             isWordCardFallbackFullscreen = false;
             currentWordCard.classList.remove('is-immersive', 'is-landscape-fallback');
-            document.body.classList.remove('word-card-immersive-open');
+            syncImmersiveBodyState();
         }
 
         async function requestWordCardNativeFullscreen() {
@@ -2367,23 +2438,124 @@
             }
         }
 
-        function handleWordCardFullscreenChange() {
-            const isNativeActive = getFullscreenElement() === currentWordCard;
-            if (!isNativeActive && !isWordCardFallbackFullscreen) {
-                unlockScreenOrientation();
-            }
-            updateWordFullscreenButton(isNativeActive || isWordCardFallbackFullscreen);
+        function isSentenceCardFullscreen() {
+            return sentenceFullscreenBtn.getAttribute('aria-pressed') === 'true'
+                || getFullscreenElement() === currentSentenceCard
+                || isSentenceCardFallbackFullscreen;
         }
 
-        function handleWordCardFullscreenKeydown(event) {
+        function updateSentenceFullscreenButton(isActive) {
+            sentenceFullscreenBtn.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+            sentenceFullscreenBtn.setAttribute('aria-label', isActive ? '退出句子全屏' : '全屏查看句子');
+            sentenceFullscreenBtn.title = isActive ? '退出全屏' : '全屏查看';
+            sentenceFullscreenIcon.classList.toggle('fa-expand', !isActive);
+            sentenceFullscreenIcon.classList.toggle('fa-compress', isActive);
+        }
+
+        function syncImmersiveBodyState() {
+            document.body.classList.toggle(
+                'word-card-immersive-open',
+                isWordCardFallbackFullscreen || isSentenceCardFallbackFullscreen
+            );
+        }
+
+        function enterSentenceCardFallback(rotateToLandscape = false) {
+            isSentenceCardFallbackFullscreen = true;
+            currentSentenceCard.classList.add('is-immersive');
+            currentSentenceCard.classList.toggle('is-landscape-fallback', rotateToLandscape);
+            syncImmersiveBodyState();
+            updateSentenceFullscreenButton(true);
+        }
+
+        function exitSentenceCardFallback() {
+            isSentenceCardFallbackFullscreen = false;
+            currentSentenceCard.classList.remove('is-immersive', 'is-landscape-fallback');
+            syncImmersiveBodyState();
+        }
+
+        async function requestSentenceCardNativeFullscreen() {
+            const request = currentSentenceCard.requestFullscreen || currentSentenceCard.webkitRequestFullscreen;
+            if (!request) throw new Error('Fullscreen API is unavailable');
+            await request.call(currentSentenceCard);
+        }
+
+        async function enterSentenceCardFullscreen() {
+            const needsLandscape = isCompactPortraitViewport();
+            const canLockOrientation = screen.orientation && typeof screen.orientation.lock === 'function';
+
+            if (needsLandscape && !canLockOrientation) {
+                enterSentenceCardFallback(true);
+                return;
+            }
+
+            try {
+                await requestSentenceCardNativeFullscreen();
+                if (getFullscreenElement() !== currentSentenceCard) {
+                    enterSentenceCardFallback(needsLandscape);
+                    return;
+                }
+                updateSentenceFullscreenButton(true);
+                if (needsLandscape && canLockOrientation) {
+                    try {
+                        await screen.orientation.lock('landscape');
+                    } catch (orientationError) {
+                        console.debug('Native landscape lock failed, using visual landscape mode:', orientationError);
+                        await exitNativeFullscreen();
+                        enterSentenceCardFallback(true);
+                    }
+                }
+            } catch (fullscreenError) {
+                console.debug('Native fullscreen failed, using page fullscreen mode:', fullscreenError);
+                enterSentenceCardFallback(needsLandscape);
+            }
+        }
+
+        async function exitSentenceCardFullscreen() {
+            if (isSentenceCardFallbackFullscreen) {
+                exitSentenceCardFallback();
+            } else {
+                await exitNativeFullscreen();
+            }
+            unlockScreenOrientation();
+            updateSentenceFullscreenButton(false);
+        }
+
+        async function toggleSentenceCardFullscreen() {
+            if (isSentenceCardFullscreen()) {
+                await exitSentenceCardFullscreen();
+            } else {
+                await enterSentenceCardFullscreen();
+            }
+        }
+
+        function handleCardFullscreenChange() {
+            const fullscreenElement = getFullscreenElement();
+            const isWordNativeActive = fullscreenElement === currentWordCard;
+            const isSentenceNativeActive = fullscreenElement === currentSentenceCard;
+            if (!isWordNativeActive && !isSentenceNativeActive
+                && !isWordCardFallbackFullscreen && !isSentenceCardFallbackFullscreen) {
+                unlockScreenOrientation();
+            }
+            updateWordFullscreenButton(isWordNativeActive || isWordCardFallbackFullscreen);
+            updateSentenceFullscreenButton(isSentenceNativeActive || isSentenceCardFallbackFullscreen);
+        }
+
+        function handleCardFullscreenKeydown(event) {
             if (event.key === 'Escape' && isWordCardFallbackFullscreen) {
                 exitWordCardFullscreen();
             }
+            if (event.key === 'Escape' && isSentenceCardFallbackFullscreen) {
+                exitSentenceCardFullscreen();
+            }
         }
 
-        function syncWordCardFallbackOrientation() {
-            if (!isWordCardFallbackFullscreen) return;
-            currentWordCard.classList.toggle('is-landscape-fallback', isCompactPortraitViewport());
+        function syncCardFallbackOrientation() {
+            if (isWordCardFallbackFullscreen) {
+                currentWordCard.classList.toggle('is-landscape-fallback', isCompactPortraitViewport());
+            }
+            if (isSentenceCardFallbackFullscreen) {
+                currentSentenceCard.classList.toggle('is-landscape-fallback', isCompactPortraitViewport());
+            }
         }
 
         function getViewFromHash() {
@@ -2398,6 +2570,13 @@
         function switchWorkspace(view, updateHash = true) {
             if (!['words', 'sentences', 'articles'].includes(view)) {
                 view = 'words';
+            }
+
+            if (view !== 'words' && isWordCardFullscreen()) {
+                exitWordCardFullscreen();
+            }
+            if (view !== 'sentences' && isSentenceCardFullscreen()) {
+                exitSentenceCardFullscreen();
             }
 
             if (!isNotebookPlaying && notebookDisplayedEntry) {

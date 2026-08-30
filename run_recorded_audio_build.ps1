@@ -14,6 +14,7 @@ $env:OMP_WAIT_POLICY = "PASSIVE"
 
 $python = (Get-Command python).Source
 $generator = Join-Path $Workspace "generate_recorded_audio.py"
+$normalizer = Join-Path $Workspace "normalize_recorded_audio.py"
 $model = Join-Path $BuildRoot "kokoro-v1.0.fp16.onnx"
 $voicesFile = Join-Path $BuildRoot "voices-v1.0.bin"
 $outputRoot = Join-Path $BuildRoot "output"
@@ -71,6 +72,12 @@ function Publish-Voice {
     $voiceRoot = Join-Path (Join-Path $outputRoot "v1") $Voice
     if (-not (Test-Path -LiteralPath $voiceRoot -PathType Container)) {
         throw "Generated voice directory is missing: $voiceRoot"
+    }
+
+    Write-BuildStatus "Normalizing $Voice before upload"
+    & $python $normalizer --root $voiceRoot --progress-every 250
+    if ($LASTEXITCODE -ne 0) {
+        throw "loudness normalization failed for $Voice"
     }
 
     Write-BuildStatus "Uploading $Voice to $RemoteHostName"

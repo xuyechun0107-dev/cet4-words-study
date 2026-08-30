@@ -18,6 +18,8 @@ from kokoro_onnx import Kokoro
 
 DEFAULT_API_BASE = "https://api-enplay.ningboaoke.com"
 DEFAULT_VOICES = ("af_heart", "af_bella", "bf_emma", "am_michael", "bm_george")
+TARGET_RMS_DB = -17.0
+PEAK_CEILING_DB = -1.5
 
 
 def normalize_text(value: object) -> str:
@@ -109,8 +111,46 @@ def output_path(root: Path, voice: str, text: str) -> Path:
     return root / "v1" / voice / digest[:2] / f"{digest}.mp3"
 
 
+def normalize_loudness(samples: np.ndarray) -> np.ndarray:
+    audio = np.asarray(samples, dtype=np.float32)
+    if audio.ndim > 1:
+        audio = np.mean(audio, axis=1)
+    if not audio.size:
+        return audio
+
+    rms = float(np.sqrt(np.mean(np.square(audio), dtype=np.float64)))
+    if rms <= 1e-8 or float(np.max(np.abs(audio))) <= 1e-8:
+        return audio
+
+    target_rms = 10 ** (TARGET_RMS_DB / 20)
+    peak_ceiling = 10 ** (PEAK_CEILING_DB / 20)
+
+    def limited(gain: float) -> np.ndarray:
+        return peak_ceiling * np.tanh((audio * gain) / peak_ceiling)
+
+    lower_gain = 0.0
+    upper_gain = max(target_rms / rms, 1.0)
+    while upper_gain < 64.0:
+        candidate = limited(upper_gain)
+        candidate_rms = float(np.sqrt(np.mean(np.square(candidate), dtype=np.float64)))
+        if candidate_rms >= target_rms:
+            break
+        upper_gain *= 2.0
+
+    for _ in range(18):
+        gain = (lower_gain + upper_gain) / 2.0
+        candidate = limited(gain)
+        candidate_rms = float(np.sqrt(np.mean(np.square(candidate), dtype=np.float64)))
+        if candidate_rms < target_rms:
+            lower_gain = gain
+        else:
+            upper_gain = gain
+
+    return limited(upper_gain)
+
+
 def encode_mp3(samples: np.ndarray, sample_rate: int) -> bytes:
-    pcm = np.clip(samples, -1.0, 1.0)
+    pcm = normalize_loudness(samples)
     pcm = (pcm * 32767).astype("<i2", copy=False)
     encoder = lameenc.Encoder()
     encoder.set_bit_rate(64)
