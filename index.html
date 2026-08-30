@@ -714,6 +714,54 @@
             font-weight: 700;
         }
 
+        .voice-help {
+            position: relative;
+            display: inline-flex;
+            width: fit-content;
+            align-items: center;
+            cursor: help;
+            outline: none;
+        }
+
+        .voice-help > label {
+            cursor: help;
+            text-decoration: underline dotted rgba(100, 116, 139, 0.58);
+            text-underline-offset: 0.22rem;
+        }
+
+        .voice-help:focus-visible {
+            border-radius: 0.25rem;
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.28);
+        }
+
+        .voice-tooltip {
+            position: absolute;
+            z-index: 40;
+            bottom: calc(100% + 0.55rem);
+            left: 0;
+            width: min(15rem, calc(100vw - 2rem));
+            padding: 0.65rem 0.75rem;
+            border: 1px solid rgba(148, 163, 184, 0.22);
+            border-radius: 0.7rem;
+            background: var(--ink);
+            box-shadow: 0 12px 28px rgba(23, 35, 61, 0.2);
+            color: oklch(97.5% 0.008 255);
+            font-size: 0.72rem;
+            font-weight: 500;
+            line-height: 1.55;
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(0.3rem);
+            transition: opacity 160ms ease-out, transform 160ms ease-out;
+        }
+
+        .voice-help:hover .voice-tooltip,
+        .voice-help:focus .voice-tooltip,
+        .voice-help:focus-within .voice-tooltip {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
         .voice-row select {
             width: 100%;
             min-width: 0;
@@ -1540,7 +1588,10 @@
             <fieldset class="voice-fields">
                 <legend>朗读声音</legend>
                 <div class="voice-row">
-                    <label for="recordedVoiceSelect">自然声音</label>
+                    <span class="voice-help" tabindex="0" aria-describedby="recordedVoiceHelp">
+                        <label for="recordedVoiceSelect">自然声音</label>
+                        <span id="recordedVoiceHelp" class="voice-tooltip" role="tooltip">还原真人音色的例句和句子朗读，需要消耗少量流量。</span>
+                    </span>
                     <select id="recordedVoiceSelect">
                         <option value="af_heart">Heart · 美式女声</option>
                         <option value="af_bella">Bella · 美式女声</option>
@@ -1548,7 +1599,10 @@
                     </select>
                 </div>
                 <div class="voice-row">
-                    <label for="systemVoiceSelect">系统回退</label>
+                    <span class="voice-help" tabindex="0" aria-describedby="systemVoiceHelp">
+                        <label for="systemVoiceSelect">系统回退</label>
+                        <span id="systemVoiceHelp" class="voice-tooltip" role="tooltip">单词和释义的朗读，以及网络不畅时本地播放。</span>
+                    </span>
                     <select id="systemVoiceSelect">
                         <option value="auto">系统自动选择</option>
                     </select>
