@@ -4428,11 +4428,7 @@
         function toggleNewWordsOnly() {
             console.log('New words only toggled:', newWordsOnlyCheckbox.checked);
             isNewWordsOnly = newWordsOnlyCheckbox.checked;
-            // Exit review mode if active
-            if (isReviewMode) {
-                exitReviewMode();
-            }
-            // Do not jump immediately; let the filter apply after current playback is done
+            // Keep the active queue intact. Apply the filter when normal playback advances.
             saveState();
         }
 
@@ -4452,18 +4448,17 @@
         }
 
         // Update repeat count from input
-        function updateRepeatCount() {
+        function updateRepeatCount(event) {
             const val = parseInt(repeatCountInput.value, 10);
             if (Number.isNaN(val) || val <= 0) {
-                alert('请输入大于 0 的重复次数');
-                repeatCountInput.value = playRepeatCount;
+                if (event && event.type === 'blur') {
+                    repeatCountInput.value = playRepeatCount;
+                }
                 return;
             }
             playRepeatCount = val;
             saveState();
-            stopPlayback();
-            console.log(`Set repeat count to ${playRepeatCount}, reloading to avoid overlapping speech`);
-            window.location.reload();
+            console.log(`Set repeat count to ${playRepeatCount}; active playback continues`);
         }
 
         // Speak only the current word once
@@ -4494,22 +4489,16 @@
             }
             playRate = val;
             saveState();
-            stopPlayback();
-            console.log(`Set speech rate to ${playRate}, reloading to avoid overlapping speech`);
-            window.location.reload();
+            console.log(`Set speech rate to ${playRate}; applying from the next spoken segment`);
         }
 
         function updateVoicePreferences() {
             recordedVoicePreference = recordedVoiceSelect.value || 'af_heart';
             systemVoicePreference = systemVoiceSelect.value || 'auto';
             saveState();
-            stopPlayback(true);
-            stopPhrasePlayback(true);
-            stopArticlePlayback();
-            stopVocabularyNotebookPlayback();
             console.log(
                 `Voice preferences set to recorded=${recordedVoicePreference}, `
-                + `fallback=${systemVoicePreference}`
+                + `fallback=${systemVoicePreference}; active playback continues`
             );
         }
 
