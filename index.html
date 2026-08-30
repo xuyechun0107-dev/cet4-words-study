@@ -422,7 +422,7 @@
             max-width: 96rem;
             margin: 0 auto;
             padding: 1.5rem;
-            overflow-x: hidden;
+            overflow-x: clip;
             display: grid;
             grid-template-columns: 13.5rem minmax(0, 1fr) 17.5rem;
             grid-template-areas: 'controls canvas shelf';
@@ -572,6 +572,259 @@
             color: var(--muted);
             font-size: 0.73rem;
             line-height: 1.5;
+        }
+
+        #articleReader {
+            width: min(100%, 58rem);
+        }
+
+        .article-reader-card {
+            overflow: visible;
+            border: 1px solid rgba(255, 255, 255, 0.96);
+            border-radius: 1.5rem;
+            background: rgba(255, 255, 255, 0.9);
+            box-shadow: 0 28px 80px rgba(31, 47, 81, 0.11);
+        }
+
+        .article-reader-header {
+            position: relative;
+            overflow: hidden;
+            padding: clamp(1.5rem, 4vw, 2.75rem);
+            border-bottom: 1px solid var(--line);
+            background:
+                radial-gradient(circle at 92% 8%, rgba(36, 87, 214, 0.12), transparent 32%),
+                linear-gradient(135deg, #f9fbff 0%, #eef4ff 100%);
+        }
+
+        .article-reader-header::after {
+            content: 'READ';
+            position: absolute;
+            right: 1.5rem;
+            bottom: -0.42em;
+            color: rgba(36, 87, 214, 0.045);
+            font-family: 'Newsreader', serif;
+            font-size: clamp(4.5rem, 12vw, 8rem);
+            font-weight: 800;
+            letter-spacing: -0.06em;
+            pointer-events: none;
+        }
+
+        .article-meta-row,
+        .article-meta-cluster {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 0.55rem;
+        }
+
+        .article-meta-row {
+            justify-content: space-between;
+        }
+
+        .article-meta-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            min-height: 1.75rem;
+            padding: 0.35rem 0.68rem;
+            border: 1px solid rgba(36, 87, 214, 0.14);
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.72);
+            color: #405174;
+            font-size: 0.72rem;
+            font-weight: 700;
+        }
+
+        .article-meta-chip.primary {
+            border-color: transparent;
+            background: var(--blue);
+            color: #fff;
+        }
+
+        .article-heading {
+            position: relative;
+            z-index: 1;
+            max-width: 44rem;
+            margin-top: 1.35rem;
+        }
+
+        .article-heading h1 {
+            font-family: 'Newsreader', 'Noto Sans SC', serif;
+            font-size: clamp(2.15rem, 5vw, 3.65rem);
+            font-weight: 750;
+            line-height: 0.98;
+            letter-spacing: -0.04em;
+        }
+
+        .article-title-zh {
+            margin-top: 0.6rem;
+            color: #52617e;
+            font-size: clamp(1rem, 2vw, 1.2rem);
+            font-weight: 700;
+        }
+
+        .article-summary {
+            position: relative;
+            z-index: 1;
+            max-width: 43rem;
+            margin-top: 1.2rem;
+            color: var(--muted);
+            font-size: 0.88rem;
+            line-height: 1.75;
+        }
+
+        .article-sentence-list {
+            padding: clamp(1rem, 3vw, 2rem);
+            counter-reset: article-sentence;
+        }
+
+        .article-sentence {
+            counter-increment: article-sentence;
+            display: grid;
+            grid-template-columns: 2.2rem minmax(0, 1fr) 2.45rem;
+            align-items: start;
+            gap: 0.85rem;
+            margin: 0;
+            padding: 1rem 0.85rem;
+            border-bottom: 1px solid rgba(221, 228, 240, 0.82);
+            border-radius: 0.9rem;
+            transition: background-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+        }
+
+        .article-sentence:last-child {
+            border-bottom-color: transparent;
+        }
+
+        .article-sentence::before {
+            content: counter(article-sentence, decimal-leading-zero);
+            padding-top: 0.2rem;
+            color: #9aa7bd;
+            font-family: 'Newsreader', serif;
+            font-size: 0.78rem;
+            font-weight: 700;
+            letter-spacing: 0.06em;
+        }
+
+        .article-sentence.is-current {
+            background: linear-gradient(90deg, rgba(36, 87, 214, 0.09), rgba(36, 87, 214, 0.025));
+            box-shadow: inset 3px 0 0 var(--blue);
+        }
+
+        .article-sentence.is-playing {
+            transform: translateX(0.18rem);
+            background: linear-gradient(90deg, rgba(36, 87, 214, 0.14), rgba(36, 87, 214, 0.035));
+        }
+
+        .article-sentence-en {
+            color: #182743;
+            font-family: 'Newsreader', 'Noto Sans SC', serif;
+            font-size: clamp(1.08rem, 2vw, 1.25rem);
+            font-weight: 600;
+            line-height: 1.58;
+        }
+
+        .article-sentence-zh {
+            margin-top: 0.42rem;
+            color: #69768d;
+            font-size: 0.84rem;
+            line-height: 1.7;
+        }
+
+        .article-sentence-play {
+            display: grid;
+            width: 2.35rem;
+            height: 2.35rem;
+            place-items: center;
+            border: 1px solid rgba(36, 87, 214, 0.15);
+            border-radius: 999px;
+            background: #fff;
+            color: var(--blue);
+            box-shadow: 0 6px 18px rgba(31, 47, 81, 0.08);
+            transition: transform 160ms ease, background-color 160ms ease, color 160ms ease;
+        }
+
+        .article-sentence-play:hover,
+        .article-sentence-play:focus-visible {
+            transform: translateY(-1px);
+            background: var(--blue);
+            color: #fff;
+            outline: none;
+        }
+
+        .article-transport {
+            position: sticky;
+            z-index: 8;
+            top: calc(5.15rem + env(safe-area-inset-top));
+            margin: 1rem clamp(1rem, 3vw, 2rem) 0;
+            padding: 0.85rem 1rem;
+            border: 1px solid rgba(255, 255, 255, 0.96);
+            border-radius: 1.05rem;
+            background: rgba(248, 251, 255, 0.93);
+            box-shadow: 0 16px 44px rgba(31, 47, 81, 0.14);
+            backdrop-filter: blur(18px);
+        }
+
+        .article-progress-meta {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            margin-bottom: 0.62rem;
+            color: #64728a;
+            font-size: 0.73rem;
+            font-weight: 700;
+        }
+
+        .article-progress-track {
+            overflow: hidden;
+            height: 0.24rem;
+            border-radius: 999px;
+            background: #dfe6f2;
+        }
+
+        .article-progress-fill {
+            width: 0;
+            height: 100%;
+            border-radius: inherit;
+            background: linear-gradient(90deg, var(--blue), #69a1ff);
+            transition: width 240ms ease;
+        }
+
+        .article-controls {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: clamp(0.45rem, 2vw, 1rem);
+            margin-top: 0.72rem;
+        }
+
+        .article-control-secondary {
+            display: grid;
+            width: 2.45rem;
+            height: 2.45rem;
+            place-items: center;
+            border: 1px solid rgba(31, 47, 81, 0.11);
+            border-radius: 999px;
+            background: #fff;
+            color: #5f6d83;
+            box-shadow: 0 5px 14px rgba(31, 47, 81, 0.07);
+        }
+
+        .article-control-secondary:hover,
+        .article-control-secondary:focus-visible {
+            border-color: rgba(36, 87, 214, 0.28);
+            color: var(--blue);
+            outline: none;
+        }
+
+        .article-control-label {
+            min-width: 3.4rem;
+            color: #718098;
+            font-size: 0.62rem;
+            font-weight: 700;
+            text-align: center;
         }
 
         .control-panel,
@@ -1476,6 +1729,21 @@
             .workspace-main { padding-top: 2rem; }
             .word-card { padding: 1.4rem !important; }
             .article-features { grid-template-columns: 1fr; }
+            .article-reader-header { padding: 1.35rem; }
+            .article-sentence-list { padding: 0.65rem; }
+            .article-sentence {
+                grid-template-columns: 1.65rem minmax(0, 1fr) 2.25rem;
+                gap: 0.5rem;
+                padding: 0.9rem 0.55rem;
+            }
+            .article-sentence-play { width: 2.2rem; height: 2.2rem; }
+            .article-transport {
+                top: calc(8.1rem + env(safe-area-inset-top));
+                margin: 0.65rem 0.65rem 0;
+                padding: 0.75rem;
+            }
+            .article-progress-meta { align-items: flex-start; padding-right: 3rem; }
+            .article-control-label { display: none; }
             .workspace-main {
                 grid-template-columns: 1fr;
                 grid-template-areas: 'canvas' 'controls' 'shelf';
@@ -1501,6 +1769,11 @@
             .nav-tab i { display: none; }
             .article-empty { padding: 2rem; }
             .section-title { font-size: 1.9rem; }
+            .article-meta-chip.topic-chip { display: none; }
+            .article-heading h1 { font-size: 2.15rem; }
+            .article-summary { font-size: 0.82rem; }
+            .article-sentence-en { font-size: 1.03rem; }
+            .article-sentence-zh { font-size: 0.8rem; }
         }
         
         @keyframes pulse {
@@ -1863,22 +2136,55 @@
                 </div>
             </div>
             <div id="articleReader" class="player-stage hidden">
-                <div class="word-card w-full p-8 animate-fade-in">
-                    <div class="flex items-start justify-between gap-4 mb-5">
-                        <div>
-                            <span id="articleLevel" class="eyebrow">Article</span>
-                            <h1 id="articleTitle" class="section-title mt-2">Untitled</h1>
+                <article class="article-reader-card animate-fade-in" aria-labelledby="articleTitle">
+                    <header class="article-reader-header">
+                        <div class="article-meta-row">
+                            <div class="article-meta-cluster">
+                                <span id="articleLevel" class="article-meta-chip primary">中考基础 · A2</span>
+                                <span id="articleGenre" class="article-meta-chip"><i class="fa fa-headphones" aria-hidden="true"></i>听力短文</span>
+                                <span id="articleTopic" class="article-meta-chip topic-chip">人与自我</span>
+                                <span id="articleWordCount" class="article-meta-chip">约 100 词</span>
+                            </div>
+                            <span id="articleIndex" class="article-meta-chip">1/12</span>
                         </div>
-                        <span id="articleIndex" class="bg-primary text-white px-3 py-1 rounded-full text-sm">1/1</span>
-                    </div>
-                    <div id="articleContent" class="text-gray-700 leading-8 whitespace-pre-wrap"></div>
-                    <div id="articleTranslation" class="mt-5 pt-5 border-t border-gray-200 text-gray-500 leading-7 whitespace-pre-wrap"></div>
-                    <div class="flex items-center justify-center gap-6 mt-8">
-                        <button id="articlePrevBtn" class="control-btn prev-btn" aria-label="上一篇"><i class="fa fa-step-backward"></i></button>
-                        <button id="articlePlayBtn" class="control-btn play-btn" aria-label="播放文章"><i id="articlePlayIcon" class="fa fa-play"></i></button>
-                        <button id="articleNextBtn" class="control-btn next-btn" aria-label="下一篇"><i class="fa fa-step-forward"></i></button>
-                    </div>
-                </div>
+                        <div class="article-heading">
+                            <h1 id="articleTitle">Untitled</h1>
+                            <p id="articleTitleZh" class="article-title-zh"></p>
+                        </div>
+                        <p id="articleSummary" class="article-summary"></p>
+                    </header>
+
+                    <footer class="article-transport" aria-label="文章播放控制">
+                        <div class="article-progress-meta">
+                            <span id="articlePlaybackStatus">准备播放 · 第 1 句</span>
+                            <span id="articleSentenceCount">1/1 句</span>
+                        </div>
+                        <div class="article-progress-track" aria-hidden="true">
+                            <div id="articleProgressFill" class="article-progress-fill"></div>
+                        </div>
+                        <div class="article-controls">
+                            <div>
+                                <button id="articlePrevBtn" class="article-control-secondary" type="button" aria-label="上一篇文章" title="上一篇文章"><i class="fa fa-angle-double-left" aria-hidden="true"></i></button>
+                                <div class="article-control-label">上一篇</div>
+                            </div>
+                            <div>
+                                <button id="articlePrevSentenceBtn" class="article-control-secondary" type="button" aria-label="上一句" title="上一句"><i class="fa fa-step-backward" aria-hidden="true"></i></button>
+                                <div class="article-control-label">上一句</div>
+                            </div>
+                            <button id="articlePlayBtn" class="control-btn play-btn" type="button" aria-label="播放全文" title="播放全文"><i id="articlePlayIcon" class="fa fa-play" aria-hidden="true"></i></button>
+                            <div>
+                                <button id="articleNextSentenceBtn" class="article-control-secondary" type="button" aria-label="下一句" title="下一句"><i class="fa fa-step-forward" aria-hidden="true"></i></button>
+                                <div class="article-control-label">下一句</div>
+                            </div>
+                            <div>
+                                <button id="articleNextBtn" class="article-control-secondary" type="button" aria-label="下一篇文章" title="下一篇文章"><i class="fa fa-angle-double-right" aria-hidden="true"></i></button>
+                                <div class="article-control-label">下一篇</div>
+                            </div>
+                        </div>
+                    </footer>
+
+                    <div id="articleSentenceList" class="article-sentence-list" aria-label="文章逐句对照"></div>
+                </article>
             </div>
         </section>
         </div>
@@ -1904,6 +2210,7 @@
                     <a href="https://tatoeba.org" target="_blank" rel="noopener noreferrer">Tatoeba</a>，采用
                     <a href="https://creativecommons.org/licenses/by/2.0/fr/" target="_blank" rel="noopener noreferrer">CC BY 2.0 FR</a>。
                 </p>
+                <p id="articleSourceNote" class="format-note hidden">分级文章为本站原创内容，依据中高考常见主题与能力要求编写，不复制历年真题原文。</p>
             </div>
         </aside>
     </main>
@@ -2014,6 +2321,7 @@
     <script src="words.js"></script>
     <script src="phrases_normalized.js"></script>
     <script src="sentences_tatoeba.js"></script>
+    <script src="articles_graded.js"></script>
     
     <!-- Main Script -->
     <script>
@@ -2079,6 +2387,7 @@
         const libraryListEl = document.getElementById('libraryList');
         const libraryCountEl = document.getElementById('libraryCount');
         const sentenceSourceNote = document.getElementById('sentenceSourceNote');
+        const articleSourceNote = document.getElementById('articleSourceNote');
         const uploadLibraryBtn = document.getElementById('uploadLibraryBtn');
         const uploadLibraryModal = document.getElementById('uploadLibraryModal');
         const closeUploadModalBtn = document.getElementById('closeUploadModal');
@@ -2093,12 +2402,21 @@
         const articleEmpty = document.getElementById('articleEmpty');
         const articleReader = document.getElementById('articleReader');
         const articleTitleEl = document.getElementById('articleTitle');
-        const articleContentEl = document.getElementById('articleContent');
-        const articleTranslationEl = document.getElementById('articleTranslation');
+        const articleTitleZhEl = document.getElementById('articleTitleZh');
+        const articleSummaryEl = document.getElementById('articleSummary');
+        const articleSentenceListEl = document.getElementById('articleSentenceList');
         const articleLevelEl = document.getElementById('articleLevel');
+        const articleGenreEl = document.getElementById('articleGenre');
+        const articleTopicEl = document.getElementById('articleTopic');
+        const articleWordCountEl = document.getElementById('articleWordCount');
         const articleIndexEl = document.getElementById('articleIndex');
+        const articlePlaybackStatusEl = document.getElementById('articlePlaybackStatus');
+        const articleSentenceCountEl = document.getElementById('articleSentenceCount');
+        const articleProgressFillEl = document.getElementById('articleProgressFill');
         const articlePrevBtn = document.getElementById('articlePrevBtn');
+        const articlePrevSentenceBtn = document.getElementById('articlePrevSentenceBtn');
         const articlePlayBtn = document.getElementById('articlePlayBtn');
+        const articleNextSentenceBtn = document.getElementById('articleNextSentenceBtn');
         const articleNextBtn = document.getElementById('articleNextBtn');
         const articlePlayIcon = document.getElementById('articlePlayIcon');
         const wordNotebookToggle = document.getElementById('wordNotebookToggle');
@@ -2170,6 +2488,10 @@
         let builtInPhraseItems = [];
         let articleList = [];
         let articleIndex = 0;
+        let articleSentenceIndex = 0;
+        let articleSentencePlayCount = 0;
+        let articlePlaybackMode = 'article';
+        let articlePlaybackCompleted = false;
         let isArticlePlaying = false;
         let speechSessionId = 0;
         let speechUtteranceId = 0;
@@ -2195,7 +2517,7 @@
         const builtInWordItems = cet4Words.map(item => ({ ...item }));
         const activeLibraryIds = loadActiveLibraryIds();
         const API_BASE_URL = 'https://api-enplay.ningboaoke.com';
-        const AUDIO_LIBRARY_VERSION = '20260830-loudness1';
+        const AUDIO_LIBRARY_VERSION = '20260830-articles1';
         
         // Local Storage Keys
         let CURRENT_INDEX_KEY = 'cet4_current_index';
@@ -2293,8 +2615,11 @@
             phraseNextBtn.addEventListener('click', goToNextPhrase);
             phrasePlayBtn.addEventListener('click', togglePhrasePlay);
             articlePrevBtn.addEventListener('click', goToPreviousArticle);
+            articlePrevSentenceBtn.addEventListener('click', () => moveArticleSentence(-1));
             articlePlayBtn.addEventListener('click', toggleArticlePlay);
+            articleNextSentenceBtn.addEventListener('click', () => moveArticleSentence(1));
             articleNextBtn.addEventListener('click', goToNextArticle);
+            articleSentenceListEl.addEventListener('click', handleArticleSentenceClick);
             uploadLibraryBtn.addEventListener('click', openUploadLibraryModal);
             closeUploadModalBtn.addEventListener('click', closeUploadLibraryModal);
             cancelUploadLibraryBtn.addEventListener('click', closeUploadLibraryModal);
@@ -2667,18 +2992,21 @@
                 articles: {
                     id: 'builtin-articles',
                     type: 'articles',
-                    name: '我的文章库',
-                    format: '内置',
-                    items: []
+                    name: '中高考分级文章全集',
+                    format: '原创 · 分级',
+                    description: '依据课程标准与中高考常见主题原创，含逐句翻译与自然音频。',
+                    items: Array.isArray(window.ALL_GRADED_ARTICLES) ? window.ALL_GRADED_ARTICLES : []
                 }
             };
             const primaryLibrary = primaryLibraries[type];
             if (!primaryLibrary) return [];
-            if (type !== 'sentences') return [primaryLibrary];
-            const extensions = Array.isArray(window.TATOEBA_SENTENCE_LIBRARIES)
+            const extensions = type === 'sentences' && Array.isArray(window.TATOEBA_SENTENCE_LIBRARIES)
                 ? window.TATOEBA_SENTENCE_LIBRARIES
                     .filter(library => library && library.type === 'sentences' && Array.isArray(library.items))
-                : [];
+                : type === 'articles' && Array.isArray(window.GRADED_ARTICLE_LIBRARIES)
+                    ? window.GRADED_ARTICLE_LIBRARIES
+                        .filter(library => library && library.type === 'articles' && Array.isArray(library.items))
+                    : [];
             return [primaryLibrary, ...extensions];
         }
 
@@ -2701,6 +3029,7 @@
             libraryListEl.innerHTML = '';
             libraryCountEl.textContent = `${libraries.length} 本`;
             sentenceSourceNote.classList.toggle('hidden', currentWorkspaceView !== 'sentences');
+            articleSourceNote.classList.toggle('hidden', currentWorkspaceView !== 'articles');
 
             libraries.forEach(library => {
                 const button = document.createElement('button');
@@ -2843,8 +3172,9 @@
                 updateTodaySentenceCount();
             } else {
                 stopArticlePlayback();
-                articleList = library.items.map(item => ({ ...item }));
+                articleList = normalizeLibraryItems(library.items || [], 'articles');
                 articleIndex = 0;
+                articleSentenceIndex = 0;
                 updateArticleCard();
                 if (currentWorkspaceView === 'articles') {
                     todayLearnedEl.textContent = `当前书库：${articleList.length} 篇`;
@@ -2872,15 +3202,19 @@
                 } else if (remote) {
                     currentWorkspaceView = type;
                     await selectLibrary(remote.id);
-                } else if (builtIn && builtIn.id === activeId && activeId !== `builtin-${type}`) {
-                    applyLibraryData(builtIn);
+                } else if (builtIn && builtIn.id === activeId) {
+                    if (activeId !== `builtin-${type}` || type === 'articles') {
+                        applyLibraryData(builtIn);
+                    }
                 } else if (!builtIn || builtIn.id !== activeId) {
                     activeLibraryIds[type] = `builtin-${type}`;
+                    if (type === 'articles') {
+                        applyLibraryData(getBuiltInLibrary(type));
+                    }
                 }
             }
-            currentWorkspaceView = getViewFromHash();
             localStorage.setItem('enplay_active_libraries', JSON.stringify(activeLibraryIds));
-            renderLibraryShelf();
+            switchWorkspace(getViewFromHash(), false);
         }
 
         async function loadRemoteWordbookCatalog() {
@@ -3122,12 +3456,62 @@
                     note: pick(item, ['translation', 'note', 'target', 'back'])
                 })).filter(item => item.text);
             }
-            return items.map(item => ({
-                title: pick(item, ['title', 'name']),
-                content: pick(item, ['content', 'text', 'body']),
-                translation: pick(item, ['translation', 'note']),
-                level: pick(item, ['level', 'difficulty']) || 'Article'
-            })).filter(item => item.title && item.content);
+            return items.map((item, index) => {
+                const content = pick(item, ['content', 'text', 'body']);
+                const translation = pick(item, ['translation', 'note']);
+                const providedSentences = Array.isArray(item && item.sentences)
+                    ? item.sentences.map(sentence => ({
+                        en: pick(sentence, ['en', 'english', 'text', 'sentence']),
+                        zh: pick(sentence, ['zh', 'chinese', 'translation', 'note'])
+                    })).filter(sentence => sentence.en)
+                    : [];
+                const englishSentences = providedSentences.length
+                    ? []
+                    : splitArticleText(content, 'en');
+                const chineseSentences = providedSentences.length
+                    ? []
+                    : splitArticleText(translation, 'zh');
+                const sentences = providedSentences.length
+                    ? providedSentences
+                    : englishSentences.map((sentence, sentenceIndex) => ({
+                        en: sentence,
+                        zh: chineseSentences[sentenceIndex] || ''
+                    }));
+                const title = pick(item, ['title', 'name']);
+                const computedWords = sentences
+                    .reduce((total, sentence) => total + (sentence.en.match(/[A-Za-z]+(?:['’-][A-Za-z]+)*/g) || []).length, 0);
+                return {
+                    id: pick(item, ['id', 'slug']) || `article-${index + 1}`,
+                    title,
+                    titleZh: pick(item, ['titleZh', 'title_zh', 'chineseTitle']),
+                    content: content || sentences.map(sentence => sentence.en).join(' '),
+                    translation: translation || sentences.map(sentence => sentence.zh).filter(Boolean).join(''),
+                    level: pick(item, ['level', 'difficulty']) || '文章',
+                    cefr: pick(item, ['cefr', 'cefrLevel']),
+                    genre: pick(item, ['genre', 'type']) || 'reading',
+                    topic: pick(item, ['topic', 'theme']),
+                    summary: pick(item, ['summary', 'description']),
+                    estimatedWords: Number(item && item.estimatedWords) || computedWords,
+                    sentences
+                };
+            }).filter(item => item.title && item.sentences.length);
+        }
+
+        function splitArticleText(text, language = 'en') {
+            const normalized = String(text || '').replace(/\r\n?/g, '\n').trim();
+            if (!normalized) return [];
+            const nonEmptyLines = normalized.split(/\n+/).map(line => line.trim()).filter(Boolean);
+            if (nonEmptyLines.length > 1) return nonEmptyLines;
+            if (typeof Intl !== 'undefined' && typeof Intl.Segmenter === 'function') {
+                const locale = language === 'zh' ? 'zh-CN' : 'en-US';
+                return Array.from(new Intl.Segmenter(locale, { granularity: 'sentence' }).segment(normalized))
+                    .map(part => part.segment.trim())
+                    .filter(Boolean);
+            }
+            const pattern = language === 'zh'
+                ? /[^。！？!?]+[。！？!?]?/g
+                : /[^.!?]+(?:[.!?]+[”"']?|$)/g;
+            return (normalized.match(pattern) || [normalized]).map(sentence => sentence.trim()).filter(Boolean);
         }
 
         function updateArticleCard() {
@@ -3137,17 +3521,105 @@
             if (!hasArticles) return;
             const article = articleList[articleIndex];
             articleTitleEl.textContent = article.title;
-            articleContentEl.textContent = article.content;
-            articleTranslationEl.textContent = article.translation || '';
-            articleTranslationEl.classList.toggle('hidden', !article.translation);
-            articleLevelEl.textContent = article.level || 'Article';
+            articleTitleZhEl.textContent = article.titleZh || '';
+            articleTitleZhEl.classList.toggle('hidden', !article.titleZh);
+            articleSummaryEl.textContent = article.summary || '逐句阅读、对照翻译，并跟随自然语音完成听读训练。';
+            const levelLabel = article.level || '分级文章';
+            articleLevelEl.textContent = article.cefr && !levelLabel.includes(article.cefr)
+                ? `${levelLabel} · ${article.cefr}`
+                : levelLabel;
+            const genre = getArticleGenreMeta(article.genre);
+            articleGenreEl.replaceChildren();
+            const genreIcon = document.createElement('i');
+            genreIcon.className = `fa ${genre.icon}`;
+            genreIcon.setAttribute('aria-hidden', 'true');
+            articleGenreEl.append(genreIcon, document.createTextNode(genre.label));
+            articleTopicEl.textContent = article.topic || '综合主题';
+            articleWordCountEl.textContent = `约 ${article.estimatedWords || 0} 词`;
             articleIndexEl.textContent = `${articleIndex + 1}/${articleList.length}`;
+            articleSentenceIndex = Math.min(articleSentenceIndex, Math.max(0, article.sentences.length - 1));
+            articlePlaybackCompleted = false;
+            renderArticleSentences(article);
+            updateArticleSentenceUi({ status: '准备播放', scroll: false });
+            articlePrevBtn.disabled = articleList.length < 2;
+            articleNextBtn.disabled = articleList.length < 2;
+            articlePrevSentenceBtn.disabled = article.sentences.length < 2;
+            articleNextSentenceBtn.disabled = article.sentences.length < 2;
+        }
+
+        function getArticleGenreMeta(value) {
+            const normalized = String(value || '').toLowerCase();
+            if (normalized === 'listening' || normalized.includes('听力')) {
+                return { label: '听力短文', icon: 'fa-headphones' };
+            }
+            return { label: '阅读理解', icon: 'fa-book' };
+        }
+
+        function renderArticleSentences(article) {
+            articleSentenceListEl.replaceChildren();
+            article.sentences.forEach((sentence, sentenceIndex) => {
+                const row = document.createElement('section');
+                row.className = 'article-sentence';
+                row.dataset.articleSentenceIndex = String(sentenceIndex);
+
+                const copy = document.createElement('div');
+                const english = document.createElement('p');
+                english.className = 'article-sentence-en';
+                english.textContent = sentence.en;
+                const chinese = document.createElement('p');
+                chinese.className = 'article-sentence-zh';
+                chinese.textContent = sentence.zh || '暂无对应翻译';
+                copy.append(english, chinese);
+
+                const play = document.createElement('button');
+                play.type = 'button';
+                play.className = 'article-sentence-play';
+                play.dataset.articleSentencePlay = String(sentenceIndex);
+                play.setAttribute('aria-label', `播放第 ${sentenceIndex + 1} 句`);
+                play.title = '播放本句';
+                const icon = document.createElement('i');
+                icon.className = 'fa fa-volume-up';
+                icon.setAttribute('aria-hidden', 'true');
+                play.appendChild(icon);
+
+                row.append(copy, play);
+                articleSentenceListEl.appendChild(row);
+            });
+        }
+
+        function updateArticleSentenceUi({ status = '', scroll = false } = {}) {
+            const article = articleList[articleIndex];
+            const sentenceCount = article && Array.isArray(article.sentences) ? article.sentences.length : 0;
+            const rows = Array.from(articleSentenceListEl.querySelectorAll('.article-sentence'));
+            rows.forEach((row, rowIndex) => {
+                row.classList.toggle('is-current', rowIndex === articleSentenceIndex);
+                row.classList.toggle('is-playing', isArticlePlaying && rowIndex === articleSentenceIndex);
+            });
+            const currentNumber = sentenceCount ? articleSentenceIndex + 1 : 0;
+            articleSentenceCountEl.textContent = `${currentNumber}/${sentenceCount} 句`;
+            articlePlaybackStatusEl.textContent = `${status || (isArticlePlaying ? '正在朗读' : '准备播放')} · 第 ${currentNumber} 句`;
+            articleProgressFillEl.style.width = sentenceCount ? `${(currentNumber / sentenceCount) * 100}%` : '0%';
+            if (scroll && rows[articleSentenceIndex]) {
+                rows[articleSentenceIndex].scrollIntoView({
+                    behavior: document.hidden ? 'auto' : 'smooth',
+                    block: 'center'
+                });
+            }
+        }
+
+        function handleArticleSentenceClick(event) {
+            const playButton = event.target.closest('[data-article-sentence-play]');
+            if (!playButton) return;
+            const sentenceIndex = Number(playButton.dataset.articleSentencePlay);
+            if (!Number.isInteger(sentenceIndex)) return;
+            startArticlePlayback(sentenceIndex, 'single');
         }
 
         function goToPreviousArticle() {
             stopArticlePlayback();
             if (!articleList.length) return;
             articleIndex = (articleIndex - 1 + articleList.length) % articleList.length;
+            articleSentenceIndex = 0;
             updateArticleCard();
         }
 
@@ -3155,7 +3627,19 @@
             stopArticlePlayback();
             if (!articleList.length) return;
             articleIndex = (articleIndex + 1) % articleList.length;
+            articleSentenceIndex = 0;
             updateArticleCard();
+        }
+
+        function moveArticleSentence(direction) {
+            const article = articleList[articleIndex];
+            if (!article || !article.sentences.length) return;
+            const shouldResume = isArticlePlaying && articlePlaybackMode === 'article';
+            stopArticlePlayback();
+            articlePlaybackCompleted = false;
+            articleSentenceIndex = (articleSentenceIndex + direction + article.sentences.length) % article.sentences.length;
+            updateArticleSentenceUi({ status: shouldResume ? '正在切换' : '准备播放', scroll: true });
+            if (shouldResume) startArticlePlayback(articleSentenceIndex, 'article');
         }
 
         function toggleArticlePlay() {
@@ -3163,25 +3647,86 @@
                 stopArticlePlayback();
                 return;
             }
-            if (!articleList.length || !isSpeechAvailable) return;
-            stopArticlePlayback();
+            if (!articleList.length) return;
+            if (articlePlaybackCompleted) articleSentenceIndex = 0;
+            startArticlePlayback(articleSentenceIndex, 'article');
+        }
+
+        function startArticlePlayback(startIndex = 0, mode = 'article') {
+            const article = articleList[articleIndex];
+            if (!article || !article.sentences.length) return;
             stopPlayback();
             stopPhrasePlayback();
             stopVocabularyNotebookPlayback();
+            cancelSpeechSession();
+            articleSentenceIndex = Math.max(0, Math.min(startIndex, article.sentences.length - 1));
+            articleSentencePlayCount = 0;
+            articlePlaybackMode = mode;
+            articlePlaybackCompleted = false;
             isArticlePlaying = true;
             articlePlayIcon.classList.replace('fa-play', 'fa-pause');
+            articlePlayBtn.setAttribute('aria-label', '暂停文章');
+            articlePlayBtn.title = '暂停文章';
+            playCurrentArticleSentence();
+        }
+
+        function playCurrentArticleSentence() {
+            if (!isArticlePlaying) return;
             const article = articleList[articleIndex];
-            playTextWithHighlight(article.title, articleTitleEl, () => {
-                playTextWithHighlight(article.content, articleContentEl, stopArticlePlayback);
+            const sentence = article && article.sentences[articleSentenceIndex];
+            if (!sentence) {
+                finishArticlePlayback();
+                return;
+            }
+            updateArticleSentenceUi({ status: '正在朗读', scroll: true });
+            const row = articleSentenceListEl.querySelector(`[data-article-sentence-index="${articleSentenceIndex}"]`);
+            const english = row && row.querySelector('.article-sentence-en');
+            playTextWithHighlight(sentence.en, english || articleTitleEl, () => {
+                if (!isArticlePlaying) return;
+                articleSentencePlayCount += 1;
+                if (articleSentencePlayCount < playRepeatCount) {
+                    playCurrentArticleSentence();
+                    return;
+                }
+                articleSentencePlayCount = 0;
+                if (articlePlaybackMode === 'single') {
+                    stopArticlePlayback({ status: '本句播放完成' });
+                    return;
+                }
+                if (articleSentenceIndex < article.sentences.length - 1) {
+                    articleSentenceIndex += 1;
+                    playCurrentArticleSentence();
+                    return;
+                }
+                finishArticlePlayback();
+            }, {
+                recorded: true,
+                onUnavailable: () => stopArticlePlayback({ status: '暂无可用语音，请检查网络或系统语音' })
             });
         }
 
-        function stopArticlePlayback() {
+        function finishArticlePlayback() {
+            if (articlePlaybackMode === 'article' && isAutoPlaying && articleList.length > 1) {
+                articleIndex = (articleIndex + 1) % articleList.length;
+                articleSentenceIndex = 0;
+                updateArticleCard();
+                playCurrentArticleSentence();
+                return;
+            }
+            articlePlaybackCompleted = true;
+            stopArticlePlayback({ status: '全文播放完成' });
+        }
+
+        function stopArticlePlayback({ status = '已暂停' } = {}) {
             if (isNotebookPlaying) stopVocabularyNotebookPlayback();
             isArticlePlaying = false;
+            articleSentencePlayCount = 0;
             articlePlayIcon.classList.remove('fa-pause');
             articlePlayIcon.classList.add('fa-play');
+            articlePlayBtn.setAttribute('aria-label', '播放全文');
+            articlePlayBtn.title = '播放全文';
             cancelSpeechSession();
+            if (articleList.length) updateArticleSentenceUi({ status, scroll: false });
         }
 
         function isPlaybackSessionActive() {
@@ -4578,6 +5123,15 @@
                 }, delay);
             };
 
+            const handleUnavailable = () => {
+                element.classList.remove('speaking');
+                if (typeof options.onUnavailable === 'function') {
+                    options.onUnavailable();
+                } else {
+                    runCallback();
+                }
+            };
+
             if (!text || !String(text).trim()) {
                 element.classList.remove('speaking');
                 runCallback();
@@ -4595,15 +5149,14 @@
 
             if (!isSpeechAvailable && !useRecordedAudio) {
                 console.log('Speech synthesis not available');
-                runCallback();
+                handleUnavailable();
                 return;
             }
 
             const speakWithSystemVoice = () => {
                 if (!isCurrentSpeech()) return;
                 if (!isSpeechAvailable) {
-                    element.classList.remove('speaking');
-                    runCallback();
+                    handleUnavailable();
                     return;
                 }
                 try {
@@ -4761,10 +5314,10 @@
                 exampleEl,
                 currentPhraseEl,
                 articleTitleEl,
-                articleContentEl,
                 notebookPlayWordsBtn,
                 notebookPlaySentencesBtn
             ].forEach(element => element && element.classList.remove('speaking'));
+            articleSentenceListEl.querySelectorAll('.speaking').forEach(element => element.classList.remove('speaking'));
         }
         
         // Toggle word loop

@@ -1,4 +1,4 @@
-"""Generate content-addressed Kokoro MP3 clips for Enplay examples and sentences."""
+"""Generate content-addressed Kokoro MP3 clips for Enplay learning content."""
 
 from __future__ import annotations
 
@@ -27,6 +27,149 @@ def normalize_text(value: object) -> str:
     return re.sub(r"\s+", " ", text).strip()
 
 
+def extract_array_fragment(source: str, array_start: int) -> str:
+    depth = 0
+    quote = ""
+    escaped = False
+    in_line_comment = False
+    in_block_comment = False
+    index = array_start
+    while index < len(source):
+        character = source[index]
+        following = source[index + 1] if index + 1 < len(source) else ""
+
+        if in_line_comment:
+            if character in "\r\n":
+                in_line_comment = False
+            index += 1
+            continue
+        if in_block_comment:
+            if character == "*" and following == "/":
+                in_block_comment = False
+                index += 2
+            else:
+                index += 1
+            continue
+        if quote:
+            if escaped:
+                escaped = False
+            elif character == "\\":
+                escaped = True
+            elif character == quote:
+                quote = ""
+            index += 1
+            continue
+        if character in {'"', "'", "`"}:
+            quote = character
+            index += 1
+            continue
+        if character == "/" and following == "/":
+            in_line_comment = True
+            index += 2
+            continue
+        if character == "/" and following == "*":
+            in_block_comment = True
+            index += 2
+            continue
+        if character == "[":
+            depth += 1
+        elif character == "]":
+            depth -= 1
+            if depth == 0:
+                return source[array_start : index + 1]
+        index += 1
+    raise ValueError("JavaScript array is not closed")
+
+
+def strip_js_comments(source: str) -> str:
+    output: list[str] = []
+    quote = ""
+    escaped = False
+    index = 0
+    while index < len(source):
+        character = source[index]
+        following = source[index + 1] if index + 1 < len(source) else ""
+        if quote:
+            output.append(character)
+            if escaped:
+                escaped = False
+            elif character == "\\":
+                escaped = True
+            elif character == quote:
+                quote = ""
+            index += 1
+            continue
+        if character in {'"', "'", "`"}:
+            quote = character
+            output.append(character)
+            index += 1
+            continue
+        if character == "/" and following == "/":
+            index += 2
+            while index < len(source) and source[index] not in "\r\n":
+                index += 1
+            continue
+        if character == "/" and following == "*":
+            index += 2
+            while index + 1 < len(source) and source[index : index + 2] != "*/":
+                if source[index] in "\r\n":
+                    output.append(source[index])
+                index += 1
+            index += 2
+            continue
+        output.append(character)
+        index += 1
+    return "".join(output)
+
+
+def normalize_js_object_array(source: str) -> str:
+    source = strip_js_comments(source)
+    output: list[str] = []
+    quote = ""
+    escaped = False
+    index = 0
+    while index < len(source):
+        character = source[index]
+        if quote:
+            output.append(character)
+            if escaped:
+                escaped = False
+            elif character == "\\":
+                escaped = True
+            elif character == quote:
+                quote = ""
+            index += 1
+            continue
+        if character in {'"', "'", "`"}:
+            quote = character
+            output.append(character)
+            index += 1
+            continue
+        if character.isalpha() or character in "_$":
+            identifier_start = index
+            index += 1
+            while index < len(source) and (
+                source[index].isalnum() or source[index] in "_$"
+            ):
+                index += 1
+            identifier = source[identifier_start:index]
+            following = index
+            while following < len(source) and source[following].isspace():
+                following += 1
+            output.append(json.dumps(identifier) if source[following:following + 1] == ":" else identifier)
+            continue
+        if character == ",":
+            following = index + 1
+            while following < len(source) and source[following].isspace():
+                following += 1
+            if source[following:following + 1] in {"}", "]"}:
+                index += 1
+                continue
+        output.append(character)
+        index += 1
+    return "".join(output)
+
+
 def extract_json_array(path: Path, variable_name: str) -> list[dict[str, object]]:
     source = path.read_text(encoding="utf-8")
     marker = re.search(rf"\bconst\s+{re.escape(variable_name)}\s*=", source)
@@ -35,7 +178,11 @@ def extract_json_array(path: Path, variable_name: str) -> list[dict[str, object]
     start = marker.end()
     array_start = source.index("[", start)
     decoder = json.JSONDecoder()
-    value, _ = decoder.raw_decode(source[array_start:])
+    try:
+        value, _ = decoder.raw_decode(source[array_start:])
+    except json.JSONDecodeError:
+        fragment = extract_array_fragment(source, array_start)
+        value = json.loads(normalize_js_object_array(fragment))
     if not isinstance(value, list):
         raise ValueError(f"{path} does not contain an array named {variable_name}")
     return value
@@ -60,9 +207,27 @@ def collect_tatoeba_texts(workspace: Path) -> list[str]:
     return list(texts)
 
 
+def collect_article_texts(workspace: Path) -> list[str]:
+    texts: dict[str, None] = {}
+    articles_path = workspace / "articles_graded.js"
+    if not articles_path.exists():
+        return []
+    for library in extract_json_array(articles_path, "gradedArticleLibraries"):
+        for article in library.get("items", []):
+            for sentence in article.get("sentences", []):
+                english = normalize_text(
+                    sentence.get("en") if isinstance(sentence, dict) else sentence
+                )
+                if english:
+                    texts.setdefault(english, None)
+    return list(texts)
+
+
 def collect_texts(workspace: Path, api_base: str, source_mode: str = "all") -> list[str]:
     if source_mode == "tatoeba":
         return collect_tatoeba_texts(workspace)
+    if source_mode == "articles":
+        return collect_article_texts(workspace)
 
     texts: dict[str, None] = {}
 
@@ -77,6 +242,9 @@ def collect_texts(workspace: Path, api_base: str, source_mode: str = "all") -> l
             texts.setdefault(sentence, None)
 
     for sentence in collect_tatoeba_texts(workspace):
+        texts.setdefault(sentence, None)
+
+    for sentence in collect_article_texts(workspace):
         texts.setdefault(sentence, None)
 
     catalog = fetch_json(f"{api_base.rstrip('/')}/v1/wordbooks")
@@ -172,7 +340,9 @@ def main() -> None:
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--api-base", default=DEFAULT_API_BASE)
     parser.add_argument("--voices", nargs="+", default=list(DEFAULT_VOICES))
-    parser.add_argument("--source-mode", choices=("all", "tatoeba"), default="all")
+    parser.add_argument(
+        "--source-mode", choices=("all", "tatoeba", "articles"), default="all"
+    )
     parser.add_argument("--shard-count", type=int, default=1)
     parser.add_argument("--shard-index", type=int, default=0)
     parser.add_argument("--limit", type=int, default=0)
