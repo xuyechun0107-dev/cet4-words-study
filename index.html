@@ -623,6 +623,13 @@
             justify-content: space-between;
         }
 
+        .article-control-secondary.article-fullscreen-toggle {
+            width: 2.75rem;
+            height: 2.75rem;
+            border-radius: 999px;
+            font-size: 0.78rem;
+        }
+
         .article-meta-chip {
             display: inline-flex;
             align-items: center;
@@ -825,6 +832,229 @@
             font-size: 0.62rem;
             font-weight: 700;
             text-align: center;
+        }
+
+        #articleReaderCard:fullscreen,
+        #articleReaderCard.is-immersive {
+            position: fixed;
+            inset: 0;
+            z-index: 2000;
+            display: grid;
+            grid-template-rows: auto minmax(0, 1fr) auto;
+            width: 100vw;
+            max-width: none;
+            height: 100vh;
+            height: 100dvh;
+            max-height: none;
+            margin: 0;
+            border: 0;
+            border-radius: 0;
+            overflow: hidden;
+            background:
+                radial-gradient(circle at 16% 12%, rgba(36, 87, 214, 0.12), transparent 30rem),
+                radial-gradient(circle at 86% 84%, rgba(10, 174, 134, 0.08), transparent 27rem),
+                #f5f8fd;
+            box-shadow: none;
+        }
+
+        #articleReaderCard:fullscreen::backdrop {
+            background: #f5f8fd;
+        }
+
+        #articleReaderCard:fullscreen .article-reader-header,
+        #articleReaderCard.is-immersive .article-reader-header {
+            grid-row: 1;
+            padding:
+                max(0.85rem, env(safe-area-inset-top))
+                max(clamp(1rem, 4vw, 3rem), env(safe-area-inset-right))
+                0.8rem
+                max(clamp(1rem, 4vw, 3rem), env(safe-area-inset-left));
+            border-bottom-color: rgba(36, 87, 214, 0.1);
+            background: rgba(248, 251, 255, 0.82);
+            backdrop-filter: blur(18px);
+        }
+
+        #articleReaderCard:fullscreen .article-reader-header::after,
+        #articleReaderCard.is-immersive .article-reader-header::after,
+        #articleReaderCard:fullscreen .article-summary,
+        #articleReaderCard.is-immersive .article-summary {
+            display: none;
+        }
+
+        #articleReaderCard:fullscreen .article-heading,
+        #articleReaderCard.is-immersive .article-heading {
+            display: flex;
+            align-items: baseline;
+            gap: 0.8rem;
+            max-width: none;
+            margin-top: 0.65rem;
+        }
+
+        #articleReaderCard:fullscreen .article-heading h1,
+        #articleReaderCard.is-immersive .article-heading h1 {
+            font-size: clamp(1.35rem, 2.4vw, 2rem);
+            line-height: 1.05;
+        }
+
+        #articleReaderCard:fullscreen .article-title-zh,
+        #articleReaderCard.is-immersive .article-title-zh {
+            margin-top: 0;
+            font-size: clamp(0.78rem, 1.4vw, 1rem);
+        }
+
+        #articleReaderCard:fullscreen .article-sentence-list,
+        #articleReaderCard.is-immersive .article-sentence-list {
+            grid-row: 2;
+            min-height: 0;
+            padding:
+                max(34vh, 10rem)
+                max(clamp(1.5rem, 8vw, 9rem), env(safe-area-inset-right))
+                max(34vh, 10rem)
+                max(clamp(1.5rem, 8vw, 9rem), env(safe-area-inset-left));
+            overflow-x: hidden;
+            overflow-y: auto;
+            overscroll-behavior: contain;
+            scroll-behavior: smooth;
+            scroll-padding-block: 35vh;
+            scroll-snap-type: y proximity;
+            scrollbar-width: none;
+            -webkit-mask-image: linear-gradient(
+                to bottom,
+                transparent 0%,
+                rgba(0, 0, 0, 0.08) 9%,
+                #000 25%,
+                #000 75%,
+                rgba(0, 0, 0, 0.08) 91%,
+                transparent 100%
+            );
+            mask-image: linear-gradient(
+                to bottom,
+                transparent 0%,
+                rgba(0, 0, 0, 0.08) 9%,
+                #000 25%,
+                #000 75%,
+                rgba(0, 0, 0, 0.08) 91%,
+                transparent 100%
+            );
+        }
+
+        #articleReaderCard:fullscreen .article-sentence-list::-webkit-scrollbar,
+        #articleReaderCard.is-immersive .article-sentence-list::-webkit-scrollbar {
+            display: none;
+        }
+
+        #articleReaderCard:fullscreen .article-sentence,
+        #articleReaderCard.is-immersive .article-sentence {
+            grid-template-columns: minmax(0, 1fr);
+            align-items: center;
+            width: min(100%, 66rem);
+            min-height: clamp(7.5rem, 18vh, 11.5rem);
+            margin-inline: auto;
+            padding: clamp(1rem, 2vw, 1.75rem) 0;
+            border: 0;
+            border-radius: 0;
+            opacity: 0.08;
+            transform: translateY(0) scale(0.965);
+            filter: saturate(0.7);
+            scroll-snap-align: center;
+            transition:
+                opacity 460ms ease,
+                transform 460ms cubic-bezier(0.2, 0.75, 0.2, 1),
+                filter 460ms ease;
+        }
+
+        #articleReaderCard:fullscreen .article-sentence::before,
+        #articleReaderCard.is-immersive .article-sentence::before,
+        #articleReaderCard:fullscreen .article-sentence-play,
+        #articleReaderCard.is-immersive .article-sentence-play {
+            display: none;
+        }
+
+        #articleReaderCard:fullscreen .article-sentence.is-before,
+        #articleReaderCard.is-immersive .article-sentence.is-before {
+            transform: translateY(-0.45rem) scale(0.965);
+        }
+
+        #articleReaderCard:fullscreen .article-sentence.is-after,
+        #articleReaderCard.is-immersive .article-sentence.is-after {
+            transform: translateY(0.45rem) scale(0.965);
+        }
+
+        #articleReaderCard:fullscreen .article-sentence.is-distance-2,
+        #articleReaderCard.is-immersive .article-sentence.is-distance-2 {
+            opacity: 0.24;
+            filter: saturate(0.82);
+        }
+
+        #articleReaderCard:fullscreen .article-sentence.is-distance-1,
+        #articleReaderCard.is-immersive .article-sentence.is-distance-1 {
+            opacity: 0.54;
+            filter: saturate(0.92);
+        }
+
+        #articleReaderCard:fullscreen .article-sentence.is-current,
+        #articleReaderCard.is-immersive .article-sentence.is-current {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+            filter: none;
+            background: transparent;
+            box-shadow: none;
+        }
+
+        #articleReaderCard:fullscreen .article-sentence-en,
+        #articleReaderCard.is-immersive .article-sentence-en {
+            max-width: 34ch;
+            margin-inline: auto;
+            color: #51617d;
+            font-size: clamp(1.8rem, 4vw, 4rem);
+            font-weight: 650;
+            line-height: 1.24;
+            text-align: center;
+            text-wrap: balance;
+        }
+
+        #articleReaderCard:fullscreen .article-sentence-zh,
+        #articleReaderCard.is-immersive .article-sentence-zh {
+            max-width: 44ch;
+            margin: 0.7rem auto 0;
+            color: #7a879d;
+            font-size: clamp(0.95rem, 1.8vw, 1.4rem);
+            line-height: 1.6;
+            text-align: center;
+        }
+
+        #articleReaderCard:fullscreen .article-sentence.is-current .article-sentence-en,
+        #articleReaderCard.is-immersive .article-sentence.is-current .article-sentence-en {
+            color: var(--blue);
+        }
+
+        #articleReaderCard:fullscreen .article-sentence.is-current .article-sentence-zh,
+        #articleReaderCard.is-immersive .article-sentence.is-current .article-sentence-zh {
+            color: #4f72b8;
+        }
+
+        #articleReaderCard:fullscreen .article-transport,
+        #articleReaderCard.is-immersive .article-transport {
+            position: relative;
+            top: auto;
+            grid-row: 3;
+            margin: 0;
+            padding:
+                0.7rem
+                max(clamp(1rem, 4vw, 3rem), env(safe-area-inset-right))
+                max(0.7rem, env(safe-area-inset-bottom))
+                max(clamp(1rem, 4vw, 3rem), env(safe-area-inset-left));
+            border: 0;
+            border-top: 1px solid rgba(36, 87, 214, 0.1);
+            border-radius: 0;
+            background: rgba(248, 251, 255, 0.86);
+            box-shadow: 0 -10px 36px rgba(31, 47, 81, 0.06);
+        }
+
+        #articleReaderCard:fullscreen .article-controls,
+        #articleReaderCard.is-immersive .article-controls {
+            margin-top: 0.5rem;
+            padding-right: 0;
         }
 
         .control-panel,
@@ -1742,14 +1972,14 @@
                 margin: 0.65rem 0.65rem 0;
                 padding: 0.75rem;
             }
-            .article-progress-meta { align-items: flex-start; padding-right: 3rem; }
+            .article-progress-meta { align-items: flex-start; padding-right: 3.25rem; }
             .article-control-label { display: none; }
             .workspace-main {
                 grid-template-columns: 1fr;
                 grid-template-areas: 'canvas' 'controls' 'shelf';
                 padding: 0.75rem;
             }
-            .vocabulary-notebook-widget { top: 8.9rem; right: 0.55rem; }
+            .vocabulary-notebook-widget { top: 8.35rem; right: 0.55rem; }
             .notebook-modal-header { flex-direction: column; }
             .notebook-modal-actions { width: 100%; }
             .notebook-play-all { flex: 1; justify-content: center; }
@@ -1774,6 +2004,69 @@
             .article-summary { font-size: 0.82rem; }
             .article-sentence-en { font-size: 1.03rem; }
             .article-sentence-zh { font-size: 0.8rem; }
+        }
+
+        @media (max-width: 360px) {
+            .article-controls { gap: 0.1rem; }
+            .article-controls .article-control-secondary,
+            .article-controls .article-control-secondary.article-fullscreen-toggle {
+                width: 2.35rem;
+                height: 2.35rem;
+            }
+            .article-controls .control-btn {
+                width: 2.8rem;
+                height: 2.8rem;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            #articleReaderCard:fullscreen .article-sentence-list,
+            #articleReaderCard.is-immersive .article-sentence-list {
+                scroll-behavior: auto;
+            }
+
+            #articleReaderCard:fullscreen .article-sentence,
+            #articleReaderCard.is-immersive .article-sentence,
+            #articleReaderCard:fullscreen .article-progress-fill,
+            #articleReaderCard.is-immersive .article-progress-fill {
+                transition: none;
+            }
+        }
+
+        @media (prefers-contrast: more) {
+            #articleReaderCard:fullscreen .article-sentence,
+            #articleReaderCard.is-immersive .article-sentence {
+                opacity: 0.62;
+            }
+
+            #articleReaderCard:fullscreen .article-sentence.is-distance-1,
+            #articleReaderCard.is-immersive .article-sentence.is-distance-1 {
+                opacity: 0.82;
+            }
+
+            #articleReaderCard:fullscreen .article-sentence.is-current,
+            #articleReaderCard.is-immersive .article-sentence.is-current {
+                opacity: 1;
+            }
+        }
+
+        @media (forced-colors: active) {
+            #articleReaderCard:fullscreen .article-sentence-list,
+            #articleReaderCard.is-immersive .article-sentence-list {
+                -webkit-mask-image: none;
+                mask-image: none;
+            }
+
+            #articleReaderCard:fullscreen .article-sentence,
+            #articleReaderCard.is-immersive .article-sentence {
+                opacity: 1;
+            }
+
+            #articleReaderCard:fullscreen .article-sentence.is-current,
+            #articleReaderCard.is-immersive .article-sentence.is-current {
+                outline: 2px solid Highlight;
+                outline-offset: 0.5rem;
+            }
         }
         
         @keyframes pulse {
@@ -1909,7 +2202,7 @@
             </div>
             <div class="setting-pair">
                 <div class="setting-field">
-                    <label for="repeatCountInput">重复次数</label>
+                    <label id="repeatCountLabel" for="repeatCountInput">单词重复</label>
                     <input id="repeatCountInput" type="number" min="1" value="3">
                 </div>
                 <div class="setting-field">
@@ -1934,7 +2227,7 @@
                 <div class="voice-row">
                     <span class="voice-help" tabindex="0" aria-describedby="recordedVoiceHelp">
                         <label for="recordedVoiceSelect">自然声音</label>
-                        <span id="recordedVoiceHelp" class="voice-tooltip" role="tooltip">还原真人音色的例句和句子朗读，需要消耗少量流量。</span>
+                        <span id="recordedVoiceHelp" class="voice-tooltip" role="tooltip">还原真人音色的例句、句子和文章朗读，需要消耗少量流量。</span>
                     </span>
                     <select id="recordedVoiceSelect">
                         <option value="af_heart">Heart · 美式女声</option>
@@ -1955,27 +2248,27 @@
                 </div>
             </fieldset>
             <div class="toggle-list">
-                <div class="toggle-row">
-                    <label for="wordLoop">单项循环</label>
+                <div class="toggle-row setting-view" data-setting-views="words sentences">
+                    <label id="itemLoopLabel" for="wordLoop">单词循环</label>
                     <input type="checkbox" id="wordLoop" class="custom-checkbox">
                 </div>
-                <div class="toggle-row">
-                    <label for="autoPlay">连续播放</label>
+                <div class="toggle-row setting-view" data-setting-views="words sentences articles">
+                    <label id="autoPlayLabel" for="autoPlay">连续播放</label>
                     <input type="checkbox" id="autoPlay" class="custom-checkbox" checked>
                 </div>
-                <div class="toggle-row">
+                <div class="toggle-row setting-view" data-setting-views="words sentences">
                     <label for="newWordsOnly">仅播放未学</label>
                     <input type="checkbox" id="newWordsOnly" class="custom-checkbox">
                 </div>
-                <div class="toggle-row">
+                <div class="toggle-row setting-view" data-setting-views="words">
                     <label for="readEnglishDefinition">读英文释义</label>
                     <input type="checkbox" id="readEnglishDefinition" class="custom-checkbox" checked>
                 </div>
-                <div class="toggle-row">
+                <div class="toggle-row setting-view" data-setting-views="words">
                     <label for="readExample">读例句</label>
                     <input type="checkbox" id="readExample" class="custom-checkbox" checked>
                 </div>
-                <div class="toggle-row">
+                <div class="toggle-row setting-view" data-setting-views="words">
                     <label for="readChineseDefinition">读中文释义</label>
                     <input type="checkbox" id="readChineseDefinition" class="custom-checkbox">
                 </div>
@@ -2136,7 +2429,7 @@
                 </div>
             </div>
             <div id="articleReader" class="player-stage hidden">
-                <article class="article-reader-card animate-fade-in" aria-labelledby="articleTitle">
+                <article id="articleReaderCard" class="article-reader-card animate-fade-in" aria-labelledby="articleTitle">
                     <header class="article-reader-header">
                         <div class="article-meta-row">
                             <div class="article-meta-cluster">
@@ -2156,7 +2449,7 @@
 
                     <footer class="article-transport" aria-label="文章播放控制">
                         <div class="article-progress-meta">
-                            <span id="articlePlaybackStatus">准备播放 · 第 1 句</span>
+                            <span id="articlePlaybackStatus" aria-live="polite" aria-atomic="true">准备播放 · 第 1 句</span>
                             <span id="articleSentenceCount">1/1 句</span>
                         </div>
                         <div class="article-progress-track" aria-hidden="true">
@@ -2179,6 +2472,12 @@
                             <div>
                                 <button id="articleNextBtn" class="article-control-secondary" type="button" aria-label="下一篇文章" title="下一篇文章"><i class="fa fa-angle-double-right" aria-hidden="true"></i></button>
                                 <div class="article-control-label">下一篇</div>
+                            </div>
+                            <div>
+                                <button id="articleFullscreenBtn" class="article-control-secondary article-fullscreen-toggle" type="button" aria-label="全屏阅读文章" aria-controls="articleReaderCard" title="全屏阅读" aria-pressed="false">
+                                    <i id="articleFullscreenIcon" class="fa fa-expand" aria-hidden="true"></i>
+                                </button>
+                                <div id="articleFullscreenLabel" class="article-control-label">全屏</div>
                             </div>
                         </div>
                     </footer>
@@ -2363,6 +2662,10 @@
         const readChineseDefinitionCheckbox = document.getElementById('readChineseDefinition');
         const learnedBadge = document.getElementById('learnedBadge');
         const repeatCountInput = document.getElementById('repeatCountInput');
+        const repeatCountLabel = document.getElementById('repeatCountLabel');
+        const itemLoopLabel = document.getElementById('itemLoopLabel');
+        const autoPlayLabel = document.getElementById('autoPlayLabel');
+        const settingViewRows = Array.from(document.querySelectorAll('[data-setting-views]'));
         const rateSelect = document.getElementById('rateSelect');
         const recordedVoiceSelect = document.getElementById('recordedVoiceSelect');
         const systemVoiceSelect = document.getElementById('systemVoiceSelect');
@@ -2401,6 +2704,7 @@
         const uploadLibraryStatus = document.getElementById('uploadLibraryStatus');
         const articleEmpty = document.getElementById('articleEmpty');
         const articleReader = document.getElementById('articleReader');
+        const articleReaderCard = document.getElementById('articleReaderCard');
         const articleTitleEl = document.getElementById('articleTitle');
         const articleTitleZhEl = document.getElementById('articleTitleZh');
         const articleSummaryEl = document.getElementById('articleSummary');
@@ -2419,6 +2723,9 @@
         const articleNextSentenceBtn = document.getElementById('articleNextSentenceBtn');
         const articleNextBtn = document.getElementById('articleNextBtn');
         const articlePlayIcon = document.getElementById('articlePlayIcon');
+        const articleFullscreenBtn = document.getElementById('articleFullscreenBtn');
+        const articleFullscreenIcon = document.getElementById('articleFullscreenIcon');
+        const articleFullscreenLabel = document.getElementById('articleFullscreenLabel');
         const wordNotebookToggle = document.getElementById('wordNotebookToggle');
         const currentWordCard = document.getElementById('currentWordCard');
         const wordFullscreenBtn = document.getElementById('wordFullscreenBtn');
@@ -2481,6 +2788,11 @@
         let prevOrderBackup = null;
         let prevOrderPosBackup = 0;
         let currentWorkspaceView = 'words';
+        let playbackSettingsByView = {
+            words: { repeatCount: 3, autoPlay: true, itemLoop: false, unlearnedOnly: false },
+            sentences: { repeatCount: 3, autoPlay: true, itemLoop: false, unlearnedOnly: false },
+            articles: { repeatCount: 1, autoPlay: true, itemLoop: false, unlearnedOnly: false }
+        };
         let customLibraries = [];
         let remoteWordbooks = [];
         const remoteWordbookCache = new Map();
@@ -2489,7 +2801,7 @@
         let articleList = [];
         let articleIndex = 0;
         let articleSentenceIndex = 0;
-        let articleSentencePlayCount = 0;
+        let articlePassCount = 0;
         let articlePlaybackMode = 'article';
         let articlePlaybackCompleted = false;
         let isArticlePlaying = false;
@@ -2514,6 +2826,7 @@
         let notebookRepeatTimer = null;
         let isWordCardFallbackFullscreen = false;
         let isSentenceCardFallbackFullscreen = false;
+        let isArticleCardFallbackFullscreen = false;
         const builtInWordItems = cet4Words.map(item => ({ ...item }));
         const activeLibraryIds = loadActiveLibraryIds();
         const API_BASE_URL = 'https://api-enplay.ningboaoke.com';
@@ -2536,6 +2849,7 @@
         const VOICE_PREF_KEY = 'cet4_voice_pref';
         const RECORDED_VOICE_PREF_KEY = 'cet4_recorded_voice_pref';
         const SYSTEM_VOICE_PREF_KEY = 'cet4_system_voice_pref';
+        const VIEW_PLAYBACK_SETTINGS_KEY = 'enplay_playback_settings_v1';
         const VOCABULARY_NOTEBOOK_KEY = 'enplay_vocabulary_notebook_v1';
         let vocabularyNotebook = loadVocabularyNotebook();
         
@@ -2587,6 +2901,7 @@
             wordNotebookToggle.addEventListener('click', toggleCurrentWordNotebook);
             wordFullscreenBtn.addEventListener('click', toggleWordCardFullscreen);
             sentenceFullscreenBtn.addEventListener('click', toggleSentenceCardFullscreen);
+            articleFullscreenBtn.addEventListener('click', toggleArticleCardFullscreen);
             document.addEventListener('fullscreenchange', handleCardFullscreenChange);
             document.addEventListener('webkitfullscreenchange', handleCardFullscreenChange);
             document.addEventListener('keydown', handleCardFullscreenKeydown);
@@ -2780,7 +3095,7 @@
         function syncImmersiveBodyState() {
             document.body.classList.toggle(
                 'word-card-immersive-open',
-                isWordCardFallbackFullscreen || isSentenceCardFallbackFullscreen
+                isWordCardFallbackFullscreen || isSentenceCardFallbackFullscreen || isArticleCardFallbackFullscreen
             );
         }
 
@@ -2853,16 +3168,96 @@
             }
         }
 
+        function isArticleCardFullscreen() {
+            return articleFullscreenBtn.getAttribute('aria-pressed') === 'true'
+                || getFullscreenElement() === articleReaderCard
+                || isArticleCardFallbackFullscreen;
+        }
+
+        function updateArticleFullscreenButton(isActive) {
+            articleFullscreenBtn.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+            articleFullscreenBtn.setAttribute('aria-label', isActive ? '退出文章全屏' : '全屏阅读文章');
+            articleFullscreenBtn.title = isActive ? '退出全屏' : '全屏阅读';
+            articleFullscreenIcon.classList.toggle('fa-expand', !isActive);
+            articleFullscreenIcon.classList.toggle('fa-compress', isActive);
+            articleFullscreenLabel.textContent = isActive ? '退出' : '全屏';
+        }
+
+        function queueArticleSentenceCentering() {
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                    const currentRow = articleSentenceListEl.querySelector('.article-sentence.is-current');
+                    centerArticleSentence(currentRow, true);
+                });
+            });
+        }
+
+        function enterArticleCardFallback() {
+            isArticleCardFallbackFullscreen = true;
+            articleReaderCard.classList.add('is-immersive');
+            syncImmersiveBodyState();
+            updateArticleFullscreenButton(true);
+            queueArticleSentenceCentering();
+        }
+
+        function exitArticleCardFallback() {
+            isArticleCardFallbackFullscreen = false;
+            articleReaderCard.classList.remove('is-immersive');
+            syncImmersiveBodyState();
+            updateArticleFullscreenButton(false);
+        }
+
+        async function requestArticleCardNativeFullscreen() {
+            const request = articleReaderCard.requestFullscreen || articleReaderCard.webkitRequestFullscreen;
+            if (!request) throw new Error('Fullscreen API is unavailable');
+            await request.call(articleReaderCard);
+        }
+
+        async function enterArticleCardFullscreen() {
+            try {
+                await requestArticleCardNativeFullscreen();
+                if (getFullscreenElement() !== articleReaderCard) {
+                    enterArticleCardFallback();
+                    return;
+                }
+                updateArticleFullscreenButton(true);
+                queueArticleSentenceCentering();
+            } catch (fullscreenError) {
+                console.debug('Article fullscreen failed, using page fullscreen mode:', fullscreenError);
+                enterArticleCardFallback();
+            }
+        }
+
+        async function exitArticleCardFullscreen() {
+            if (isArticleCardFallbackFullscreen) {
+                exitArticleCardFallback();
+            } else {
+                await exitNativeFullscreen();
+            }
+            updateArticleFullscreenButton(false);
+        }
+
+        async function toggleArticleCardFullscreen() {
+            if (isArticleCardFullscreen()) {
+                await exitArticleCardFullscreen();
+            } else {
+                await enterArticleCardFullscreen();
+            }
+        }
+
         function handleCardFullscreenChange() {
             const fullscreenElement = getFullscreenElement();
             const isWordNativeActive = fullscreenElement === currentWordCard;
             const isSentenceNativeActive = fullscreenElement === currentSentenceCard;
-            if (!isWordNativeActive && !isSentenceNativeActive
-                && !isWordCardFallbackFullscreen && !isSentenceCardFallbackFullscreen) {
+            const isArticleNativeActive = fullscreenElement === articleReaderCard;
+            if (!isWordNativeActive && !isSentenceNativeActive && !isArticleNativeActive
+                && !isWordCardFallbackFullscreen && !isSentenceCardFallbackFullscreen && !isArticleCardFallbackFullscreen) {
                 unlockScreenOrientation();
             }
             updateWordFullscreenButton(isWordNativeActive || isWordCardFallbackFullscreen);
             updateSentenceFullscreenButton(isSentenceNativeActive || isSentenceCardFallbackFullscreen);
+            updateArticleFullscreenButton(isArticleNativeActive || isArticleCardFallbackFullscreen);
+            if (isArticleNativeActive || isArticleCardFallbackFullscreen) queueArticleSentenceCentering();
         }
 
         function handleCardFullscreenKeydown(event) {
@@ -2871,6 +3266,9 @@
             }
             if (event.key === 'Escape' && isSentenceCardFallbackFullscreen) {
                 exitSentenceCardFullscreen();
+            }
+            if (event.key === 'Escape' && isArticleCardFallbackFullscreen) {
+                exitArticleCardFullscreen();
             }
         }
 
@@ -2892,9 +3290,44 @@
             switchWorkspace(getViewFromHash(), false);
         }
 
+        function syncPlayerSettingsForView(view) {
+            const labels = {
+                words: {
+                    repeat: '单词重复',
+                    loop: '单词循环',
+                    autoPlay: '连续播放'
+                },
+                sentences: {
+                    repeat: '句子重复',
+                    loop: '单句循环',
+                    autoPlay: '连续播放'
+                },
+                articles: {
+                    repeat: '整篇重复',
+                    loop: '',
+                    autoPlay: '连续下一篇'
+                }
+            }[view];
+
+            applyPlaybackSettingsForView(view);
+            repeatCountLabel.textContent = labels.repeat;
+            repeatCountInput.setAttribute('aria-label', labels.repeat);
+            itemLoopLabel.textContent = labels.loop;
+            autoPlayLabel.textContent = labels.autoPlay;
+            playerSettings.dataset.view = view;
+            settingViewRows.forEach(row => {
+                const supportedViews = String(row.dataset.settingViews || '').split(/\s+/).filter(Boolean);
+                row.classList.toggle('hidden', !supportedViews.includes(view));
+            });
+        }
+
         function switchWorkspace(view, updateHash = true) {
             if (!['words', 'sentences', 'articles'].includes(view)) {
                 view = 'words';
+            }
+
+            if (view !== currentWorkspaceView) {
+                saveActivePlaybackSettings();
             }
 
             if (view !== 'words' && isWordCardFullscreen()) {
@@ -2902,6 +3335,9 @@
             }
             if (view !== 'sentences' && isSentenceCardFullscreen()) {
                 exitSentenceCardFullscreen();
+            }
+            if (view !== 'articles' && isArticleCardFullscreen()) {
+                exitArticleCardFullscreen();
             }
 
             if (!isNotebookPlaying && notebookDisplayedEntry) {
@@ -2914,6 +3350,7 @@
             if (view !== 'sentences') stopPhrasePlayback(true);
             if (view !== 'articles') stopArticlePlayback();
             currentWorkspaceView = view;
+            syncPlayerSettingsForView(view);
 
             workspaceSections.forEach(section => {
                 section.classList.toggle('hidden', section.dataset.section !== view);
@@ -3592,19 +4029,47 @@
             const sentenceCount = article && Array.isArray(article.sentences) ? article.sentences.length : 0;
             const rows = Array.from(articleSentenceListEl.querySelectorAll('.article-sentence'));
             rows.forEach((row, rowIndex) => {
-                row.classList.toggle('is-current', rowIndex === articleSentenceIndex);
-                row.classList.toggle('is-playing', isArticlePlaying && rowIndex === articleSentenceIndex);
+                const distance = Math.abs(rowIndex - articleSentenceIndex);
+                const isCurrent = rowIndex === articleSentenceIndex;
+                row.classList.toggle('is-current', isCurrent);
+                row.classList.toggle('is-playing', isArticlePlaying && isCurrent);
+                row.classList.toggle('is-distance-1', distance === 1);
+                row.classList.toggle('is-distance-2', distance === 2);
+                row.classList.toggle('is-distant', distance >= 3);
+                row.classList.toggle('is-before', rowIndex < articleSentenceIndex);
+                row.classList.toggle('is-after', rowIndex > articleSentenceIndex);
+                row.setAttribute('aria-current', isCurrent ? 'true' : 'false');
             });
             const currentNumber = sentenceCount ? articleSentenceIndex + 1 : 0;
             articleSentenceCountEl.textContent = `${currentNumber}/${sentenceCount} 句`;
-            articlePlaybackStatusEl.textContent = `${status || (isArticlePlaying ? '正在朗读' : '准备播放')} · 第 ${currentNumber} 句`;
+            const showPass = articlePlaybackMode === 'article' && (isArticlePlaying || status === '已暂停');
+            const passStatus = showPass
+                ? ` · 第 ${Math.min(articlePassCount + 1, playRepeatCount)}/${playRepeatCount} 遍`
+                : '';
+            articlePlaybackStatusEl.textContent = `${status || (isArticlePlaying ? '正在朗读' : '准备播放')} · 第 ${currentNumber} 句${passStatus}`;
             articleProgressFillEl.style.width = sentenceCount ? `${(currentNumber / sentenceCount) * 100}%` : '0%';
             if (scroll && rows[articleSentenceIndex]) {
-                rows[articleSentenceIndex].scrollIntoView({
-                    behavior: document.hidden ? 'auto' : 'smooth',
-                    block: 'center'
-                });
+                centerArticleSentence(rows[articleSentenceIndex]);
             }
+        }
+
+        function centerArticleSentence(row, forceInstant = false) {
+            if (!row) return;
+            const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            const behavior = forceInstant || document.hidden || reducedMotion ? 'auto' : 'smooth';
+            if (isArticleCardFullscreen()) {
+                const listRect = articleSentenceListEl.getBoundingClientRect();
+                const rowRect = row.getBoundingClientRect();
+                const targetTop = articleSentenceListEl.scrollTop
+                    + (rowRect.top - listRect.top)
+                    - ((articleSentenceListEl.clientHeight - rowRect.height) / 2);
+                articleSentenceListEl.scrollTo({
+                    top: Math.max(0, targetTop),
+                    behavior
+                });
+                return;
+            }
+            row.scrollIntoView({ behavior, block: 'center' });
         }
 
         function handleArticleSentenceClick(event) {
@@ -3644,15 +4109,16 @@
 
         function toggleArticlePlay() {
             if (isArticlePlaying) {
-                stopArticlePlayback();
+                stopArticlePlayback({ status: '已暂停', resetPass: false });
                 return;
             }
             if (!articleList.length) return;
             if (articlePlaybackCompleted) articleSentenceIndex = 0;
-            startArticlePlayback(articleSentenceIndex, 'article');
+            const isResumingArticle = !articlePlaybackCompleted && articlePlaybackMode === 'article';
+            startArticlePlayback(articleSentenceIndex, 'article', { resetPass: !isResumingArticle });
         }
 
-        function startArticlePlayback(startIndex = 0, mode = 'article') {
+        function startArticlePlayback(startIndex = 0, mode = 'article', { resetPass = true } = {}) {
             const article = articleList[articleIndex];
             if (!article || !article.sentences.length) return;
             stopPlayback();
@@ -3660,7 +4126,7 @@
             stopVocabularyNotebookPlayback();
             cancelSpeechSession();
             articleSentenceIndex = Math.max(0, Math.min(startIndex, article.sentences.length - 1));
-            articleSentencePlayCount = 0;
+            if (resetPass || mode === 'single') articlePassCount = 0;
             articlePlaybackMode = mode;
             articlePlaybackCompleted = false;
             isArticlePlaying = true;
@@ -3683,12 +4149,6 @@
             const english = row && row.querySelector('.article-sentence-en');
             playTextWithHighlight(sentence.en, english || articleTitleEl, () => {
                 if (!isArticlePlaying) return;
-                articleSentencePlayCount += 1;
-                if (articleSentencePlayCount < playRepeatCount) {
-                    playCurrentArticleSentence();
-                    return;
-                }
-                articleSentencePlayCount = 0;
                 if (articlePlaybackMode === 'single') {
                     stopArticlePlayback({ status: '本句播放完成' });
                     return;
@@ -3706,7 +4166,15 @@
         }
 
         function finishArticlePlayback() {
+            articlePassCount += 1;
+            if (articlePlaybackMode === 'article' && articlePassCount < playRepeatCount) {
+                articleSentenceIndex = 0;
+                updateArticleSentenceUi({ status: '开始下一遍', scroll: true });
+                playCurrentArticleSentence();
+                return;
+            }
             if (articlePlaybackMode === 'article' && isAutoPlaying && articleList.length > 1) {
+                articlePassCount = 0;
                 articleIndex = (articleIndex + 1) % articleList.length;
                 articleSentenceIndex = 0;
                 updateArticleCard();
@@ -3717,10 +4185,10 @@
             stopArticlePlayback({ status: '全文播放完成' });
         }
 
-        function stopArticlePlayback({ status = '已暂停' } = {}) {
+        function stopArticlePlayback({ status = '已暂停', resetPass = true } = {}) {
             if (isNotebookPlaying) stopVocabularyNotebookPlayback();
             isArticlePlaying = false;
-            articleSentencePlayCount = 0;
+            if (resetPass) articlePassCount = 0;
             articlePlayIcon.classList.remove('fa-pause');
             articlePlayIcon.classList.add('fa-play');
             articlePlayBtn.setAttribute('aria-label', '播放全文');
@@ -4249,6 +4717,71 @@
             cancelSpeechSession();
         }
         
+        function normalizeViewPlaybackSettings(raw, fallback) {
+            const repeatCount = Number.parseInt(raw && raw.repeatCount, 10);
+            return {
+                repeatCount: Number.isInteger(repeatCount) && repeatCount > 0
+                    ? repeatCount
+                    : fallback.repeatCount,
+                autoPlay: typeof (raw && raw.autoPlay) === 'boolean'
+                    ? raw.autoPlay
+                    : fallback.autoPlay,
+                itemLoop: typeof (raw && raw.itemLoop) === 'boolean'
+                    ? raw.itemLoop
+                    : fallback.itemLoop,
+                unlearnedOnly: typeof (raw && raw.unlearnedOnly) === 'boolean'
+                    ? raw.unlearnedOnly
+                    : fallback.unlearnedOnly
+            };
+        }
+
+        function loadPlaybackSettingsByView() {
+            let saved = {};
+            try {
+                saved = JSON.parse(localStorage.getItem(VIEW_PLAYBACK_SETTINGS_KEY) || '{}');
+            } catch (error) {
+                console.warn('Failed to read view-specific playback settings.', error);
+            }
+            const defaults = {
+                words: {
+                    repeatCount: playRepeatCount,
+                    autoPlay: isAutoPlaying,
+                    itemLoop: isWordLooping,
+                    unlearnedOnly: isNewWordsOnly
+                },
+                sentences: { repeatCount: 3, autoPlay: true, itemLoop: false, unlearnedOnly: false },
+                articles: { repeatCount: 1, autoPlay: true, itemLoop: false, unlearnedOnly: false }
+            };
+            return Object.fromEntries(
+                Object.entries(defaults).map(([view, fallback]) => [
+                    view,
+                    normalizeViewPlaybackSettings(saved && saved[view], fallback)
+                ])
+            );
+        }
+
+        function applyPlaybackSettingsForView(view) {
+            const settings = playbackSettingsByView[view] || playbackSettingsByView.words;
+            playRepeatCount = settings.repeatCount;
+            isAutoPlaying = settings.autoPlay;
+            isWordLooping = settings.itemLoop;
+            isNewWordsOnly = settings.unlearnedOnly;
+            repeatCountInput.value = String(playRepeatCount);
+            autoPlayCheckbox.checked = isAutoPlaying;
+            wordLoopCheckbox.checked = isWordLooping;
+            newWordsOnlyCheckbox.checked = isNewWordsOnly;
+        }
+
+        function saveActivePlaybackSettings() {
+            playbackSettingsByView[currentWorkspaceView] = {
+                repeatCount: playRepeatCount,
+                autoPlay: isAutoPlaying,
+                itemLoop: isWordLooping,
+                unlearnedOnly: isNewWordsOnly
+            };
+            localStorage.setItem(VIEW_PLAYBACK_SETTINGS_KEY, JSON.stringify(playbackSettingsByView));
+        }
+
         // Load saved state from localStorage
         function loadState() {
             const loadedOrder = loadOrCreateOrder();
@@ -4328,22 +4861,28 @@
                 readExampleCheckbox.checked = true;
                 shouldReadExample = true;
             }
+
+            playbackSettingsByView = loadPlaybackSettingsByView();
+            applyPlaybackSettingsForView('words');
         }
         
         // Save current state to localStorage
         function saveState() {
+            saveActivePlaybackSettings();
             if (!isReviewMode) {
                 localStorage.setItem(CURRENT_INDEX_KEY, currentIndex.toString());
                 localStorage.setItem(ORDER_KEY, JSON.stringify(order));
                 localStorage.setItem(ORDER_POSITION_KEY, orderPosition.toString());
             }
-            localStorage.setItem(AUTO_PLAY_KEY, isAutoPlaying.toString());
-            localStorage.setItem(WORD_LOOP_KEY, isWordLooping.toString());
-            localStorage.setItem(NEW_WORDS_ONLY_KEY, isNewWordsOnly.toString());
+            if (currentWorkspaceView === 'words') {
+                localStorage.setItem(AUTO_PLAY_KEY, isAutoPlaying.toString());
+                localStorage.setItem(WORD_LOOP_KEY, isWordLooping.toString());
+                localStorage.setItem(NEW_WORDS_ONLY_KEY, isNewWordsOnly.toString());
+                localStorage.setItem(PLAY_REPEAT_KEY, playRepeatCount.toString());
+            }
             localStorage.setItem(READ_ENGLISH_DEFINITION_KEY, shouldReadEnglishDefinition.toString());
             localStorage.setItem(READ_EXAMPLE_KEY, shouldReadExample.toString());
             localStorage.setItem(READ_CHINESE_DEFINITION_KEY, shouldReadChineseDefinition.toString());
-            localStorage.setItem(PLAY_REPEAT_KEY, playRepeatCount.toString());
             localStorage.setItem(PLAY_RATE_KEY, playRate.toString());
             localStorage.setItem(RECORDED_VOICE_PREF_KEY, recordedVoicePreference);
             localStorage.setItem(SYSTEM_VOICE_PREF_KEY, systemVoicePreference);
