@@ -2089,7 +2089,12 @@
         let speechSessionId = 0;
         let speechUtteranceId = 0;
         let speechCallbackTimer = null;
+        const recordedAudioPlayer = new Audio();
+        recordedAudioPlayer.preload = 'auto';
+        recordedAudioPlayer.playsInline = true;
         let activeRecordedAudio = null;
+        let mediaSessionPaused = false;
+        let deferredPlaybackStep = null;
         const recordedAudioHashCache = new Map();
         let playbackStartTimer = null;
         let librarySelectionId = 0;
@@ -2152,6 +2157,7 @@
 
             // Init the three learning workspaces after progress has loaded
             initWorkspaceNavigation();
+            initBackgroundPlaybackSupport();
             
             // Event listeners
             prevBtn.addEventListener('click', goToPreviousWord);
@@ -2963,6 +2969,112 @@
             cancelSpeechSession();
         }
 
+        function isPlaybackSessionActive() {
+            return isPlaying || isPhrasePlaying || isArticlePlaying || isNotebookPlaying;
+        }
+
+        function schedulePlaybackStep(callback, delay = 0) {
+            const invoke = () => {
+                if (mediaSessionPaused) {
+                    deferredPlaybackStep = callback;
+                    return;
+                }
+                callback();
+            };
+
+            // Safari/WebKit and Chromium throttle timers in inactive windows.
+            // Once playback is already user-initiated, advance the audio chain
+            // without a timer while hidden so a short pause cannot become seconds.
+            if (document.hidden || delay <= 0) {
+                queueMicrotask(invoke);
+                return null;
+            }
+            return setTimeout(invoke, delay);
+        }
+
+        function updateMediaSessionPlaybackState(state) {
+            if (!('mediaSession' in navigator)) return;
+            try {
+                navigator.mediaSession.playbackState = state;
+            } catch (error) {
+                console.debug('Unable to update media session state:', error);
+            }
+        }
+
+        function updateMediaSessionMetadata(text) {
+            if (!('mediaSession' in navigator) || typeof MediaMetadata === 'undefined') return;
+            const albumByView = {
+                words: '单词学习',
+                sentences: '句子学习',
+                articles: '文章学习'
+            };
+            try {
+                navigator.mediaSession.metadata = new MediaMetadata({
+                    title: text,
+                    artist: 'Enplay',
+                    album: albumByView[currentWorkspaceView] || 'LANGUAGE STUDY'
+                });
+            } catch (error) {
+                console.debug('Unable to update media session metadata:', error);
+            }
+        }
+
+        function pauseFromMediaSession() {
+            if (!isPlaybackSessionActive()) return;
+            mediaSessionPaused = true;
+            if (activeRecordedAudio && !activeRecordedAudio.paused) {
+                activeRecordedAudio.pause();
+            }
+            if (isSpeechAvailable && window.speechSynthesis.speaking) {
+                window.speechSynthesis.pause();
+            }
+            updateMediaSessionPlaybackState('paused');
+        }
+
+        function resumeFromMediaSession() {
+            if (!isPlaybackSessionActive()) return;
+            mediaSessionPaused = false;
+            if (activeRecordedAudio && activeRecordedAudio.paused && !activeRecordedAudio.ended) {
+                activeRecordedAudio.play().catch(error => {
+                    console.info('Recorded audio could not resume:', error);
+                });
+            }
+            if (isSpeechAvailable && window.speechSynthesis.paused) {
+                window.speechSynthesis.resume();
+            }
+            const deferredStep = deferredPlaybackStep;
+            deferredPlaybackStep = null;
+            if (deferredStep) queueMicrotask(deferredStep);
+            updateMediaSessionPlaybackState('playing');
+        }
+
+        function recoverBackgroundPlayback() {
+            if (!isPlaybackSessionActive() || mediaSessionPaused) return;
+            if (activeRecordedAudio && activeRecordedAudio.paused && !activeRecordedAudio.ended) {
+                activeRecordedAudio.play().catch(error => {
+                    console.info('Recorded audio is waiting for the browser to resume:', error);
+                });
+            }
+            if (isSpeechAvailable && window.speechSynthesis.paused) {
+                window.speechSynthesis.resume();
+            }
+            updateMediaSessionPlaybackState('playing');
+        }
+
+        function initBackgroundPlaybackSupport() {
+            document.addEventListener('visibilitychange', recoverBackgroundPlayback);
+            document.addEventListener('resume', recoverBackgroundPlayback);
+            window.addEventListener('pageshow', recoverBackgroundPlayback);
+
+            if (!('mediaSession' in navigator)) return;
+            try {
+                navigator.mediaSession.setActionHandler('play', resumeFromMediaSession);
+                navigator.mediaSession.setActionHandler('pause', pauseFromMediaSession);
+            } catch (error) {
+                console.debug('Media Session controls are not available:', error);
+            }
+        }
+
         // Check if speech synthesis is supported
         function checkSpeechSupport() {
             isSpeechAvailable = 'speechSynthesis' in window;
@@ -3270,7 +3382,7 @@
             phraseIndex = pos;
             updatePhraseCard();
             closeHistoryModal();
-            setTimeout(() => startPhrasePlayback(), 300);
+            schedulePlaybackStep(() => startPhrasePlayback(), 300);
         }
 
         function togglePhrasePlay() {
@@ -3312,7 +3424,7 @@
             playTextWithHighlight(item.text, currentPhraseEl, () => {
                 phrasePlayCount++;
                 if (phrasePlayCount < playRepeatCount) {
-                    phraseRepeatTimer = setTimeout(() => {
+                    phraseRepeatTimer = schedulePlaybackStep(() => {
                         phraseRepeatTimer = null;
                         playCurrentPhrase();
                     }, 800);
@@ -3321,7 +3433,7 @@
                     stopPhrasePlayback();
                     if (isWordLooping) {
                         phrasePlayCount = 0;
-                        phraseRepeatTimer = setTimeout(() => {
+                        phraseRepeatTimer = schedulePlaybackStep(() => {
                             phraseRepeatTimer = null;
                             if (continueAutoPlay) startPhrasePlayback();
                         }, 1000);
@@ -3330,7 +3442,7 @@
                         if (autoPlaySnapshot) {
                             const moved = goToNextPhrase({ fromAutoPlay: true });
                             if (moved) {
-                                phraseAutoPlayTimer = setTimeout(() => {
+                                phraseAutoPlayTimer = schedulePlaybackStep(() => {
                                     phraseAutoPlayTimer = null;
                                     if (isAutoPlaying && continueAutoPlay) startPhrasePlayback();
                                 }, 500);
@@ -3892,7 +4004,7 @@
             notebookEntryPlayCount++;
             if (notebookEntryPlayCount < playRepeatCount || isWordLooping) {
                 if (notebookEntryPlayCount >= playRepeatCount) notebookEntryPlayCount = 0;
-                notebookRepeatTimer = setTimeout(() => {
+                notebookRepeatTimer = schedulePlaybackStep(() => {
                     notebookRepeatTimer = null;
                     playCurrentNotebookEntryOnce();
                 }, 700);
@@ -4077,7 +4189,7 @@
             }
             
             // Start playing the word after a small delay to ensure UI updates
-            playbackStartTimer = setTimeout(() => {
+            playbackStartTimer = schedulePlaybackStep(() => {
                 playbackStartTimer = null;
                 if (!isPlaying) return;
                 playCurrentWord();
@@ -4160,7 +4272,7 @@
 
             if (playCount < playRepeatCount) {
                 console.log(`Playing word at index ${currentIndex} (${cet4Words[currentIndex].word}) again (${playCount}/${playRepeatCount})`);
-                repeatTimer = setTimeout(() => {
+                repeatTimer = schedulePlaybackStep(() => {
                     repeatTimer = null;
                     playCurrentWord();
                 }, 1000);
@@ -4174,7 +4286,7 @@
             if (isWordLooping) {
                 playCount = 0;
                 console.log('Word loop enabled, restarting playback');
-                repeatTimer = setTimeout(() => {
+                repeatTimer = schedulePlaybackStep(() => {
                     repeatTimer = null;
                     if (isWordLooping && continueAutoPlay) startPlayback();
                 }, 1000);
@@ -4184,7 +4296,7 @@
             if (isAutoPlaying) {
                 console.log('Auto-play enabled, moving to next word');
                 const autoPlaySnapshot = isAutoPlaying && continueAutoPlay;
-                autoPlayTimer = setTimeout(() => {
+                autoPlayTimer = schedulePlaybackStep(() => {
                     autoPlayTimer = null;
                     if (!autoPlaySnapshot || !isAutoPlaying || !continueAutoPlay) {
                         console.log('Auto-play turned off before advancing');
@@ -4192,7 +4304,7 @@
                     }
                     const moved = goToNextWord({ fromAutoPlay: true });
                     if (moved && isAutoPlaying && continueAutoPlay) {
-                        autoPlayTimer = setTimeout(() => {
+                        autoPlayTimer = schedulePlaybackStep(() => {
                             autoPlayTimer = null;
                             if (isAutoPlaying && continueAutoPlay) startPlayback();
                         }, 500);
@@ -4225,7 +4337,7 @@
             const runCallback = (delay = 0) => {
                 if (!callback || !isCurrentSpeech()) return;
                 if (speechCallbackTimer) clearTimeout(speechCallbackTimer);
-                speechCallbackTimer = setTimeout(() => {
+                speechCallbackTimer = schedulePlaybackStep(() => {
                     speechCallbackTimer = null;
                     if (isCurrentSpeech()) callback();
                 }, delay);
@@ -4238,6 +4350,8 @@
             }
             
             const normalizedText = String(text || '').trim();
+            updateMediaSessionMetadata(normalizedText);
+            updateMediaSessionPlaybackState('playing');
             const useRecordedAudio = Boolean(
                 options.recorded
                 && recordedVoicePreference
@@ -4340,9 +4454,12 @@
             getRecordedAudioUrl(normalizedText, recordedVoicePreference)
                 .then((audioUrl) => {
                     if (!isCurrentSpeech()) return;
-                    const audio = new Audio(audioUrl);
+                    const audio = recordedAudioPlayer;
+                    audio.pause();
+                    audio.onended = null;
+                    audio.onerror = null;
+                    audio.src = audioUrl;
                     activeRecordedAudio = audio;
-                    audio.preload = 'auto';
                     audio.playbackRate = playRate;
                     audio.onended = () => {
                         if (!isCurrentSpeech()) return;
@@ -4362,6 +4479,7 @@
                         speakWithSystemVoice();
                     };
                     audio.onerror = fallback;
+                    audio.load();
                     audio.play().catch(fallback);
                 })
                 .catch(() => speakWithSystemVoice());
@@ -4386,12 +4504,16 @@
                 speechCallbackTimer = null;
             }
             if (activeRecordedAudio) {
+                activeRecordedAudio.onended = null;
+                activeRecordedAudio.onerror = null;
                 activeRecordedAudio.pause();
-                activeRecordedAudio.removeAttribute('src');
-                activeRecordedAudio.load();
+                activeRecordedAudio.currentTime = 0;
                 activeRecordedAudio = null;
             }
             if (isSpeechAvailable) window.speechSynthesis.cancel();
+            mediaSessionPaused = false;
+            deferredPlaybackStep = null;
+            updateMediaSessionPlaybackState('paused');
             removeSpeakingHighlights();
         }
         
@@ -4474,7 +4596,7 @@
             }
             const word = cet4Words[currentIndex];
             // Small delay to ensure stop takes effect
-            playbackStartTimer = setTimeout(() => {
+            playbackStartTimer = schedulePlaybackStep(() => {
                 playbackStartTimer = null;
                 playTextWithHighlight(word.word, currentWordEl, () => {});
             }, 100);
@@ -4886,7 +5008,7 @@
                     closeHistoryModal();
                     
                     // Start playing the word automatically
-                    setTimeout(() => {
+                    schedulePlaybackStep(() => {
                         startPlayback();
                     }, 500);
                     
@@ -4923,7 +5045,7 @@
                 enterReviewMode(wordsForDate, date);
                 closeHistoryModal();
                 
-                setTimeout(() => {
+                schedulePlaybackStep(() => {
                     startPlayback();
                 }, 500);
                 
