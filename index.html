@@ -675,6 +675,45 @@
             font-size: 0.78rem;
         }
 
+        .voice-fields {
+            display: grid;
+            gap: 0.55rem;
+            margin-top: 0.8rem;
+            padding: 0;
+            border: 0;
+        }
+
+        .voice-fields legend {
+            margin-bottom: 0.05rem;
+            color: var(--muted);
+            font-size: 0.72rem;
+            font-weight: 700;
+        }
+
+        .voice-row {
+            display: grid;
+            grid-template-columns: 4rem minmax(0, 1fr);
+            align-items: center;
+            gap: 0.45rem;
+        }
+
+        .voice-row label {
+            color: var(--muted);
+            font-size: 0.65rem;
+            font-weight: 700;
+        }
+
+        .voice-row select {
+            width: 100%;
+            min-width: 0;
+            padding: 0.5rem 0.55rem;
+            border: 1px solid var(--line);
+            border-radius: 0.7rem;
+            color: var(--ink);
+            background: white;
+            font-size: 0.72rem;
+        }
+
         .toggle-list {
             display: grid;
             gap: 0.6rem;
@@ -1485,15 +1524,23 @@
                     <option value="1.5">1.5×</option>
                 </select>
             </div>
-            <div class="setting-field">
-                <label for="voiceSelect">朗读声音</label>
-                <select id="voiceSelect">
-                    <option value="kokoro:af_heart">Heart · 美式女声</option>
-                    <option value="kokoro:af_bella">Bella · 美式女声</option>
-                    <option value="kokoro:bf_emma">Emma · 英式女声</option>
-                    <option value="auto">系统自动选择</option>
-                </select>
-            </div>
+            <fieldset class="voice-fields">
+                <legend>朗读声音</legend>
+                <div class="voice-row">
+                    <label for="recordedVoiceSelect">自然声音</label>
+                    <select id="recordedVoiceSelect">
+                        <option value="af_heart">Heart · 美式女声</option>
+                        <option value="af_bella">Bella · 美式女声</option>
+                        <option value="bf_emma">Emma · 英式女声</option>
+                    </select>
+                </div>
+                <div class="voice-row">
+                    <label for="systemVoiceSelect">系统回退</label>
+                    <select id="systemVoiceSelect">
+                        <option value="auto">系统自动选择</option>
+                    </select>
+                </div>
+            </fieldset>
             <div class="toggle-list">
                 <div class="toggle-row">
                     <label for="wordLoop">单项循环</label>
@@ -1501,11 +1548,19 @@
                 </div>
                 <div class="toggle-row">
                     <label for="autoPlay">连续播放</label>
-                    <input type="checkbox" id="autoPlay" class="custom-checkbox">
+                    <input type="checkbox" id="autoPlay" class="custom-checkbox" checked>
                 </div>
                 <div class="toggle-row">
                     <label for="newWordsOnly">仅播放未学</label>
                     <input type="checkbox" id="newWordsOnly" class="custom-checkbox">
+                </div>
+                <div class="toggle-row">
+                    <label for="readEnglishDefinition">读英文释义</label>
+                    <input type="checkbox" id="readEnglishDefinition" class="custom-checkbox" checked>
+                </div>
+                <div class="toggle-row">
+                    <label for="readExample">读例句</label>
+                    <input type="checkbox" id="readExample" class="custom-checkbox" checked>
                 </div>
                 <div class="toggle-row">
                     <label for="readChineseDefinition">读中文释义</label>
@@ -1832,11 +1887,14 @@
         const wordLoopCheckbox = document.getElementById('wordLoop');
         const autoPlayCheckbox = document.getElementById('autoPlay');
         const newWordsOnlyCheckbox = document.getElementById('newWordsOnly');
+        const readEnglishDefinitionCheckbox = document.getElementById('readEnglishDefinition');
+        const readExampleCheckbox = document.getElementById('readExample');
         const readChineseDefinitionCheckbox = document.getElementById('readChineseDefinition');
         const learnedBadge = document.getElementById('learnedBadge');
         const repeatCountInput = document.getElementById('repeatCountInput');
         const rateSelect = document.getElementById('rateSelect');
-        const voiceSelect = document.getElementById('voiceSelect');
+        const recordedVoiceSelect = document.getElementById('recordedVoiceSelect');
+        const systemVoiceSelect = document.getElementById('systemVoiceSelect');
         const wordSpeakBtn = document.getElementById('wordSpeakBtn');
         const historyFilter = document.getElementById('historyFilter');
         const searchInput = document.getElementById('searchInput');
@@ -1904,15 +1962,18 @@
         // App State
         let currentIndex = 0;
         let isPlaying = false;
-        let isAutoPlaying = false;
+        let isAutoPlaying = true;
         let isWordLooping = false;
         let isNewWordsOnly = false;
+        let shouldReadEnglishDefinition = true;
+        let shouldReadExample = true;
         let shouldReadChineseDefinition = false;
         let playCount = 0;
         let autoPlayTimer = null;
         let todayLearnedCount = 0;
         let isSpeechAvailable = false;
-        let voicePreference = 'auto';
+        let recordedVoicePreference = 'af_heart';
+        let systemVoicePreference = 'auto';
         let searchMatches = [];
         let phraseCategories = [];
         let phraseList = [];
@@ -1961,6 +2022,7 @@
         const builtInWordItems = cet4Words.map(item => ({ ...item }));
         const activeLibraryIds = loadActiveLibraryIds();
         const API_BASE_URL = 'https://api-enplay.ningboaoke.com';
+        const AUDIO_LIBRARY_VERSION = '20260830-full1';
         
         // Local Storage Keys
         let CURRENT_INDEX_KEY = 'cet4_current_index';
@@ -1969,12 +2031,16 @@
         const AUTO_PLAY_KEY = 'cet4_auto_play';
         const WORD_LOOP_KEY = 'cet4_word_loop';
         const NEW_WORDS_ONLY_KEY = 'cet4_new_words_only';
+        const READ_ENGLISH_DEFINITION_KEY = 'cet4_read_english_definition';
+        const READ_EXAMPLE_KEY = 'cet4_read_example';
         const READ_CHINESE_DEFINITION_KEY = 'cet4_read_chinese_definition';
         let ORDER_KEY = 'cet4_word_order';
         let ORDER_POSITION_KEY = 'cet4_word_order_position';
         const PLAY_REPEAT_KEY = 'cet4_play_repeat_count';
         const PLAY_RATE_KEY = 'cet4_play_rate';
         const VOICE_PREF_KEY = 'cet4_voice_pref';
+        const RECORDED_VOICE_PREF_KEY = 'cet4_recorded_voice_pref';
+        const SYSTEM_VOICE_PREF_KEY = 'cet4_system_voice_pref';
         const VOCABULARY_NOTEBOOK_KEY = 'enplay_vocabulary_notebook_v1';
         let vocabularyNotebook = loadVocabularyNotebook();
         
@@ -2013,11 +2079,14 @@
             wordLoopCheckbox.addEventListener('change', toggleWordLoop);
             autoPlayCheckbox.addEventListener('change', toggleAutoPlay);
             newWordsOnlyCheckbox.addEventListener('change', toggleNewWordsOnly);
+            readEnglishDefinitionCheckbox.addEventListener('change', toggleEnglishDefinitionReading);
+            readExampleCheckbox.addEventListener('change', toggleExampleReading);
             readChineseDefinitionCheckbox.addEventListener('change', toggleChineseDefinitionReading);
             repeatCountInput.addEventListener('input', updateRepeatCount);
             repeatCountInput.addEventListener('blur', updateRepeatCount);
             rateSelect.addEventListener('change', updateRate);
-            voiceSelect.addEventListener('change', updateVoicePreference);
+            recordedVoiceSelect.addEventListener('change', updateVoicePreferences);
+            systemVoiceSelect.addEventListener('change', updateVoicePreferences);
             wordSpeakBtn.addEventListener('click', speakCurrentWordOnce);
             wordNotebookToggle.addEventListener('click', toggleCurrentWordNotebook);
             wordFullscreenBtn.addEventListener('click', toggleWordCardFullscreen);
@@ -2825,9 +2894,10 @@
 
         // Populate voice dropdown with available English voices
         function populateVoiceOptions() {
-            if (!voiceSelect) return;
+            if (!recordedVoiceSelect || !systemVoiceSelect) return;
             const voices = isSpeechAvailable ? (window.speechSynthesis.getVoices() || []) : [];
-            voiceSelect.innerHTML = '';
+            recordedVoiceSelect.innerHTML = '';
+            systemVoiceSelect.innerHTML = '';
 
             const makeOpt = (label, value) => {
                 const opt = document.createElement('option');
@@ -2836,16 +2906,10 @@
                 return opt;
             };
 
-            const kokoroGroup = document.createElement('optgroup');
-            kokoroGroup.label = '自然录音 · 例句与句子';
-            kokoroGroup.appendChild(makeOpt('Heart · 美式女声', 'kokoro:af_heart'));
-            kokoroGroup.appendChild(makeOpt('Bella · 美式女声', 'kokoro:af_bella'));
-            kokoroGroup.appendChild(makeOpt('Emma · 英式女声', 'kokoro:bf_emma'));
-            voiceSelect.appendChild(kokoroGroup);
-
-            const systemGroup = document.createElement('optgroup');
-            systemGroup.label = '系统语音';
-            systemGroup.appendChild(makeOpt('系统自动选择', 'auto'));
+            recordedVoiceSelect.appendChild(makeOpt('Heart · 美式女声', 'af_heart'));
+            recordedVoiceSelect.appendChild(makeOpt('Bella · 美式女声', 'af_bella'));
+            recordedVoiceSelect.appendChild(makeOpt('Emma · 英式女声', 'bf_emma'));
+            systemVoiceSelect.appendChild(makeOpt('系统自动选择', 'auto'));
 
             // All English voices
             const englishVoices = voices.filter(v => /^en/i.test(v.lang));
@@ -2854,12 +2918,15 @@
             englishVoices.forEach(v => {
                 if (seen.has(v.name)) return;
                 seen.add(v.name);
-                systemGroup.appendChild(makeOpt(`${v.name} (${v.lang})`, v.name));
+                systemVoiceSelect.appendChild(makeOpt(`${v.name} (${v.lang})`, v.name));
             });
-            voiceSelect.appendChild(systemGroup);
 
-            const preferredExists = Array.from(voiceSelect.options).some(o => o.value === voicePreference);
-            voiceSelect.value = preferredExists ? voicePreference : 'auto';
+            const recordedExists = Array.from(recordedVoiceSelect.options)
+                .some(option => option.value === recordedVoicePreference);
+            const systemExists = Array.from(systemVoiceSelect.options)
+                .some(option => option.value === systemVoicePreference);
+            recordedVoiceSelect.value = recordedExists ? recordedVoicePreference : 'af_heart';
+            systemVoiceSelect.value = systemExists ? systemVoicePreference : 'auto';
         }
 
         // Pick a voice: selected name if available, else English fallback
@@ -2868,8 +2935,10 @@
             const voices = window.speechSynthesis.getVoices() || [];
             if (!voices.length) return null;
 
-            const preferredName = voiceSelect ? voiceSelect.value : voicePreference;
-            if (preferredName && preferredName !== 'auto' && !preferredName.startsWith('kokoro:')) {
+            const preferredName = systemVoiceSelect
+                ? systemVoiceSelect.value
+                : systemVoicePreference;
+            if (preferredName && preferredName !== 'auto') {
                 const chosen = voices.find(v => v.name === preferredName);
                 if (chosen) return chosen;
             }
@@ -3216,6 +3285,9 @@
             if (autoPlaySetting !== null) {
                 autoPlayCheckbox.checked = autoPlaySetting === 'true';
                 isAutoPlaying = autoPlayCheckbox.checked;
+            } else {
+                autoPlayCheckbox.checked = true;
+                isAutoPlaying = true;
             }
 
             // Load repeat count
@@ -3234,11 +3306,14 @@
             const rateSelect = document.getElementById('rateSelect');
             if (rateSelect) rateSelect.value = playRate.toFixed(1);
             
-            const savedVoice = localStorage.getItem(VOICE_PREF_KEY);
-            if (savedVoice) {
-                voicePreference = savedVoice;
-                if (voiceSelect) voiceSelect.value = savedVoice;
-            }
+            const legacyVoice = localStorage.getItem(VOICE_PREF_KEY) || '';
+            const savedRecordedVoice = localStorage.getItem(RECORDED_VOICE_PREF_KEY);
+            const savedSystemVoice = localStorage.getItem(SYSTEM_VOICE_PREF_KEY);
+            recordedVoicePreference = savedRecordedVoice
+                || (legacyVoice.startsWith('kokoro:') ? legacyVoice.slice('kokoro:'.length) : 'af_heart');
+            systemVoicePreference = savedSystemVoice
+                || (legacyVoice && !legacyVoice.startsWith('kokoro:') ? legacyVoice : 'auto');
+            populateVoiceOptions();
             
             // Load word loop setting
             const wordLoopSetting = localStorage.getItem(WORD_LOOP_KEY);
@@ -3259,6 +3334,24 @@
                 readChineseDefinitionCheckbox.checked = readChineseDefinitionSetting === 'true';
                 shouldReadChineseDefinition = readChineseDefinitionCheckbox.checked;
             }
+
+            const readEnglishDefinitionSetting = localStorage.getItem(READ_ENGLISH_DEFINITION_KEY);
+            if (readEnglishDefinitionSetting !== null) {
+                readEnglishDefinitionCheckbox.checked = readEnglishDefinitionSetting === 'true';
+                shouldReadEnglishDefinition = readEnglishDefinitionCheckbox.checked;
+            } else {
+                readEnglishDefinitionCheckbox.checked = true;
+                shouldReadEnglishDefinition = true;
+            }
+
+            const readExampleSetting = localStorage.getItem(READ_EXAMPLE_KEY);
+            if (readExampleSetting !== null) {
+                readExampleCheckbox.checked = readExampleSetting === 'true';
+                shouldReadExample = readExampleCheckbox.checked;
+            } else {
+                readExampleCheckbox.checked = true;
+                shouldReadExample = true;
+            }
         }
         
         // Save current state to localStorage
@@ -3271,10 +3364,13 @@
             localStorage.setItem(AUTO_PLAY_KEY, isAutoPlaying.toString());
             localStorage.setItem(WORD_LOOP_KEY, isWordLooping.toString());
             localStorage.setItem(NEW_WORDS_ONLY_KEY, isNewWordsOnly.toString());
+            localStorage.setItem(READ_ENGLISH_DEFINITION_KEY, shouldReadEnglishDefinition.toString());
+            localStorage.setItem(READ_EXAMPLE_KEY, shouldReadExample.toString());
             localStorage.setItem(READ_CHINESE_DEFINITION_KEY, shouldReadChineseDefinition.toString());
             localStorage.setItem(PLAY_REPEAT_KEY, playRepeatCount.toString());
             localStorage.setItem(PLAY_RATE_KEY, playRate.toString());
-            localStorage.setItem(VOICE_PREF_KEY, voicePreference);
+            localStorage.setItem(RECORDED_VOICE_PREF_KEY, recordedVoicePreference);
+            localStorage.setItem(SYSTEM_VOICE_PREF_KEY, systemVoicePreference);
         }
 
         // Load existing shuffle order or create a new one
@@ -3684,9 +3780,13 @@
                 ? [{ text: entry.text, element: currentPhraseEl, recorded: true }]
                 : [
                     { text: entry.word, element: currentWordEl },
-                    { text: entry.definitionEn, element: englishDefinitionEl },
+                    ...(shouldReadEnglishDefinition
+                        ? [{ text: entry.definitionEn, element: englishDefinitionEl }]
+                        : []),
                     ...(shouldReadChineseDefinition ? [{ text: entry.definitionZh, element: definitionEl }] : []),
-                    { text: entry.example, element: exampleEl, recorded: true }
+                    ...(shouldReadExample
+                        ? [{ text: entry.example, element: exampleEl, recorded: true }]
+                        : [])
                 ];
             const spokenParts = parts.filter(part => part.text && String(part.text).trim());
             let partIndex = 0;
@@ -3943,16 +4043,27 @@
                 return;
             }
             
-            // Play the word, English definition, optional Chinese definition, and example.
+            // Play the word and the enabled supporting content.
             playTextWithHighlight(word.word, currentWordEl, function() {
-                playTextWithHighlight(englishDefinitionEl.textContent, englishDefinitionEl, function() {
+                const playDefinition = shouldReadEnglishDefinition
+                    ? (next) => playTextWithHighlight(
+                        englishDefinitionEl.textContent,
+                        englishDefinitionEl,
+                        next
+                    )
+                    : (next) => next();
+                playDefinition(function() {
                     playChineseDefinitionIfEnabled(function() {
-                        playTextWithHighlight(
-                            word.example,
-                            exampleEl,
-                            finishCurrentWordPlayback,
-                            { recorded: true }
-                        );
+                        if (shouldReadExample) {
+                            playTextWithHighlight(
+                                word.example,
+                                exampleEl,
+                                finishCurrentWordPlayback,
+                                { recorded: true }
+                            );
+                        } else {
+                            finishCurrentWordPlayback();
+                        }
                     });
                 });
             });
@@ -4044,7 +4155,7 @@
             const normalizedText = String(text || '').trim();
             const useRecordedAudio = Boolean(
                 options.recorded
-                && voicePreference.startsWith('kokoro:')
+                && recordedVoicePreference
                 && !/[\u4e00-\u9fa5]/.test(normalizedText)
             );
 
@@ -4141,7 +4252,7 @@
             }
 
             element.classList.add('speaking');
-            getRecordedAudioUrl(normalizedText, voicePreference.slice('kokoro:'.length))
+            getRecordedAudioUrl(normalizedText, recordedVoicePreference)
                 .then((audioUrl) => {
                     if (!isCurrentSpeech()) return;
                     const audio = new Audio(audioUrl);
@@ -4179,7 +4290,7 @@
                 digest = Array.from(new Uint8Array(hash), byte => byte.toString(16).padStart(2, '0')).join('');
                 recordedAudioHashCache.set(text, digest);
             }
-            return `${API_BASE_URL}/audio/v1/${encodeURIComponent(voiceId)}/${digest.slice(0, 2)}/${digest}.mp3`;
+            return `${API_BASE_URL}/audio/v1/${encodeURIComponent(voiceId)}/${digest.slice(0, 2)}/${digest}.mp3?v=${AUDIO_LIBRARY_VERSION}`;
         }
 
         function cancelSpeechSession() {
@@ -4245,6 +4356,16 @@
             saveState();
         }
 
+        function toggleEnglishDefinitionReading() {
+            shouldReadEnglishDefinition = readEnglishDefinitionCheckbox.checked;
+            saveState();
+        }
+
+        function toggleExampleReading() {
+            shouldReadExample = readExampleCheckbox.checked;
+            saveState();
+        }
+
         // Update repeat count from input
         function updateRepeatCount() {
             const val = parseInt(repeatCountInput.value, 10);
@@ -4293,14 +4414,18 @@
             window.location.reload();
         }
 
-        function updateVoicePreference() {
-            voicePreference = voiceSelect.value || 'auto';
+        function updateVoicePreferences() {
+            recordedVoicePreference = recordedVoiceSelect.value || 'af_heart';
+            systemVoicePreference = systemVoiceSelect.value || 'auto';
             saveState();
             stopPlayback(true);
             stopPhrasePlayback(true);
             stopArticlePlayback();
             stopVocabularyNotebookPlayback();
-            console.log(`Voice preference set to ${voicePreference}`);
+            console.log(
+                `Voice preferences set to recorded=${recordedVoicePreference}, `
+                + `fallback=${systemVoicePreference}`
+            );
         }
 
         // Phrase learned helpers
