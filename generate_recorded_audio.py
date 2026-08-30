@@ -17,7 +17,7 @@ from kokoro_onnx import Kokoro
 
 
 DEFAULT_API_BASE = "https://api-enplay.ningboaoke.com"
-DEFAULT_VOICES = ("af_heart", "af_bella", "bf_emma")
+DEFAULT_VOICES = ("af_heart", "af_bella", "bf_emma", "am_michael", "bm_george")
 
 
 def normalize_text(value: object) -> str:
@@ -27,8 +27,10 @@ def normalize_text(value: object) -> str:
 
 def extract_json_array(path: Path, variable_name: str) -> list[dict[str, object]]:
     source = path.read_text(encoding="utf-8")
-    marker = f"const {variable_name} ="
-    start = source.index(marker) + len(marker)
+    marker = re.search(rf"\bconst\s+{re.escape(variable_name)}\s*=", source)
+    if not marker:
+        raise ValueError(f"{path} does not contain a variable named {variable_name}")
+    start = marker.end()
     array_start = source.index("[", start)
     decoder = json.JSONDecoder()
     value, _ = decoder.raw_decode(source[array_start:])
@@ -43,7 +45,23 @@ def fetch_json(url: str) -> object:
         return json.load(response)
 
 
-def collect_texts(workspace: Path, api_base: str) -> list[str]:
+def collect_tatoeba_texts(workspace: Path) -> list[str]:
+    texts: dict[str, None] = {}
+    tatoeba_path = workspace / "sentences_tatoeba.js"
+    if not tatoeba_path.exists():
+        return []
+    for library in extract_json_array(tatoeba_path, "libraries"):
+        for item in library.get("items", []):
+            sentence = normalize_text(item.get("text"))
+            if sentence:
+                texts.setdefault(sentence, None)
+    return list(texts)
+
+
+def collect_texts(workspace: Path, api_base: str, source_mode: str = "all") -> list[str]:
+    if source_mode == "tatoeba":
+        return collect_tatoeba_texts(workspace)
+
     texts: dict[str, None] = {}
 
     for item in extract_json_array(workspace / "words.js", "cet4Words"):
@@ -55,6 +73,9 @@ def collect_texts(workspace: Path, api_base: str) -> list[str]:
         sentence = normalize_text(item.get("sentence"))
         if sentence:
             texts.setdefault(sentence, None)
+
+    for sentence in collect_tatoeba_texts(workspace):
+        texts.setdefault(sentence, None)
 
     catalog = fetch_json(f"{api_base.rstrip('/')}/v1/wordbooks")
     if not isinstance(catalog, list):
@@ -99,6 +120,10 @@ def encode_mp3(samples: np.ndarray, sample_rate: int) -> bytes:
     return encoder.encode(pcm.tobytes()) + encoder.flush()
 
 
+def language_for_voice(voice: str) -> str:
+    return "en-gb" if voice.startswith("b") else "en-us"
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--workspace", type=Path, default=Path(__file__).resolve().parent)
@@ -107,12 +132,18 @@ def main() -> None:
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--api-base", default=DEFAULT_API_BASE)
     parser.add_argument("--voices", nargs="+", default=list(DEFAULT_VOICES))
+    parser.add_argument("--source-mode", choices=("all", "tatoeba"), default="all")
+    parser.add_argument("--shard-count", type=int, default=1)
+    parser.add_argument("--shard-index", type=int, default=0)
     parser.add_argument("--limit", type=int, default=0)
     parser.add_argument("--progress-every", type=int, default=25)
     parser.add_argument("--dry-run", action="store_true")
     args = parser.parse_args()
 
-    texts = collect_texts(args.workspace.resolve(), args.api_base)
+    if args.shard_count < 1 or not 0 <= args.shard_index < args.shard_count:
+        parser.error("shard index must be within the configured shard count")
+    texts = collect_texts(args.workspace.resolve(), args.api_base, args.source_mode)
+    texts = texts[args.shard_index :: args.shard_count]
     if args.limit > 0:
         texts = texts[: args.limit]
     total = len(texts) * len(args.voices)
@@ -123,6 +154,7 @@ def main() -> None:
     started = perf_counter()
     completed = 0
     skipped = 0
+    failed = 0
     kokoro = Kokoro(str(args.model.resolve()), str(args.voices_file.resolve()))
 
     for voice in args.voices:
@@ -133,8 +165,19 @@ def main() -> None:
                 completed += 1
                 continue
             destination.parent.mkdir(parents=True, exist_ok=True)
-            samples, sample_rate = kokoro.create(text, voice=voice, speed=1.0, lang="en-us")
-            destination.write_bytes(encode_mp3(samples, sample_rate))
+            try:
+                samples, sample_rate = kokoro.create(
+                    text,
+                    voice=voice,
+                    speed=1.0,
+                    lang=language_for_voice(voice),
+                )
+                temporary = destination.with_suffix(".mp3.tmp")
+                temporary.write_bytes(encode_mp3(samples, sample_rate))
+                temporary.replace(destination)
+            except Exception as error:
+                failed += 1
+                print(f"FAILED voice={voice} text={text!r}: {error}", flush=True)
             completed += 1
             if completed % args.progress_every == 0 or completed == total:
                 elapsed = perf_counter() - started
@@ -142,9 +185,11 @@ def main() -> None:
                 remaining = (total - completed) / rate if rate else 0
                 print(
                     f"{completed}/{total} clips; {rate:.2f} clips/s; "
-                    f"ETA {remaining / 3600:.2f}h; skipped {skipped}",
+                    f"ETA {remaining / 3600:.2f}h; skipped {skipped}; failed {failed}",
                     flush=True,
                 )
+
+    print(f"Finished: completed={completed} skipped={skipped} failed={failed}", flush=True)
 
 
 if __name__ == "__main__":
