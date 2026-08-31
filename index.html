@@ -800,12 +800,19 @@
         }
 
         .article-controls {
-            display: flex;
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 3.4rem)) 3rem repeat(3, minmax(0, 3.4rem));
             align-items: center;
             justify-content: center;
+            justify-items: center;
             gap: clamp(0.45rem, 2vw, 1rem);
             margin-top: 0.72rem;
         }
+
+        /* A matching empty slot on the left balances the fullscreen action. */
+        .article-controls > :first-child { grid-column: 2; }
+        .article-controls > div { display: grid; justify-items: center; }
+        .article-control-label.article-track-label { visibility: hidden; }
 
         .article-control-secondary {
             display: grid;
@@ -2010,8 +2017,8 @@
             .article-controls { gap: 0.1rem; }
             .article-controls .article-control-secondary,
             .article-controls .article-control-secondary.article-fullscreen-toggle {
-                width: 2.35rem;
-                height: 2.35rem;
+                width: 1.8rem;
+                height: 1.8rem;
             }
             .article-controls .control-btn {
                 width: 2.8rem;
@@ -2602,7 +2609,7 @@
                         <div class="article-controls">
                             <div>
                                 <button id="articlePrevBtn" class="article-control-secondary" type="button" aria-label="上一篇文章" title="上一篇文章"><i class="fa fa-angle-double-left" aria-hidden="true"></i></button>
-                                <div class="article-control-label">上一篇</div>
+                                <div class="article-control-label article-track-label" aria-hidden="true">上一篇</div>
                             </div>
                             <div>
                                 <button id="articlePrevSentenceBtn" class="article-control-secondary" type="button" aria-label="上一句" title="上一句"><i class="fa fa-step-backward" aria-hidden="true"></i></button>
@@ -2615,7 +2622,7 @@
                             </div>
                             <div>
                                 <button id="articleNextBtn" class="article-control-secondary" type="button" aria-label="下一篇文章" title="下一篇文章"><i class="fa fa-angle-double-right" aria-hidden="true"></i></button>
-                                <div class="article-control-label">下一篇</div>
+                                <div class="article-control-label article-track-label" aria-hidden="true">下一篇</div>
                             </div>
                             <div>
                                 <button id="articleFullscreenBtn" class="article-control-secondary article-fullscreen-toggle" type="button" aria-label="全屏阅读文章" aria-controls="articleReaderCard" title="全屏阅读" aria-pressed="false">
