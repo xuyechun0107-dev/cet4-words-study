@@ -2147,6 +2147,142 @@
         .modal.active .modal-content {
             transform: translate(-50%, -50%) scale(1);
         }
+        /* Neighbor previews only participate in layout in immersive mode. */
+        .fullscreen-neighbor { display: none; }
+        .fullscreen-focus { display: contents; }
+
+        :is(#currentWordCard, #currentSentenceCard):is(:fullscreen, .is-immersive) {
+            container-type: size;
+            height: 100dvh;
+            display: flex;
+            flex-direction: column;
+            gap: clamp(0.5rem, 2vmin, 1.5rem);
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            padding-block: max(1.25rem, 4vmin, env(safe-area-inset-top)) max(1.25rem, 4vmin, env(safe-area-inset-bottom)) !important;
+            animation: none;
+        }
+
+        :is(#currentWordCard, #currentSentenceCard):is(:fullscreen, .is-immersive) > :not(.notebook-toggle) {
+            width: min(100%, 64rem);
+        }
+
+        :is(#currentWordCard, #currentSentenceCard).is-immersive.is-landscape-fallback {
+            width: 100dvh;
+            height: 100dvw;
+            padding-block: max(1.25rem, 4vmin) !important;
+        }
+
+        :is(#currentWordCard, #currentSentenceCard):is(:fullscreen, .is-immersive) .fullscreen-focus {
+            display: block;
+            flex: 0 1 auto;
+            max-height: 100%;
+            min-height: 0;
+            overflow: auto;
+            overscroll-behavior: contain;
+            padding: 0.25rem 3rem 0.25rem 0.25rem;
+            overflow-wrap: anywhere;
+            scrollbar-width: thin;
+        }
+
+        :is(#currentWordCard, #currentSentenceCard):is(:fullscreen, .is-immersive) .fullscreen-neighbor {
+            display: flex;
+            flex: 0 0 auto;
+            flex-direction: column;
+            justify-content: center;
+            align-items: flex-start;
+            gap: 0.2rem;
+            min-height: 0;
+            min-width: 0;
+            padding: 0.25rem 3rem 0.25rem 0.25rem;
+            color: oklch(70% 0.025 260);
+            text-align: left;
+            background: transparent;
+            border: 0;
+            border-radius: 0.4rem;
+        }
+
+        #currentSentenceCard:is(:fullscreen, .is-immersive) .sentence-player-footer {
+            flex: 0 0 auto;
+        }
+
+        .fullscreen-neighbor .neighbor-label {
+            font-size: 0.7rem;
+            font-weight: 500;
+        }
+
+        .fullscreen-neighbor .neighbor-text {
+            display: -webkit-box;
+            -webkit-box-orient: vertical;
+            -webkit-line-clamp: 2;
+            overflow: hidden;
+            overflow-wrap: anywhere;
+            font-weight: 400;
+            font-size: clamp(1.1rem, min(4cqw, 7cqh), 3rem);
+            line-height: 1.2;
+        }
+
+        #currentSentenceCard .neighbor-text {
+            font-size: clamp(0.95rem, min(3cqw, 5cqh), 2rem);
+        }
+
+        .fullscreen-neighbor:disabled { cursor: default; }
+        .fullscreen-neighbor:not(:disabled):hover { color: var(--blue); }
+        .fullscreen-neighbor:focus-visible,
+        .fullscreen-focus:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+
+        #currentWordCard:is(:fullscreen, .is-immersive) #currentWord {
+            font-size: clamp(2rem, min(7cqw, 12cqh), 6rem);
+            line-height: 1.1;
+        }
+
+        #currentWordCard:is(:fullscreen, .is-immersive) :is(#englishDefinition, #definition, #example) {
+            font-size: clamp(1rem, min(2.5cqw, 4cqh), 1.8rem);
+            line-height: 1.5;
+        }
+
+        #currentWordCard:is(:fullscreen, .is-immersive) :is(#phonetic, h3) {
+            font-size: clamp(0.9rem, min(2cqw, 3.5cqh), 1.4rem);
+        }
+
+        #currentWordCard:is(:fullscreen, .is-immersive) :is(#englishDefinitionBlock, #definitionBlock) {
+            margin-bottom: clamp(0.6rem, 2cqh, 1.5rem);
+        }
+
+        #currentSentenceCard:is(:fullscreen, .is-immersive) #currentPhrase {
+            max-width: 45ch;
+            color: var(--blue);
+            font-size: clamp(1.35rem, min(5cqw, 9cqh), 3.5rem);
+        }
+
+        #currentSentenceCard:is(:fullscreen, .is-immersive) #currentPhraseNote {
+            font-size: clamp(1rem, min(2.5cqw, 4cqh), 1.6rem);
+        }
+
+        #currentSentenceCard:is(:fullscreen, .is-immersive) h2 {
+            font-size: clamp(0.9rem, 3cqh, 1.25rem);
+        }
+
+        :is(#currentWordCard, #currentSentenceCard):is(:fullscreen, .is-immersive) .notebook-toggle {
+            top: max(1.25rem, 4vmin, env(safe-area-inset-top));
+        }
+
+        :is(#currentWordCard, #currentSentenceCard):is(:fullscreen, .is-immersive) .card-fullscreen-toggle {
+            bottom: max(1.25rem, 4vmin, env(safe-area-inset-bottom));
+        }
+
+        :is(#currentWordCard, #currentSentenceCard).is-immersive.is-landscape-fallback .notebook-toggle {
+            top: max(1.25rem, 4vmin);
+        }
+
+        :is(#currentWordCard, #currentSentenceCard).is-immersive.is-landscape-fallback .card-fullscreen-toggle {
+            bottom: max(1.25rem, 4vmin);
+        }
+
+        /* Keep exit reachable even when an imported word has no example. */
+        #currentWordCard:is(:fullscreen, .is-immersive) #exampleBlock.hidden { display: block; }
+        #currentWordCard:is(:fullscreen, .is-immersive) #exampleBlock.hidden :is(h3, #example) { display: none; }
     </style>
 </head>
 <body class="min-h-screen flex flex-col">
@@ -2291,6 +2427,8 @@
             <button id="wordNotebookToggle" class="notebook-toggle" type="button" aria-label="加入生词本" title="加入生词本">
                 <i class="fa fa-plus" aria-hidden="true"></i>
             </button>
+            <button id="wordPreviousPreview" class="fullscreen-neighbor" type="button"><span class="neighbor-label">上一个单词</span><span class="neighbor-text"></span></button>
+            <div class="fullscreen-focus" tabindex="0" aria-label="当前单词内容">
             <div class="flex justify-between items-start mb-4">
                 <div>
                     <div class="flex items-center">
@@ -2326,6 +2464,8 @@
                 </div>
                 <p id="example" class="text-lg italic text-gray-600">The climbers had to abandon their attempt to reach the summit due to the bad weather.</p>
             </div>
+            </div>
+            <button id="wordNextPreview" class="fullscreen-neighbor" type="button"><span class="neighbor-label">下一个单词</span><span class="neighbor-text"></span></button>
         </div>
         
         <!-- Progress Bar -->
@@ -2366,6 +2506,8 @@
             <button id="phraseNotebookToggle" class="notebook-toggle" type="button" aria-label="加入生词本" title="加入生词本">
                 <i class="fa fa-plus" aria-hidden="true"></i>
             </button>
+            <button id="sentencePreviousPreview" class="fullscreen-neighbor" type="button"><span class="neighbor-label">上一句</span><span class="neighbor-text"></span></button>
+            <div class="fullscreen-focus" tabindex="0" aria-label="当前句子内容">
             <div class="flex justify-between items-start mb-4">
                 <div class="flex items-center gap-3">
                     <h2 class="text-2xl font-bold text-primary">Sentence Player</h2>
@@ -2384,6 +2526,8 @@
                 </div>
                 <p id="currentPhraseNote" class="text-sm text-gray-600 mt-2"></p>
             </div>
+            </div>
+            <button id="sentenceNextPreview" class="fullscreen-neighbor" type="button"><span class="neighbor-label">下一句</span><span class="neighbor-text"></span></button>
             <div class="sentence-player-footer">
                 <div class="sentence-player-controls flex items-center justify-center gap-6">
                     <button id="phrasePrevBtn" class="control-btn prev-btn">
@@ -2901,6 +3045,10 @@
             wordNotebookToggle.addEventListener('click', toggleCurrentWordNotebook);
             wordFullscreenBtn.addEventListener('click', toggleWordCardFullscreen);
             sentenceFullscreenBtn.addEventListener('click', toggleSentenceCardFullscreen);
+            document.getElementById('wordPreviousPreview').addEventListener('click', goToPreviousWord);
+            document.getElementById('wordNextPreview').addEventListener('click', () => goToNextWord());
+            document.getElementById('sentencePreviousPreview').addEventListener('click', goToPrevPhrase);
+            document.getElementById('sentenceNextPreview').addEventListener('click', () => goToNextPhrase());
             articleFullscreenBtn.addEventListener('click', toggleArticleCardFullscreen);
             document.addEventListener('fullscreenchange', handleCardFullscreenChange);
             document.addEventListener('webkitfullscreenchange', handleCardFullscreenChange);
@@ -2972,6 +3120,32 @@
             return document.fullscreenElement || document.webkitFullscreenElement || null;
         }
 
+        function getFullscreenNeighbors(type) {
+            if (notebookDisplayedEntry && (notebookDisplayedEntry.type === 'sentence' ? 'sentence' : 'word') === type) {
+                return [notebookPlaybackQueue[notebookPlaybackIndex - 1], notebookPlaybackQueue[notebookPlaybackIndex + 1]];
+            }
+            if (type === 'sentence') {
+                return [phraseList[findPrevPhraseIndex()], phraseList[findNextPhraseIndex()]];
+            }
+            return [findPreviousPosition(isNewWordsOnly), findNextPosition(isNewWordsOnly)]
+                .map(position => position < 0 ? null : cet4Words[order[position]]);
+        }
+
+        function updateFullscreenNeighbors(type) {
+            const neighbors = getFullscreenNeighbors(type);
+            ['Previous', 'Next'].forEach((direction, index) => {
+                const preview = document.getElementById(`${type}${direction}Preview`);
+                const item = neighbors[index];
+                const text = item ? (type === 'sentence' ? item.text : item.word) : '';
+                preview.disabled = !text;
+                preview.querySelector('.neighbor-text').textContent = text || '';
+                const label = type === 'sentence' ? ['上一句', '下一句'][index] : ['上一个单词', '下一个单词'][index];
+                preview.querySelector('.neighbor-label').textContent = text ? label : ['已到开头', '已到末尾'][index];
+                preview.title = text || '';
+                preview.setAttribute('aria-label', text ? `${label}：${text}` : ['已到开头', '已到末尾'][index]);
+            });
+        }
+
         function isWordCardFullscreen() {
             return wordFullscreenBtn.getAttribute('aria-pressed') === 'true'
                 || getFullscreenElement() === currentWordCard
@@ -2983,6 +3157,7 @@
         }
 
         function updateWordFullscreenButton(isActive) {
+            if (isActive) updateFullscreenNeighbors('word');
             wordFullscreenBtn.setAttribute('aria-pressed', isActive ? 'true' : 'false');
             wordFullscreenBtn.setAttribute('aria-label', isActive ? '退出单词全屏' : '全屏查看单词');
             wordFullscreenBtn.title = isActive ? '退出全屏' : '全屏查看';
@@ -3085,6 +3260,7 @@
         }
 
         function updateSentenceFullscreenButton(isActive) {
+            if (isActive) updateFullscreenNeighbors('sentence');
             sentenceFullscreenBtn.setAttribute('aria-pressed', isActive ? 'true' : 'false');
             sentenceFullscreenBtn.setAttribute('aria-label', isActive ? '退出句子全屏' : '全屏查看句子');
             sentenceFullscreenBtn.title = isActive ? '退出全屏' : '全屏查看';
@@ -4514,6 +4690,7 @@
 
         function updatePhraseCard() {
             notebookDisplayedEntry = null;
+            updateFullscreenNeighbors('sentence');
             if (!phraseList.length) {
                 currentPhraseEl.textContent = 'No phrases available';
                 phraseIndexEl.textContent = '0/0';
@@ -5233,6 +5410,7 @@
 
         function displayNotebookEntry(entry, position, total) {
             notebookDisplayedEntry = entry;
+            updateFullscreenNeighbors(entry.type === 'sentence' ? 'sentence' : 'word');
             if (entry.type === 'sentence') {
                 currentPhraseEl.textContent = entry.text || '';
                 currentPhraseNoteEl.textContent = entry.translation || '（暂无中文释义）';
@@ -5362,6 +5540,7 @@
         // Update the word card with current word
         function updateWordCard() {
             notebookDisplayedEntry = null;
+            updateFullscreenNeighbors('word');
             const wordIndex = order[orderPosition] || 0;
             currentIndex = wordIndex;
             const word = cet4Words[wordIndex];
@@ -5878,6 +6057,7 @@
             console.log('New words only toggled:', newWordsOnlyCheckbox.checked);
             isNewWordsOnly = newWordsOnlyCheckbox.checked;
             // Keep the active queue intact. Apply the filter when normal playback advances.
+            updateFullscreenNeighbors(currentWorkspaceView === 'sentences' ? 'sentence' : 'word');
             saveState();
         }
 
