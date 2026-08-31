@@ -761,6 +761,8 @@
         }
 
         .article-transport {
+            container: article-transport / inline-size;
+            min-width: 0;
             position: sticky;
             z-index: 8;
             top: calc(5.15rem + env(safe-area-inset-top));
@@ -801,18 +803,44 @@
 
         .article-controls {
             display: grid;
-            grid-template-columns: repeat(3, minmax(0, 3.4rem)) 3rem repeat(3, minmax(0, 3.4rem));
+            grid-template-columns: repeat(3, minmax(0, 3.4rem)) minmax(0, 3rem) repeat(3, minmax(0, 3.4rem));
             align-items: center;
             justify-content: center;
             justify-items: center;
-            gap: clamp(0.45rem, 2vw, 1rem);
+            gap: clamp(0.125rem, 1.5cqw, 1rem);
+            min-width: 0;
+            max-width: 100%;
             margin-top: 0.72rem;
         }
 
         /* A matching empty slot on the left balances the fullscreen action. */
         .article-controls > :first-child { grid-column: 2; }
-        .article-controls > div { display: grid; justify-items: center; }
+        .article-controls > div {
+            display: grid;
+            justify-items: center;
+            min-width: 0;
+            width: 100%;
+        }
         .article-control-label.article-track-label { visibility: hidden; }
+
+        .article-controls .article-control-secondary {
+            width: min(2.45rem, 100%);
+            height: auto;
+            aspect-ratio: 1;
+            min-width: 0;
+        }
+
+        .article-controls .article-control-secondary.article-fullscreen-toggle {
+            width: min(2.75rem, 100%);
+            height: auto;
+        }
+
+        .article-controls > .control-btn {
+            width: min(3rem, 100%);
+            height: auto;
+            aspect-ratio: 1;
+            min-width: 0;
+        }
 
         .article-control-secondary {
             display: grid;
@@ -834,11 +862,19 @@
         }
 
         .article-control-label {
-            min-width: 3.4rem;
+            min-width: 0;
+            max-width: 100%;
             color: #718098;
             font-size: 0.62rem;
             font-weight: 700;
             text-align: center;
+        }
+
+        @container article-transport (max-width: 26rem) {
+            .article-controls { gap: 0.125rem; }
+            .article-control-label { display: none; }
+            .article-controls button { font-size: clamp(0.7rem, 3cqw, 1rem); }
+            .article-progress-meta { gap: 0.5rem; flex-wrap: wrap; }
         }
 
         #articleReaderCard:fullscreen,
@@ -2011,19 +2047,6 @@
             .article-summary { font-size: 0.82rem; }
             .article-sentence-en { font-size: 1.03rem; }
             .article-sentence-zh { font-size: 0.8rem; }
-        }
-
-        @media (max-width: 360px) {
-            .article-controls { gap: 0.1rem; }
-            .article-controls .article-control-secondary,
-            .article-controls .article-control-secondary.article-fullscreen-toggle {
-                width: 1.8rem;
-                height: 1.8rem;
-            }
-            .article-controls .control-btn {
-                width: 2.8rem;
-                height: 2.8rem;
-            }
         }
 
         @media (prefers-reduced-motion: reduce) {
