@@ -4,7 +4,8 @@ param(
     [Parameter(Mandatory = $true)]
     [string]$BuildRoot,
     [string]$RemoteHostName = "aoke@192.168.0.103",
-    [string]$RemoteAudioRoot = "/home/aoke/apps/cet4-study/audio/v1"
+    [string]$RemoteAudioRoot = "/home/aoke/apps/cet4-study/audio/v1",
+    [switch]$MaleOnly
 )
 
 $ErrorActionPreference = "Stop"
@@ -19,6 +20,7 @@ $model = Join-Path $BuildRoot "kokoro-v1.0.fp16.onnx"
 $voicesFile = Join-Path $BuildRoot "voices-v1.0.bin"
 $outputRoot = Join-Path $BuildRoot "output"
 $logRoot = Join-Path $BuildRoot "logs"
+$runId = Get-Date -Format "yyyyMMdd-HHmmss"
 
 [IO.Directory]::CreateDirectory($outputRoot) | Out-Null
 [IO.Directory]::CreateDirectory($logRoot) | Out-Null
@@ -36,8 +38,8 @@ function Start-AudioWorker {
         [string[]]$Voices
     )
 
-    $stdout = Join-Path $logRoot "$Name.stdout.log"
-    $stderr = Join-Path $logRoot "$Name.stderr.log"
+    $stdout = Join-Path $logRoot "$Name.$runId.stdout.log"
+    $stderr = Join-Path $logRoot "$Name.$runId.stderr.log"
     $arguments = @(
         $generator,
         "--workspace", $Workspace,
@@ -50,7 +52,7 @@ function Start-AudioWorker {
     ) + $Voices
 
     $process = Start-Process -FilePath $python `
-        -ArgumentList $arguments `
+        -ArgumentList ($arguments | ForEach-Object { '"' + $_ + '"' }) `
         -WorkingDirectory $Workspace `
         -WindowStyle Hidden `
         -RedirectStandardOutput $stdout `
@@ -81,28 +83,41 @@ function Publish-Voice {
     }
 
     Write-BuildStatus "Uploading $Voice to $RemoteHostName"
-    & scp -r -- $voiceRoot "${RemoteHostName}:${RemoteAudioRoot}/"
+    & scp -o BatchMode=yes -o ConnectTimeout=20 -r -- $voiceRoot "${RemoteHostName}:${RemoteAudioRoot}/"
     if ($LASTEXITCODE -ne 0) {
         throw "scp failed for $Voice with exit code $LASTEXITCODE"
     }
 
+    # scp may preserve restrictive local directory modes. The API container only
+    # needs read/traverse access, so make the uploaded voice tree publicly readable.
+    $remoteVoiceRoot = "$RemoteAudioRoot/$Voice"
+    & ssh -o BatchMode=yes -o ConnectTimeout=20 $RemoteHostName "test -d '$remoteVoiceRoot' && find '$remoteVoiceRoot' -type d -exec chmod 755 {} + && find '$remoteVoiceRoot' -type f -name '*.mp3' -exec chmod 644 {} +"
+    if ($LASTEXITCODE -ne 0) {
+        throw "remote audio permission update failed for $Voice"
+    }
+
     $manifest = Join-Path $logRoot "$Voice.sha256"
-    $voicePrefixLength = $voiceRoot.Length + 1
+    $separator = [IO.Path]::DirectorySeparatorChar
+    $voiceMarker = "$separator$Voice$separator"
     $manifestLines = Get-ChildItem -LiteralPath $voiceRoot -Recurse -File -Filter "*.mp3" |
         Sort-Object FullName |
         ForEach-Object {
-            $relativePath = $_.FullName.Substring($voicePrefixLength).Replace("\", "/")
+            $markerIndex = $_.FullName.LastIndexOf($voiceMarker, [StringComparison]::OrdinalIgnoreCase)
+            if ($markerIndex -lt 0) {
+                throw "Cannot derive relative path for $($_.FullName) under voice $Voice"
+            }
+            $relativePath = $_.FullName.Substring($markerIndex + $voiceMarker.Length).Replace("\", "/")
             $hash = (Get-FileHash -LiteralPath $_.FullName -Algorithm SHA256).Hash.ToLowerInvariant()
             "$hash  $relativePath"
         }
     Set-Content -LiteralPath $manifest -Value $manifestLines -Encoding ASCII
 
     $remoteManifest = "/tmp/enplay-$Voice.sha256"
-    & scp -- $manifest "${RemoteHostName}:${remoteManifest}"
+    & scp -o BatchMode=yes -o ConnectTimeout=20 -- $manifest "${RemoteHostName}:${remoteManifest}"
     if ($LASTEXITCODE -ne 0) {
         throw "checksum manifest upload failed for $Voice"
     }
-    & ssh $RemoteHostName "cd '$RemoteAudioRoot/$Voice' && sha256sum -c '$remoteManifest' >/dev/null && rm -f '$remoteManifest'"
+    & ssh -o BatchMode=yes -o ConnectTimeout=20 $RemoteHostName "cd '$RemoteAudioRoot/$Voice' && sha256sum -c '$remoteManifest' >/dev/null && rm -f '$remoteManifest'"
     if ($LASTEXITCODE -ne 0) {
         throw "remote SHA256 verification failed for $Voice"
     }
@@ -112,7 +127,9 @@ function Publish-Voice {
 
 Write-BuildStatus "Audio build started"
 $workers = @(
-    Start-AudioWorker -Name "new-sentences-female" -SourceMode "tatoeba" -Voices @("af_heart", "af_bella", "bf_emma")
+    if (-not $MaleOnly) {
+        Start-AudioWorker -Name "new-sentences-female" -SourceMode "tatoeba" -Voices @("af_heart", "af_bella", "bf_emma")
+    }
     Start-AudioWorker -Name "all-content-michael" -SourceMode "all" -Voices @("am_michael")
     Start-AudioWorker -Name "all-content-george" -SourceMode "all" -Voices @("bm_george")
 )

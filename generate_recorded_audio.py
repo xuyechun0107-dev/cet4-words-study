@@ -400,6 +400,8 @@ def main() -> None:
                 )
 
     print(f"Finished: completed={completed} skipped={skipped} failed={failed}", flush=True)
+    if failed:
+        raise SystemExit(1)
 
 
 if __name__ == "__main__":
