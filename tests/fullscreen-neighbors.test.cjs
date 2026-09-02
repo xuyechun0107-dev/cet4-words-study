@@ -3,10 +3,13 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const vm = require('node:vm');
+const { webcrypto } = require('node:crypto');
 
 const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
 function source(name) {
-    const start = html.indexOf(`        function ${name}(`);
+    const functionMarker = `        function ${name}(`;
+    const asyncFunctionMarker = `        async function ${name}(`;
+    const start = Math.max(html.indexOf(functionMarker), html.indexOf(asyncFunctionMarker));
     assert.ok(start >= 0, `Missing function ${name}`);
     return html.slice(start, html.indexOf('\n        }', start) + 10);
 }
@@ -67,4 +70,28 @@ test('preview renderer disables boundaries and inserts untrusted content as text
     assert.equal(elements.wordPreviousPreview.parts['.neighbor-label'].textContent, '已到开头');
     assert.equal(elements.wordNextPreview.parts['.neighbor-text'].textContent, '<img src=x onerror=alert(1)>');
     assert.equal(elements.wordNextPreview.innerHTML, undefined);
+});
+
+test('recorded sentence URLs are warmed per voice before playback', async () => {
+    const context = vm.createContext({
+        API_BASE_URL: 'https://audio.example.test',
+        AUDIO_LIBRARY_VERSION: 'test-version',
+        TextEncoder,
+        crypto: webcrypto,
+        recordedAudioHashCache: new Map(),
+        recordedAudioUrlCache: new Map(),
+    });
+    ['getRecordedAudioCacheKey', 'getCachedRecordedAudioUrl', 'warmRecordedAudioUrl', 'getRecordedAudioUrl']
+        .forEach(name => vm.runInContext(source(name), context));
+
+    const text = 'A sentence ready to play.';
+    context.warmRecordedAudioUrl(text, 'af_heart');
+    await context.getRecordedAudioUrl(text, 'af_heart');
+
+    const femaleUrl = context.getCachedRecordedAudioUrl(text, 'af_heart');
+    assert.match(femaleUrl, /\/audio\/v1\/af_heart\//);
+    assert.equal(context.getCachedRecordedAudioUrl(text, 'am_michael'), '');
+
+    await context.getRecordedAudioUrl(text, 'am_michael');
+    assert.match(context.getCachedRecordedAudioUrl(text, 'am_michael'), /\/audio\/v1\/am_michael\//);
 });

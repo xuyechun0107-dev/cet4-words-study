@@ -3091,6 +3091,7 @@
         let mediaSessionPaused = false;
         let deferredPlaybackStep = null;
         const recordedAudioHashCache = new Map();
+        const recordedAudioUrlCache = new Map();
         let playbackStartTimer = null;
         let librarySelectionId = 0;
         let isNotebookPlaying = false;
@@ -4841,6 +4842,7 @@
             phraseNotebookToggle.disabled = false;
             const item = phraseList[phraseIndex];
             currentPhraseEl.textContent = item.text;
+            warmRecordedAudioUrl(item.text, recordedVoicePreference);
             phraseSceneLabel.textContent = formatPhraseCategory(item.scene);
             phraseIndexEl.textContent = `${phraseIndex + 1}/${phraseList.length}`;
             const note = item.note || getPhraseNote(item.scene, item.text);
@@ -6096,41 +6098,67 @@
             }
 
             element.classList.add('speaking');
-            getRecordedAudioUrl(normalizedText, recordedVoicePreference)
-                .then((audioUrl) => {
+            const playRecordedAudioUrl = (audioUrl) => {
+                if (!isCurrentSpeech()) return;
+                const audio = recordedAudioPlayer;
+                audio.pause();
+                audio.onended = null;
+                audio.onerror = null;
+                audio.src = audioUrl;
+                activeRecordedAudio = audio;
+                audio.playbackRate = playRate;
+                audio.onended = () => {
                     if (!isCurrentSpeech()) return;
-                    const audio = recordedAudioPlayer;
-                    audio.pause();
-                    audio.onended = null;
+                    activeRecordedAudio = null;
+                    element.classList.remove('speaking');
+                    runCallback(300);
+                };
+                let hasFallenBack = false;
+                const fallback = () => {
+                    if (!isCurrentSpeech() || hasFallenBack) return;
+                    hasFallenBack = true;
                     audio.onerror = null;
-                    audio.src = audioUrl;
-                    activeRecordedAudio = audio;
-                    audio.playbackRate = playRate;
-                    audio.onended = () => {
-                        if (!isCurrentSpeech()) return;
-                        activeRecordedAudio = null;
-                        element.classList.remove('speaking');
-                        runCallback(300);
-                    };
-                    let hasFallenBack = false;
-                    const fallback = () => {
-                        if (!isCurrentSpeech() || hasFallenBack) return;
-                        hasFallenBack = true;
-                        audio.onerror = null;
-                        audio.pause();
-                        activeRecordedAudio = null;
-                        element.classList.remove('speaking');
-                        console.info('Recorded audio is not ready; using the system voice for this item.');
-                        speakWithSystemVoice();
-                    };
-                    audio.onerror = fallback;
-                    audio.load();
-                    audio.play().catch(fallback);
-                })
+                    audio.pause();
+                    activeRecordedAudio = null;
+                    element.classList.remove('speaking');
+                    console.info('Recorded audio is not ready; using the system voice for this item.');
+                    speakWithSystemVoice();
+                };
+                audio.onerror = fallback;
+                audio.load();
+                audio.play().catch(fallback);
+            };
+
+            const cachedAudioUrl = getCachedRecordedAudioUrl(normalizedText, recordedVoicePreference);
+            if (cachedAudioUrl) {
+                // Keep the first play() inside the user's click call stack. Safari and
+                // mobile Chromium may otherwise block it after the async SHA-256 step.
+                playRecordedAudioUrl(cachedAudioUrl);
+                return;
+            }
+
+            getRecordedAudioUrl(normalizedText, recordedVoicePreference)
+                .then(playRecordedAudioUrl)
                 .catch(() => speakWithSystemVoice());
         }
 
+        function getRecordedAudioCacheKey(text, voiceId) {
+            return `${voiceId}\n${String(text || '').normalize('NFKC').replace(/\s+/g, ' ').trim()}`;
+        }
+
+        function getCachedRecordedAudioUrl(text, voiceId) {
+            return recordedAudioUrlCache.get(getRecordedAudioCacheKey(text, voiceId)) || '';
+        }
+
+        function warmRecordedAudioUrl(text, voiceId) {
+            if (!text || !voiceId || /[\u4e00-\u9fa5]/.test(String(text))) return;
+            getRecordedAudioUrl(text, voiceId).catch(() => {});
+        }
+
         async function getRecordedAudioUrl(text, voiceId) {
+            const cacheKey = getRecordedAudioCacheKey(text, voiceId);
+            const cachedUrl = recordedAudioUrlCache.get(cacheKey);
+            if (cachedUrl) return cachedUrl;
             let digest = recordedAudioHashCache.get(text);
             if (!digest) {
                 const bytes = new TextEncoder().encode(text.normalize('NFKC').replace(/\s+/g, ' ').trim());
@@ -6138,7 +6166,9 @@
                 digest = Array.from(new Uint8Array(hash), byte => byte.toString(16).padStart(2, '0')).join('');
                 recordedAudioHashCache.set(text, digest);
             }
-            return `${API_BASE_URL}/audio/v1/${encodeURIComponent(voiceId)}/${digest.slice(0, 2)}/${digest}.mp3?v=${AUDIO_LIBRARY_VERSION}`;
+            const audioUrl = `${API_BASE_URL}/audio/v1/${encodeURIComponent(voiceId)}/${digest.slice(0, 2)}/${digest}.mp3?v=${AUDIO_LIBRARY_VERSION}`;
+            recordedAudioUrlCache.set(cacheKey, audioUrl);
+            return audioUrl;
         }
 
         function presenceFetch(url, options = {}) {
@@ -6337,6 +6367,9 @@
         function updateVoicePreferences() {
             recordedVoicePreference = recordedVoiceSelect.value || 'af_heart';
             systemVoicePreference = systemVoiceSelect.value || 'auto';
+            if (phraseList.length) {
+                warmRecordedAudioUrl(phraseList[phraseIndex].text, recordedVoicePreference);
+            }
             saveState();
             console.log(
                 `Voice preferences set to recorded=${recordedVoicePreference}, `
