@@ -10,8 +10,13 @@ services:
       ALLOWED_HOSTS: api-enplay.ningboaoke.com,localhost,127.0.0.1
       ENABLE_DOCS: "false"
       MAX_BODY_BYTES: "5242880"
+      REDIS_URL: redis://redis:6379/0
+      PRESENCE_CAPACITY: "200"
+      PRESENCE_TTL_SECONDS: "90"
     depends_on:
       db:
+        condition: service_healthy
+      redis:
         condition: service_healthy
     volumes:
       - ./audio:/app/audio:ro
@@ -31,6 +36,28 @@ services:
       nofile:
         soft: 4096
         hard: 4096
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  redis:
+    image: redis:7.4-alpine
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes", "--maxmemory", "96mb", "--maxmemory-policy", "allkeys-lru"]
+    volumes:
+      - cet4_redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+    security_opt:
+      - no-new-privileges:true
+    mem_limit: 128m
+    cpus: 0.5
+    pids_limit: 64
     logging:
       driver: json-file
       options:
@@ -65,3 +92,4 @@ services:
 
 volumes:
   cet4_mysql_data:
+  cet4_redis_data:

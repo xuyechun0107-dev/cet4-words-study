@@ -417,6 +417,93 @@
             box-shadow: 0 8px 24px rgba(23, 35, 60, 0.08);
         }
 
+        .online-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            min-height: 2.45rem;
+            padding: 0.55rem 0.75rem;
+            border: 1px solid rgba(10, 174, 134, 0.2);
+            border-radius: 0.8rem;
+            background: rgba(238, 252, 247, 0.9);
+            color: #08745b;
+            font-size: 0.75rem;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .online-status-dot {
+            width: 0.45rem;
+            height: 0.45rem;
+            border-radius: 50%;
+            background: var(--mint);
+            box-shadow: 0 0 0 4px rgba(10, 174, 134, 0.1);
+        }
+
+        .online-status.is-connecting {
+            border-color: var(--line);
+            background: rgba(245, 247, 251, 0.9);
+            color: var(--muted);
+        }
+
+        .online-status.is-connecting .online-status-dot {
+            background: #9aa4b8;
+            box-shadow: none;
+            animation: presencePulse 1.4s ease-in-out infinite;
+        }
+
+        @keyframes presencePulse {
+            50% { opacity: 0.35; transform: scale(0.75); }
+        }
+
+        .access-gate {
+            position: fixed;
+            inset: 0;
+            z-index: 100;
+            display: grid;
+            place-items: center;
+            padding: 1.5rem;
+            background: rgba(245, 247, 251, 0.82);
+            backdrop-filter: blur(18px);
+        }
+
+        .access-gate.hidden { display: none; }
+
+        .access-gate-card {
+            width: min(100%, 28rem);
+            padding: 2.25rem;
+            border: 1px solid rgba(23, 35, 60, 0.1);
+            border-radius: 1.4rem;
+            background: rgba(255, 255, 255, 0.96);
+            box-shadow: 0 28px 80px rgba(23, 35, 60, 0.16);
+            text-align: center;
+        }
+
+        .access-gate-icon {
+            display: grid;
+            width: 3.25rem;
+            height: 3.25rem;
+            margin: 0 auto 1.15rem;
+            place-items: center;
+            border-radius: 1rem;
+            background: var(--ink);
+            color: white;
+            font-size: 1.15rem;
+        }
+
+        .access-gate-card h2 {
+            margin-bottom: 0.55rem;
+            font-family: 'Newsreader', 'Noto Sans SC', serif;
+            font-size: 1.8rem;
+            line-height: 1.1;
+        }
+
+        .access-gate-card p {
+            color: var(--muted);
+            font-size: 0.9rem;
+            line-height: 1.7;
+        }
+
         .workspace-main {
             width: 100%;
             max-width: 96rem;
@@ -1995,6 +2082,8 @@
             .brand-glyph { width: 2.2rem; height: 2.2rem; }
             .history-button span { display: none; }
             .history-button { width: 2.5rem; height: 2.5rem; justify-content: center; padding: 0; }
+            .online-status { min-height: 2.5rem; padding: 0.55rem 0.65rem; }
+            .online-status-label { display: none; }
             .workspace-nav { overflow: hidden; }
             .nav-tab { min-width: 0; gap: 0.3rem; padding: 0.6rem 0.3rem; font-size: 0.8rem; }
             .section-intro { grid-template-columns: 1fr; gap: 0.6rem; }
@@ -2343,12 +2432,25 @@
                 <input id="searchInput" type="text" placeholder="搜索单词…" autocomplete="off" aria-label="搜索单词">
                 <div id="searchResults" class="absolute left-0 right-0 mt-2 bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-y-auto hidden z-10"></div>
             </div>
+            <div id="onlineStatus" class="online-status is-connecting" role="status" aria-live="polite" title="正在连接在线人数服务">
+                <span class="online-status-dot" aria-hidden="true"></span>
+                <span class="online-status-label">在线</span>
+                <strong id="onlineCount">连接中</strong>
+            </div>
             <button id="historyBtn" class="history-button" type="button">
                 <i class="fa fa-history text-primary"></i>
                 <span id="historyButtonLabel">学习记录</span>
             </button>
         </div>
     </header>
+
+    <div id="accessGate" class="access-gate" role="alert" aria-live="assertive">
+        <div class="access-gate-card">
+            <span class="access-gate-icon"><i class="fa fa-users" aria-hidden="true"></i></span>
+            <h2 id="accessGateTitle">正在连接学习空间</h2>
+            <p id="accessGateMessage">正在确认当前在线人数，请稍候。</p>
+        </div>
+    </div>
 
     <!-- Main Content -->
     <main class="workspace-main flex-grow">
@@ -3005,6 +3107,12 @@
         const activeLibraryIds = loadActiveLibraryIds();
         const API_BASE_URL = 'https://api-enplay.ningboaoke.com';
         const AUDIO_LIBRARY_VERSION = '20260830-articles1';
+        const PRESENCE_TOKEN_KEY = 'enplay_presence_token_v1';
+        const PRESENCE_HEARTBEAT_MS = 30000;
+        let presenceToken = localStorage.getItem(PRESENCE_TOKEN_KEY) || '';
+        let presenceTimer = null;
+        let presenceFailures = 0;
+        let applicationInitialized = false;
         
         // Local Storage Keys
         let CURRENT_INDEX_KEY = 'cet4_current_index';
@@ -3030,6 +3138,7 @@
         // Initialize the app
         function init() {
             console.log('Initializing app...');
+            applicationInitialized = true;
             
             // Check if speech synthesis is available
             checkSpeechSupport();
@@ -3763,7 +3872,7 @@
             if (remoteWordbookCache.has(library.id)) {
                 return remoteWordbookCache.get(library.id);
             }
-            const response = await fetch(`${API_BASE_URL}/v1/wordbooks/${encodeURIComponent(library.slug)}`);
+            const response = await presenceFetch(`${API_BASE_URL}/v1/wordbooks/${encodeURIComponent(library.slug)}`);
             if (!response.ok) throw new Error(`Wordbook request failed: ${response.status}`);
             const payload = await response.json();
             const loadedLibrary = {
@@ -3861,7 +3970,7 @@
         }
 
         async function loadRemoteWordbookCatalog() {
-            const response = await fetch(`${API_BASE_URL}/v1/wordbooks`);
+            const response = await presenceFetch(`${API_BASE_URL}/v1/wordbooks`);
             if (!response.ok) throw new Error(`Wordbook catalog request failed: ${response.status}`);
             const catalog = await response.json();
             remoteWordbooks = catalog.map(item => ({
@@ -6032,6 +6141,80 @@
             return `${API_BASE_URL}/audio/v1/${encodeURIComponent(voiceId)}/${digest.slice(0, 2)}/${digest}.mp3?v=${AUDIO_LIBRARY_VERSION}`;
         }
 
+        function presenceFetch(url, options = {}) {
+            const headers = new Headers(options.headers || {});
+            if (presenceToken) headers.set('X-Presence-Token', presenceToken);
+            return fetch(url, { ...options, headers });
+        }
+
+        function updatePresenceDisplay(payload, connected = true) {
+            const onlineStatus = document.getElementById('onlineStatus');
+            const onlineCount = document.getElementById('onlineCount');
+            if (!onlineStatus || !onlineCount) return;
+            onlineStatus.classList.toggle('is-connecting', !connected);
+            if (connected && payload) {
+                onlineCount.textContent = `${payload.online} / ${payload.capacity}`;
+                onlineStatus.title = `当前在线 ${payload.online} 人，最多 ${payload.capacity} 人；每 30 秒更新`;
+            } else {
+                onlineCount.textContent = '连接中';
+                onlineStatus.title = '正在重新连接在线人数服务';
+            }
+        }
+
+        function showAccessGate(title, message) {
+            document.getElementById('accessGateTitle').textContent = title;
+            document.getElementById('accessGateMessage').textContent = message;
+            document.getElementById('accessGate').classList.remove('hidden');
+        }
+
+        function schedulePresenceRefresh(delay) {
+            if (presenceTimer) clearTimeout(presenceTimer);
+            presenceTimer = setTimeout(refreshPresence, delay);
+        }
+
+        async function refreshPresence() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/v1/presence/join`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ token: presenceToken || null })
+                });
+                const payload = await response.json();
+                if (!response.ok) throw new Error(payload.detail || `Presence request failed: ${response.status}`);
+                presenceFailures = 0;
+                updatePresenceDisplay(payload, true);
+                if (!payload.admitted) {
+                    showAccessGate(
+                        '当前学习空间已满',
+                        `目前已有 ${payload.online} 人在线，上限为 ${payload.capacity} 人。系统会自动重试，有空位后即可进入。`
+                    );
+                    schedulePresenceRefresh(10000);
+                    return;
+                }
+                presenceToken = payload.token;
+                localStorage.setItem(PRESENCE_TOKEN_KEY, presenceToken);
+                document.getElementById('accessGate').classList.add('hidden');
+                if (!applicationInitialized) init();
+                schedulePresenceRefresh(PRESENCE_HEARTBEAT_MS);
+            } catch (error) {
+                presenceFailures += 1;
+                updatePresenceDisplay(null, false);
+                if (!applicationInitialized || presenceFailures >= 3) {
+                    showAccessGate('正在重新连接', '在线人数服务暂时不可用，连接恢复后会自动进入学习页面。');
+                }
+                console.warn('Unable to refresh visitor presence:', error);
+                schedulePresenceRefresh(10000);
+            }
+        }
+
+        function initPresenceTracking() {
+            document.addEventListener('visibilitychange', () => {
+                if (document.visibilityState === 'visible') refreshPresence();
+            });
+            window.addEventListener('online', refreshPresence);
+            refreshPresence();
+        }
+
         function cancelSpeechSession() {
             speechSessionId++;
             speechUtteranceId++;
@@ -6739,7 +6922,7 @@
         }
         
         // Initialize the app when DOM is loaded
-        document.addEventListener('DOMContentLoaded', init);
+        document.addEventListener('DOMContentLoaded', initPresenceTracking);
     </script>
 </body>
 </html>

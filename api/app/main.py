@@ -1,7 +1,9 @@
 import hashlib
+import hmac
 import os
 import secrets
 import time
+import uuid
 from collections import defaultdict
 from collections.abc import Generator
 from typing import Annotated
@@ -13,6 +15,8 @@ from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from starlette.middleware.trustedhost import TrustedHostMiddleware
 from pydantic import BaseModel, ConfigDict, Field
+from redis.asyncio import Redis
+from redis.exceptions import RedisError
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -39,6 +43,11 @@ ALLOWED_HOSTS = [
 ]
 MAX_BODY_BYTES = int(os.getenv("MAX_BODY_BYTES", str(5 * 1024 * 1024)))
 ENABLE_DOCS = os.getenv("ENABLE_DOCS", "false").lower() == "true"
+REDIS_URL = os.getenv("REDIS_URL", "redis://redis:6379/0")
+PRESENCE_CAPACITY = max(1, int(os.getenv("PRESENCE_CAPACITY", "200")))
+PRESENCE_TTL_SECONDS = max(45, int(os.getenv("PRESENCE_TTL_SECONDS", "90")))
+PRESENCE_SECRET = os.getenv("PRESENCE_SECRET", "") or ADMIN_TOKEN or "enplay-local-development"
+PRESENCE_KEY = "enplay:presence:leases"
 
 app = FastAPI(
     title=APP_NAME,
@@ -54,13 +63,16 @@ app.add_middleware(
     allow_origins=ALLOWED_ORIGINS,
     allow_credentials=False,
     allow_methods=["GET", "POST", "OPTIONS"],
-    allow_headers=["Content-Type", "X-Admin-Token"],
+    allow_headers=["Content-Type", "X-Admin-Token", "X-Presence-Token"],
 )
+
+redis_client = Redis.from_url(REDIS_URL, decode_responses=True)
 
 RATE_LIMITS = {
     "admin": (20, 60),
     "wordbooks": (120, 60),
     "audio": (600, 60),
+    "presence": (12, 60),
 }
 rate_windows: dict[tuple[str, str], list[float | int]] = defaultdict(lambda: [0.0, 0])
 wordbook_cache: dict[str, tuple[bytes, str]] = {}
@@ -73,7 +85,41 @@ def request_scope(path: str) -> str | None:
         return "wordbooks"
     if path.startswith("/audio/"):
         return "audio"
+    if path.startswith("/v1/presence"):
+        return "presence"
     return None
+
+
+def presence_protected(path: str) -> bool:
+    # Recorded audio stays on one shared URL so Cloudflare can cache one copy for
+    # every admitted visitor. The app gate controls normal access while API data
+    # endpoints additionally require a live signed presence lease.
+    return path.startswith(("/v1/words", "/v1/sentences", "/v1/articles", "/v1/wordbooks"))
+
+
+def sign_device(device_id: str) -> str:
+    signature = hmac.new(
+        PRESENCE_SECRET.encode("utf-8"), device_id.encode("ascii"), hashlib.sha256
+    ).hexdigest()
+    return f"{device_id}.{signature}"
+
+
+def verify_device_token(token: str | None) -> str | None:
+    if not token or len(token) > 160 or "." not in token:
+        return None
+    device_id, supplied_signature = token.rsplit(".", 1)
+    if len(device_id) != 32 or any(character not in "0123456789abcdef" for character in device_id):
+        return None
+    expected = sign_device(device_id).rsplit(".", 1)[1]
+    if not secrets.compare_digest(supplied_signature, expected):
+        return None
+    return device_id
+
+
+async def presence_count(now: float | None = None) -> int:
+    current_time = now if now is not None else time.time()
+    await redis_client.zremrangebyscore(PRESENCE_KEY, "-inf", current_time)
+    return int(await redis_client.zcard(PRESENCE_KEY))
 
 
 @app.middleware("http")
@@ -91,6 +137,10 @@ async def protect_api(request: Request, call_next):
                 status_code=status.HTTP_400_BAD_REQUEST,
                 content={"detail": "Invalid Content-Length header."},
             )
+
+    # Let CORSMiddleware answer browser preflight requests before presence checks.
+    if request.method == "OPTIONS":
+        return await call_next(request)
 
     scope = request_scope(request.url.path)
     if scope:
@@ -119,6 +169,27 @@ async def protect_api(request: Request, call_next):
             for key in expired:
                 rate_windows.pop(key, None)
 
+    if presence_protected(request.url.path):
+        presence_token = request.headers.get("x-presence-token") or request.query_params.get("presence")
+        device_id = verify_device_token(presence_token)
+        if device_id is None:
+            return JSONResponse(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                content={"detail": "An active visitor session is required."},
+            )
+        try:
+            expires_at = await redis_client.zscore(PRESENCE_KEY, device_id)
+        except RedisError:
+            return JSONResponse(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                content={"detail": "Visitor capacity service is temporarily unavailable."},
+            )
+        if expires_at is None or float(expires_at) <= time.time():
+            return JSONResponse(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                content={"detail": "The visitor session has expired."},
+            )
+
     response = await call_next(request)
     response.headers["Strict-Transport-Security"] = "max-age=31536000"
     response.headers["X-Content-Type-Options"] = "nosniff"
@@ -146,6 +217,18 @@ class WordPayload(BaseModel):
     phonetic: str | None = Field(default=None, max_length=255)
     definition: str = Field(min_length=1, max_length=5000)
     example: str | None = Field(default=None, max_length=5000)
+
+
+class PresenceRequest(BaseModel):
+    token: str | None = Field(default=None, max_length=160)
+
+
+class PresenceStatus(BaseModel):
+    admitted: bool
+    online: int
+    capacity: int
+    lease_seconds: int
+    token: str | None = None
 
 
 class SentencePayload(BaseModel):
@@ -215,9 +298,74 @@ def create_tables() -> None:
     Base.metadata.create_all(bind=engine)
 
 
+@app.on_event("shutdown")
+async def close_redis() -> None:
+    await redis_client.aclose()
+
+
 @app.get("/health")
 def health() -> dict[str, str]:
     return {"status": "ok", "service": APP_NAME}
+
+
+@app.get("/v1/presence/status", response_model=PresenceStatus)
+async def get_presence_status() -> PresenceStatus:
+    try:
+        online = await presence_count()
+    except RedisError as error:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Visitor capacity service is temporarily unavailable.",
+        ) from error
+    return PresenceStatus(
+        admitted=False,
+        online=online,
+        capacity=PRESENCE_CAPACITY,
+        lease_seconds=PRESENCE_TTL_SECONDS,
+    )
+
+
+@app.post("/v1/presence/join", response_model=PresenceStatus)
+async def join_presence(payload: PresenceRequest) -> PresenceStatus:
+    device_id = verify_device_token(payload.token)
+    if device_id is None:
+        device_id = uuid.uuid4().hex
+    token = sign_device(device_id)
+    now = time.time()
+    expires_at = now + PRESENCE_TTL_SECONDS
+    admission_script = """
+        redis.call('ZREMRANGEBYSCORE', KEYS[1], '-inf', ARGV[1])
+        local exists = redis.call('ZSCORE', KEYS[1], ARGV[3])
+        local count = redis.call('ZCARD', KEYS[1])
+        if not exists and count >= tonumber(ARGV[4]) then
+            return {0, count}
+        end
+        redis.call('ZADD', KEYS[1], ARGV[2], ARGV[3])
+        if not exists then count = count + 1 end
+        return {1, count}
+    """
+    try:
+        admitted, online = await redis_client.eval(
+            admission_script,
+            1,
+            PRESENCE_KEY,
+            now,
+            expires_at,
+            device_id,
+            PRESENCE_CAPACITY,
+        )
+    except RedisError as error:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Visitor capacity service is temporarily unavailable.",
+        ) from error
+    return PresenceStatus(
+        admitted=bool(admitted),
+        online=int(online),
+        capacity=PRESENCE_CAPACITY,
+        lease_seconds=PRESENCE_TTL_SECONDS,
+        token=token if admitted else None,
+    )
 
 
 @app.get("/v1/words", response_model=list[WordPayload])
