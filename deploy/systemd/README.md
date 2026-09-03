@@ -78,8 +78,9 @@ Install and statically verify the units, but do not enable or start them yet:
 ```sh
 sudo install -o root -g root -m 0644 /opt/enplay/current/deploy/systemd/enplay-api.service /etc/systemd/system/
 sudo install -o root -g root -m 0644 /opt/enplay/current/deploy/systemd/enplay-tts-generate@.service /etc/systemd/system/
+sudo install -o root -g root -m 0644 /opt/enplay/current/deploy/systemd/enplay-tts-build.service /etc/systemd/system/
 sudo systemctl daemon-reload
-sudo systemd-analyze verify /etc/systemd/system/enplay-api.service /etc/systemd/system/enplay-tts-generate@.service
+sudo systemd-analyze verify /etc/systemd/system/enplay-api.service /etc/systemd/system/enplay-tts-generate@.service /etc/systemd/system/enplay-tts-build.service
 ```
 
 The API wrapper always binds Uvicorn to `127.0.0.1:28100`; expose it only
@@ -106,6 +107,15 @@ TTS_SOURCE_MODE=tatoeba
 Use the same override for `af_bella` and `bf_emma`; male voices normally keep
 the `all` default. These override files contain no credentials and should be
 owned by `root:enplay` with mode `0640`.
+
+For a fresh server with no existing clips, `enplay-tts-build.service` generates
+all collected content sequentially for all five configured voices in one
+resource-limited process. It is resumable because non-empty clips are skipped:
+
+```sh
+sudo systemctl start enplay-tts-build.service
+journalctl --unit enplay-tts-build.service --follow
+```
 
 ## Verification and promotion
 
