@@ -7,6 +7,7 @@ import hashlib
 import json
 import re
 import unicodedata
+import urllib.error
 import urllib.request
 from pathlib import Path
 from time import perf_counter
@@ -18,6 +19,7 @@ from kokoro_onnx import Kokoro
 
 DEFAULT_API_BASE = "https://api-enplay.ningboaoke.com"
 DEFAULT_VOICES = ("af_heart", "af_bella", "bf_emma", "am_michael", "bm_george")
+API_USER_AGENT = "EnplayAudioBuilder/1.0"
 TARGET_RMS_DB = -17.0
 PEAK_CEILING_DB = -1.5
 
@@ -188,10 +190,65 @@ def extract_json_array(path: Path, variable_name: str) -> list[dict[str, object]
     return value
 
 
-def fetch_json(url: str) -> object:
-    request = urllib.request.Request(url, headers={"User-Agent": "EnplayAudioBuilder/1.0"})
+def fetch_json(
+    url: str,
+    *,
+    headers: dict[str, str] | None = None,
+    payload: object | None = None,
+) -> object:
+    request_headers = {"User-Agent": API_USER_AGENT}
+    if headers:
+        request_headers.update(headers)
+    body = None
+    if payload is not None:
+        body = json.dumps(payload).encode("utf-8")
+        request_headers.setdefault("Content-Type", "application/json")
+    request = urllib.request.Request(url, data=body, headers=request_headers)
     with urllib.request.urlopen(request, timeout=120) as response:
         return json.load(response)
+
+
+class PresenceAwareApiClient:
+    """Fetch Enplay API data and transparently maintain a visitor lease."""
+
+    def __init__(self, api_base: str) -> None:
+        self.api_base = api_base.rstrip("/")
+        self.presence_token: str | None = None
+
+    def join_presence(self) -> None:
+        status = fetch_json(
+            f"{self.api_base}/v1/presence/join",
+            payload={"token": self.presence_token},
+        )
+        if not isinstance(status, dict) or not status.get("admitted"):
+            raise RuntimeError("Enplay API visitor capacity is full; retry later")
+        token = status.get("token")
+        if not isinstance(token, str) or not token:
+            raise ValueError("Enplay API presence response did not contain a token")
+        self.presence_token = token
+
+    def fetch(self, path: str) -> object:
+        url = f"{self.api_base}/{path.lstrip('/')}"
+        headers = (
+            {"X-Presence-Token": self.presence_token}
+            if self.presence_token
+            else None
+        )
+        try:
+            return fetch_json(url, headers=headers)
+        except urllib.error.HTTPError as error:
+            if error.code != 401:
+                raise
+            error.close()
+
+        # A first protected request establishes the lease lazily. If an existing
+        # lease expired during a long collection, joining with its signed token
+        # renews the same visitor and the request is retried once.
+        self.join_presence()
+        return fetch_json(
+            url,
+            headers={"X-Presence-Token": self.presence_token},
+        )
 
 
 def collect_tatoeba_texts(workspace: Path) -> list[str]:
@@ -247,12 +304,13 @@ def collect_texts(workspace: Path, api_base: str, source_mode: str = "all") -> l
     for sentence in collect_article_texts(workspace):
         texts.setdefault(sentence, None)
 
-    catalog = fetch_json(f"{api_base.rstrip('/')}/v1/wordbooks")
+    api = PresenceAwareApiClient(api_base)
+    catalog = api.fetch("/v1/wordbooks")
     if not isinstance(catalog, list):
         raise ValueError("Wordbook catalog response is not a list")
     for summary in catalog:
         slug = summary["slug"]
-        wordbook = fetch_json(f"{api_base.rstrip('/')}/v1/wordbooks/{slug}")
+        wordbook = api.fetch(f"/v1/wordbooks/{slug}")
         for item in wordbook.get("items", []):
             example = normalize_text(item.get("example"))
             if example:
@@ -260,7 +318,7 @@ def collect_texts(workspace: Path, api_base: str, source_mode: str = "all") -> l
 
     offset = 0
     while True:
-        page = fetch_json(f"{api_base.rstrip('/')}/v1/sentences?offset={offset}&limit=200")
+        page = api.fetch(f"/v1/sentences?offset={offset}&limit=200")
         if not isinstance(page, list) or not page:
             break
         for item in page:

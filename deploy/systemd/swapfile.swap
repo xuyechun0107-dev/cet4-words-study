@@ -1,0 +1,8 @@
+[Unit]
+Description=Swap file for Enplay audio generation
+
+[Swap]
+What=/swapfile
+
+[Install]
+WantedBy=swap.target

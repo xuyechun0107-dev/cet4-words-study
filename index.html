@@ -3106,7 +3106,12 @@
         let isArticleCardFallbackFullscreen = false;
         const builtInWordItems = cet4Words.map(item => ({ ...item }));
         const activeLibraryIds = loadActiveLibraryIds();
-        const API_BASE_URL = 'https://api-enplay.ningboaoke.com';
+        function getApiBaseUrl(hostname = window.location.hostname) {
+            return hostname === 'enplay.aoke.ltd'
+                ? 'https://api-enplay.aoke.ltd'
+                : 'https://api-enplay.ningboaoke.com';
+        }
+        const API_BASE_URL = getApiBaseUrl();
         const AUDIO_LIBRARY_VERSION = '20260830-articles1';
         const PRESENCE_TOKEN_KEY = 'enplay_presence_token_v1';
         const PRESENCE_HEARTBEAT_MS = 30000;

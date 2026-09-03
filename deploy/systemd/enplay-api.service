@@ -1,0 +1,41 @@
+[Unit]
+Description=Enplay FastAPI service
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+User=enplay
+Group=enplay
+WorkingDirectory=/opt/enplay/current/api
+Environment=PYTHONDONTWRITEBYTECODE=1
+Environment=PYTHONUNBUFFERED=1
+UMask=0027
+ExecStartPre=/usr/bin/test -r /opt/enplay/shared/api.env
+ExecStartPre=/usr/bin/test -x /opt/enplay/venv/bin/uvicorn
+ExecStart=/bin/sh /opt/enplay/current/deploy/systemd/enplay-api-start.sh
+Restart=on-failure
+RestartSec=5s
+TimeoutStopSec=30s
+KillSignal=SIGINT
+
+NoNewPrivileges=true
+PrivateDevices=true
+PrivateTmp=true
+ProtectControlGroups=true
+ProtectHome=true
+ProtectKernelModules=true
+ProtectKernelTunables=true
+ProtectSystem=strict
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+RestrictRealtime=true
+RestrictSUIDSGID=true
+LockPersonality=true
+CapabilityBoundingSet=
+AmbientCapabilities=
+SystemCallArchitectures=native
+TasksMax=128
+LimitNOFILE=4096
+
+[Install]
+WantedBy=multi-user.target

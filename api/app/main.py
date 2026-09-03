@@ -29,7 +29,8 @@ ADMIN_TOKEN = os.getenv("ADMIN_TOKEN", "")
 ALLOWED_ORIGINS = [
     origin.strip()
     for origin in os.getenv(
-        "ALLOWED_ORIGINS", "https://enplay.ningboaoke.com"
+        "ALLOWED_ORIGINS",
+        "https://enplay.aoke.ltd,https://enplay.ningboaoke.com,https://cet4-words-study.pages.dev",
     ).split(",")
     if origin.strip()
 ]
@@ -37,7 +38,8 @@ AUDIO_ROOT = os.getenv("AUDIO_ROOT", "/app/audio")
 ALLOWED_HOSTS = [
     host.strip()
     for host in os.getenv(
-        "ALLOWED_HOSTS", "api-enplay.ningboaoke.com,localhost,127.0.0.1"
+        "ALLOWED_HOSTS",
+        "api-enplay.aoke.ltd,api-enplay.ningboaoke.com,localhost,127.0.0.1",
     ).split(",")
     if host.strip()
 ]

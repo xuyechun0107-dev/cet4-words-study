@@ -6,8 +6,8 @@ services:
     environment:
       DATABASE_URL: mysql+pymysql://cet4:${MYSQL_PASSWORD}@db:3306/cet4?charset=utf8mb4
       ADMIN_TOKEN: ${ADMIN_TOKEN}
-      ALLOWED_ORIGINS: https://enplay.ningboaoke.com,https://cet4-words-study.pages.dev
-      ALLOWED_HOSTS: api-enplay.ningboaoke.com,localhost,127.0.0.1
+      ALLOWED_ORIGINS: https://enplay.aoke.ltd,https://enplay.ningboaoke.com,https://cet4-words-study.pages.dev
+      ALLOWED_HOSTS: api-enplay.aoke.ltd,api-enplay.ningboaoke.com,localhost,127.0.0.1
       ENABLE_DOCS: "false"
       MAX_BODY_BYTES: "5242880"
       REDIS_URL: redis://redis:6379/0
