@@ -14,6 +14,14 @@ function source(name) {
     return html.slice(start, html.indexOf('\n        }', start) + 10);
 }
 function fixture(overrides = {}) {
+    const translations = {
+        'fullscreen.previousWord': '上一個單詞',
+        'fullscreen.nextWord': '下一個單詞',
+        'fullscreen.previousSentence': '上一句',
+        'fullscreen.nextSentence': '下一句',
+        'fullscreen.start': '已到開頭',
+        'fullscreen.end': '已到末尾',
+    };
     const context = vm.createContext({
         notebookDisplayedEntry: null, notebookPlaybackQueue: [], notebookPlaybackIndex: 0,
         cet4Words: [{ word: 'alpha' }, { word: 'beta' }, { word: 'gamma' }],
@@ -23,6 +31,7 @@ function fixture(overrides = {}) {
         getTodayLearnedSet: () => new Set([1]),
         getAllLearnedPhraseSet: () => new Set(['a:2']),
         getPhraseKey: (scene, idx) => `${scene}:${idx}`,
+        t: key => translations[key] || key,
         ...overrides,
     });
     ['findPreviousPosition', 'findNextPosition', 'findPrevPhraseIndex', 'findNextPhraseIndex', 'getFullscreenNeighbors', 'updateFullscreenNeighbors']
@@ -67,7 +76,7 @@ test('preview renderer disables boundaries and inserts untrusted content as text
     const context = fixture({ document, order: [0, 1], orderPosition: 0, cet4Words: [{ word: 'first' }, { word: '<img src=x onerror=alert(1)>' }] });
     context.updateFullscreenNeighbors('word');
     assert.equal(elements.wordPreviousPreview.disabled, true);
-    assert.equal(elements.wordPreviousPreview.parts['.neighbor-label'].textContent, '已到开头');
+    assert.equal(elements.wordPreviousPreview.parts['.neighbor-label'].textContent, '已到開頭');
     assert.equal(elements.wordNextPreview.parts['.neighbor-text'].textContent, '<img src=x onerror=alert(1)>');
     assert.equal(elements.wordNextPreview.innerHTML, undefined);
 });

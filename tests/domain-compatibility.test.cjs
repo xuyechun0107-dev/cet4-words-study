@@ -19,6 +19,7 @@ function apiBaseUrlFor(hostname) {
 }
 
 test('frontend selects the matching API while preserving legacy fallbacks', () => {
+    assert.equal(apiBaseUrlFor('192.168.0.103'), '/api');
     assert.equal(apiBaseUrlFor('enplay.aoke.ltd'), 'https://api-enplay.aoke.ltd');
     assert.equal(apiBaseUrlFor('enplay.ningboaoke.com'), 'https://api-enplay.ningboaoke.com');
     assert.equal(apiBaseUrlFor('cet4-words-study.pages.dev'), 'https://api-enplay.ningboaoke.com');

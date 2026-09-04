@@ -1,19 +1,20 @@
 <!DOCTYPE html>
-<html lang="en-US">
+<html lang="zh-Hant" dir="ltr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#17233c">
-    <title>Enplay · CET-4 Language Studio</title>
+    <title>單詞播放器 · Enplay</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     <link rel="shortcut icon" href="/favicon.svg">
+    <script src="i18n.js"></script>
     <!-- Tailwind CSS v3 -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Font Awesome -->
     <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;family=Newsreader:opsz,wght@6..72,600;6..72,700&amp;family=Noto+Sans+SC:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;family=Newsreader:opsz,wght@6..72,600;6..72,700&amp;family=Noto+Sans+Arabic:wght@400;500;600;700&amp;family=Noto+Sans+JP:wght@400;500;600;700&amp;family=Noto+Sans+KR:wght@400;500;600;700&amp;family=Noto+Sans+SC:wght@400;500;600;700&amp;family=Noto+Sans+Thai:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
     <script>
         tailwind.config = {
             theme: {
@@ -361,6 +362,128 @@
             justify-content: flex-end;
             gap: 0.75rem;
             min-width: 0;
+        }
+
+        .language-switcher {
+            position: relative;
+            flex: 0 0 auto;
+        }
+
+        .language-trigger {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.45rem;
+            min-width: 3.15rem;
+            min-height: 2.45rem;
+            padding: 0.55rem 0.72rem;
+            border: 1px solid var(--line);
+            border-radius: 0.8rem;
+            background: rgba(255, 255, 255, 0.94);
+            color: var(--ink);
+            font-size: 0.76rem;
+            font-weight: 800;
+            transition: border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+        }
+
+        .language-trigger:hover,
+        .language-trigger[aria-expanded="true"] {
+            border-color: rgba(36, 87, 214, 0.3);
+            box-shadow: 0 8px 24px rgba(23, 35, 60, 0.08);
+            transform: translateY(-1px);
+        }
+
+        .language-trigger:focus-visible,
+        .language-option:focus-visible {
+            outline: 3px solid rgba(36, 87, 214, 0.2);
+            outline-offset: 2px;
+        }
+
+        .language-trigger i {
+            color: var(--blue);
+            font-size: 0.88rem;
+        }
+
+        .language-menu {
+            position: absolute;
+            top: calc(100% + 0.6rem);
+            inset-inline-end: 0;
+            z-index: 70;
+            width: min(17rem, calc(100vw - 1.5rem));
+            padding: 0.55rem;
+            border: 1px solid rgba(23, 35, 60, 0.12);
+            border-radius: 1rem;
+            background: #fbfcff;
+            box-shadow: 0 24px 64px rgba(23, 35, 60, 0.18);
+        }
+
+        .language-menu-heading {
+            padding: 0.45rem 0.65rem 0.55rem;
+            color: var(--muted);
+            font-size: 0.68rem;
+            font-weight: 800;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        .language-options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.25rem;
+        }
+
+        .language-option {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.5rem;
+            min-height: 2.45rem;
+            padding: 0.55rem 0.65rem;
+            border-radius: 0.65rem;
+            color: #485672;
+            font-size: 0.78rem;
+            font-weight: 700;
+            text-align: start;
+            transition: color 160ms ease, background-color 160ms ease;
+        }
+
+        .language-option:hover {
+            color: var(--ink);
+            background: #eef3ff;
+        }
+
+        .language-option[aria-checked="true"] {
+            color: var(--blue);
+            background: var(--blue-soft);
+        }
+
+        .language-option i {
+            visibility: hidden;
+            color: var(--blue);
+        }
+
+        .language-option[aria-checked="true"] i { visibility: visible; }
+
+        html[dir="rtl"] body {
+            font-family: 'Noto Sans Arabic', 'Segoe UI', Tahoma, sans-serif;
+        }
+
+        html[dir="rtl"] .search-shell::before {
+            right: 0.9rem;
+            left: auto;
+        }
+
+        html[dir="rtl"] .search-shell input {
+            padding-right: 2.55rem;
+            padding-left: 1rem;
+        }
+
+        html[dir="rtl"] .section-description { text-align: start; }
+
+        :is(#currentWord, #phonetic, #englishDefinition, #example, #currentPhrase, .article-heading h1, .article-sentence-en, .fullscreen-neighbor .neighbor-text) {
+            direction: ltr;
+            unicode-bidi: plaintext;
+            text-align: left;
         }
 
         .search-shell {
@@ -2084,6 +2207,8 @@
             .history-button { width: 2.5rem; height: 2.5rem; justify-content: center; padding: 0; }
             .online-status { min-height: 2.5rem; padding: 0.55rem 0.65rem; }
             .online-status-label { display: none; }
+            .language-trigger { width: 2.5rem; min-width: 2.5rem; height: 2.5rem; padding: 0; }
+            .language-trigger i { display: none; }
             .workspace-nav { overflow: hidden; }
             .nav-tab { min-width: 0; gap: 0.3rem; padding: 0.6rem 0.3rem; font-size: 0.8rem; }
             .section-intro { grid-template-columns: 1fr; gap: 0.6rem; }
@@ -2129,6 +2254,7 @@
 
         @media (max-width: 420px) {
             .nav-tab i { display: none; }
+            .language-menu { position: fixed; top: 4.1rem; right: 0.75rem; left: 0.75rem; width: auto; }
             .article-empty { padding: 2rem; }
             .section-title { font-size: 1.9rem; }
             .article-meta-chip.topic-chip { display: none; }
@@ -2402,12 +2528,136 @@
         /* Keep exit reachable even when an imported word has no example. */
         #currentWordCard:is(:fullscreen, .is-immersive) #exampleBlock.hidden { display: block; }
         #currentWordCard:is(:fullscreen, .is-immersive) #exampleBlock.hidden :is(h3, #example) { display: none; }
+
+        /* Locale-specific readability and overflow safeguards. */
+        html[lang="ja"] body { font-family: 'Noto Sans JP', 'Yu Gothic', sans-serif; }
+        html[lang="ko"] body { font-family: 'Noto Sans KR', 'Malgun Gothic', sans-serif; }
+        html[lang="th"] body { font-family: 'Noto Sans Thai', 'Leelawadee UI', sans-serif; }
+        html[lang="ar"] body { font-family: 'Noto Sans Arabic', Tahoma, sans-serif; }
+
+        .learned-badge {
+            margin-left: 0;
+            margin-inline-start: 0.75rem;
+        }
+
+        .voice-tooltip {
+            right: auto;
+            left: auto;
+            inset-inline-start: 0;
+            overflow-wrap: anywhere;
+        }
+
+        .shelf-book { text-align: start; }
+        .search-shell input { direction: ltr; text-align: start; }
+        .nav-tab span,
+        .history-button span,
+        .setting-field label,
+        .toggle-row label,
+        .voice-row label,
+        .upload-library-button,
+        .notebook-play-all,
+        .article-control-label {
+            overflow-wrap: anywhere;
+            line-height: 1.35;
+        }
+
+        :is(html[lang="fr"], html[lang="es"], html[lang="pt"], html[lang="ru"], html[lang="th"], html[lang="ar"]) .voice-row {
+            grid-template-columns: minmax(0, 1fr);
+            align-items: stretch;
+            gap: 0.3rem;
+        }
+
+        :is(html[lang="th"], html[lang="ar"]) :is(.eyebrow, .panel-kicker, .brand-kicker, .language-menu-heading) {
+            letter-spacing: normal;
+            text-transform: none;
+        }
+
+        :is(html[lang="th"], html[lang="ar"]) :is(.section-title, .access-gate-card h2, .panel-heading h2) {
+            line-height: 1.25;
+            letter-spacing: normal;
+        }
+
+        html[dir="rtl"] .app-header,
+        html[dir="rtl"] .workspace-main {
+            direction: ltr;
+        }
+
+        html[dir="rtl"] :is(.workspace-nav, .header-actions, .control-panel, .library-shelf, .section-intro, .article-empty, .modal-content) {
+            direction: rtl;
+        }
+
+        html[dir="rtl"] :is(.brand-mark, .learning-canvas, .word-card, .article-reader-card, .notebook-entry) {
+            direction: ltr;
+        }
+
+        html[dir="rtl"] .section-intro :is(.eyebrow, .section-title, .section-description),
+        html[dir="rtl"] .control-panel :is(.panel-heading, .progress-note, .setting-field, .voice-fields, .toggle-row),
+        html[dir="rtl"] .library-shelf :is(.panel-heading, .format-note) {
+            text-align: start;
+        }
+
+        html[dir="rtl"] .language-menu { direction: rtl; }
+
+        @media (min-width: 901px) {
+            .app-header {
+                grid-template-columns: minmax(190px, 1fr) auto max-content;
+            }
+        }
+
+        @media (min-width: 641px) {
+            html[dir="rtl"] .language-menu {
+                inset-inline-start: 0;
+                inset-inline-end: auto;
+            }
+        }
+
+        @media (min-width: 901px) and (max-width: 1120px) {
+            :is(html[lang="fr"], html[lang="es"], html[lang="pt"], html[lang="ru"], html[lang="th"], html[lang="ar"]) .app-header {
+                grid-template-columns: minmax(0, 1fr) auto;
+            }
+
+            :is(html[lang="fr"], html[lang="es"], html[lang="pt"], html[lang="ru"], html[lang="th"], html[lang="ar"]) .workspace-nav {
+                grid-column: 1 / -1;
+                grid-row: 2;
+                width: 100%;
+            }
+
+            :is(html[lang="fr"], html[lang="es"], html[lang="pt"], html[lang="ru"], html[lang="th"], html[lang="ar"]) .header-actions {
+                grid-column: 2;
+                grid-row: 1;
+            }
+        }
+
+        @media (max-width: 1360px) and (min-width: 901px) {
+            :is(html[lang="fr"], html[lang="es"], html[lang="pt"], html[lang="ru"], html[lang="th"], html[lang="ar"]) .search-shell {
+                display: none;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .language-menu {
+                position: fixed;
+                top: 4.1rem;
+                right: 0.75rem;
+                left: 0.75rem;
+                width: auto;
+            }
+            .language-options { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+            :is(html[lang="ru"], html[lang="th"], html[lang="ar"]) .language-options {
+                grid-template-columns: minmax(0, 1fr);
+                max-height: min(30rem, calc(100dvh - 6rem));
+                overflow-y: auto;
+            }
+            html[dir="rtl"] .section-intro {
+                padding-inline-start: 4.25rem;
+            }
+        }
     </style>
 </head>
 <body class="min-h-screen flex flex-col">
     <!-- Header -->
     <header class="app-header">
-        <a class="brand-mark" href="#words" aria-label="Enplay 首页">
+        <a class="brand-mark" href="#words" aria-label="首頁" data-i18n-aria-label="common.home">
             <span class="brand-glyph"><i class="fa fa-headphones"></i></span>
             <span>
                 <span class="brand-title block">Enplay</span>
@@ -2415,31 +2665,51 @@
             </span>
         </a>
 
-        <nav class="workspace-nav" aria-label="学习内容">
+        <nav class="workspace-nav" aria-label="學習內容" data-i18n-aria-label="nav.content">
             <button class="nav-tab active" type="button" data-view="words" aria-selected="true">
-                <i class="fa fa-font"></i><span>单词</span>
+                <i class="fa fa-font"></i><span data-i18n="nav.words">單詞</span>
             </button>
             <button class="nav-tab" type="button" data-view="sentences" aria-selected="false">
-                <i class="fa fa-comment-o"></i><span>句子</span>
+                <i class="fa fa-comment-o"></i><span data-i18n="nav.sentences">句子</span>
             </button>
             <button class="nav-tab" type="button" data-view="articles" aria-selected="false">
-                <i class="fa fa-file-text-o"></i><span>文章</span>
+                <i class="fa fa-file-text-o"></i><span data-i18n="nav.articles">文章</span>
             </button>
         </nav>
 
         <div class="header-actions">
             <div id="searchShell" class="search-shell">
-                <input id="searchInput" type="text" placeholder="搜索单词…" autocomplete="off" aria-label="搜索单词">
+                <input id="searchInput" type="text" placeholder="搜尋單詞…" autocomplete="off" aria-label="搜尋單詞" data-i18n-placeholder="nav.searchWord" data-i18n-aria-label="nav.searchWord">
                 <div id="searchResults" class="absolute left-0 right-0 mt-2 bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-y-auto hidden z-10"></div>
             </div>
-            <div id="onlineStatus" class="online-status is-connecting" role="status" aria-live="polite" title="正在连接在线人数服务">
+            <div id="onlineStatus" class="online-status is-connecting" role="status" aria-live="polite" title="正在連線在線人數服務" data-i18n-title="online.reconnectingTitle">
                 <span class="online-status-dot" aria-hidden="true"></span>
-                <span class="online-status-label">在线</span>
-                <strong id="onlineCount">连接中</strong>
+                <span class="online-status-label" data-i18n="online.label">在線</span>
+                <strong id="onlineCount" data-i18n="online.connecting">連線中</strong>
+            </div>
+            <div class="language-switcher">
+                <button id="languageMenuButton" class="language-trigger" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="languageMenu" aria-label="介面語言" title="介面語言" data-i18n-aria-label="language.label" data-i18n-title="language.label">
+                    <i class="fa fa-globe" aria-hidden="true"></i>
+                    <span id="languageCurrentCode">繁</span>
+                </button>
+                <div id="languageMenu" class="language-menu hidden" role="menu" aria-label="選擇介面語言" data-i18n-aria-label="language.choose">
+                    <div class="language-menu-heading" data-i18n="language.label">介面語言</div>
+                    <div class="language-options">
+                        <button class="language-option" type="button" role="menuitemradio" aria-checked="true" data-locale="zh-Hant"><span lang="zh-Hant">繁體中文</span><i class="fa fa-check" aria-hidden="true"></i></button>
+                        <button class="language-option" type="button" role="menuitemradio" aria-checked="false" data-locale="ja"><span lang="ja">日本語</span><i class="fa fa-check" aria-hidden="true"></i></button>
+                        <button class="language-option" type="button" role="menuitemradio" aria-checked="false" data-locale="ko"><span lang="ko">한국어</span><i class="fa fa-check" aria-hidden="true"></i></button>
+                        <button class="language-option" type="button" role="menuitemradio" aria-checked="false" data-locale="fr"><span lang="fr">Français</span><i class="fa fa-check" aria-hidden="true"></i></button>
+                        <button class="language-option" type="button" role="menuitemradio" aria-checked="false" data-locale="es"><span lang="es">Español</span><i class="fa fa-check" aria-hidden="true"></i></button>
+                        <button class="language-option" type="button" role="menuitemradio" aria-checked="false" data-locale="pt"><span lang="pt">Português</span><i class="fa fa-check" aria-hidden="true"></i></button>
+                        <button class="language-option" type="button" role="menuitemradio" aria-checked="false" data-locale="ru"><span lang="ru">Русский</span><i class="fa fa-check" aria-hidden="true"></i></button>
+                        <button class="language-option" type="button" role="menuitemradio" aria-checked="false" data-locale="th"><span lang="th">ไทย</span><i class="fa fa-check" aria-hidden="true"></i></button>
+                        <button class="language-option" type="button" role="menuitemradio" aria-checked="false" data-locale="ar"><span lang="ar" dir="rtl">العربية</span><i class="fa fa-check" aria-hidden="true"></i></button>
+                    </div>
+                </div>
             </div>
             <button id="historyBtn" class="history-button" type="button">
                 <i class="fa fa-history text-primary"></i>
-                <span id="historyButtonLabel">学习记录</span>
+                <span id="historyButtonLabel" data-i18n="nav.learningRecord">學習記錄</span>
             </button>
         </div>
     </header>
@@ -2447,34 +2717,34 @@
     <div id="accessGate" class="access-gate" role="alert" aria-live="assertive">
         <div class="access-gate-card">
             <span class="access-gate-icon"><i class="fa fa-users" aria-hidden="true"></i></span>
-            <h2 id="accessGateTitle">正在连接学习空间</h2>
-            <p id="accessGateMessage">正在确认当前在线人数，请稍候。</p>
+            <h2 id="accessGateTitle" data-i18n="online.gateConnectingTitle">正在連線學習空間</h2>
+            <p id="accessGateMessage" data-i18n="online.gateConnectingMessage">正在確認目前在線人數，請稍候。</p>
         </div>
     </div>
 
     <!-- Main Content -->
     <main class="workspace-main flex-grow">
-        <aside id="playerSettings" class="control-panel" aria-label="播放控制">
+        <aside id="playerSettings" class="control-panel" aria-label="播放控制" data-i18n-aria-label="player.title">
             <div class="panel-heading">
                 <div>
                     <span class="panel-kicker">Player</span>
-                    <h2>播放控制</h2>
+                    <h2 data-i18n="player.title">播放控制</h2>
                 </div>
                 <i class="fa fa-sliders text-primary"></i>
             </div>
             <div class="progress-note">
-                <span id="todayLearned">今日进度：0 个单词</span>
-                <button id="exitWordReviewBtn" class="review-exit-button hidden" type="button" aria-label="退出日期回放" title="返回原词典位置">
+                <span id="todayLearned">今日進度：0 個單詞</span>
+                <button id="exitWordReviewBtn" class="review-exit-button hidden" type="button" aria-label="退出日期回放" title="退出日期回放" data-i18n-aria-label="player.exitDateReview" data-i18n-title="player.exitDateReview">
                     <i class="fa fa-times" aria-hidden="true"></i>
                 </button>
             </div>
             <div class="setting-pair">
                 <div class="setting-field">
-                    <label id="repeatCountLabel" for="repeatCountInput">单词重复</label>
+                    <label id="repeatCountLabel" for="repeatCountInput">單詞重複</label>
                     <input id="repeatCountInput" type="number" min="1" value="3">
                 </div>
                 <div class="setting-field">
-                    <label for="rateSelect">播放速度</label>
+                    <label for="rateSelect" data-i18n="player.speed">播放速度</label>
                     <select id="rateSelect">
                         <option value="0.5">0.5×</option>
                         <option value="0.6">0.6×</option>
@@ -2491,53 +2761,53 @@
                 </div>
             </div>
             <fieldset class="voice-fields">
-                <legend>朗读声音</legend>
+                <legend data-i18n="player.voice">朗讀聲音</legend>
                 <div class="voice-row">
                     <span class="voice-help" tabindex="0" aria-describedby="recordedVoiceHelp">
-                        <label for="recordedVoiceSelect">自然声音</label>
-                        <span id="recordedVoiceHelp" class="voice-tooltip" role="tooltip">还原真人音色的例句、句子和文章朗读，需要消耗少量流量。</span>
+                        <label for="recordedVoiceSelect" data-i18n="player.naturalVoice">自然聲音</label>
+                        <span id="recordedVoiceHelp" class="voice-tooltip" role="tooltip" data-i18n="player.naturalVoiceHelp">還原真人音色的例句、句子和文章朗讀，需要消耗少量流量。</span>
                     </span>
                     <select id="recordedVoiceSelect">
-                        <option value="af_heart">Heart · 美式女声</option>
-                        <option value="af_bella">Bella · 美式女声</option>
-                        <option value="bf_emma">Emma · 英式女声</option>
-                        <option value="am_michael">Michael · 美式男声</option>
-                        <option value="bm_george">George · 英式男声</option>
+                        <option value="af_heart">Heart · 美式女聲</option>
+                        <option value="af_bella">Bella · 美式女聲</option>
+                        <option value="bf_emma">Emma · 英式女聲</option>
+                        <option value="am_michael">Michael · 美式男聲</option>
+                        <option value="bm_george">George · 英式男聲</option>
                     </select>
                 </div>
                 <div class="voice-row">
                     <span class="voice-help" tabindex="0" aria-describedby="systemVoiceHelp">
-                        <label for="systemVoiceSelect">系统回退</label>
-                        <span id="systemVoiceHelp" class="voice-tooltip" role="tooltip">单词和释义的朗读，以及网络不畅时本地播放。</span>
+                        <label for="systemVoiceSelect" data-i18n="player.systemVoice">系統回退</label>
+                        <span id="systemVoiceHelp" class="voice-tooltip" role="tooltip" data-i18n="player.systemVoiceHelp">用於單詞和釋義朗讀，以及網路不穩時的本機播放。</span>
                     </span>
                     <select id="systemVoiceSelect">
-                        <option value="auto">系统自动选择</option>
+                        <option value="auto">系統自動選擇</option>
                     </select>
                 </div>
             </fieldset>
             <div class="toggle-list">
                 <div class="toggle-row setting-view" data-setting-views="words sentences">
-                    <label id="itemLoopLabel" for="wordLoop">单词循环</label>
+                    <label id="itemLoopLabel" for="wordLoop">單詞循環</label>
                     <input type="checkbox" id="wordLoop" class="custom-checkbox">
                 </div>
                 <div class="toggle-row setting-view" data-setting-views="words sentences articles">
-                    <label id="autoPlayLabel" for="autoPlay">连续播放</label>
+                    <label id="autoPlayLabel" for="autoPlay">連續播放</label>
                     <input type="checkbox" id="autoPlay" class="custom-checkbox" checked>
                 </div>
                 <div class="toggle-row setting-view" data-setting-views="words sentences">
-                    <label for="newWordsOnly">仅播放未学</label>
+                    <label for="newWordsOnly" data-i18n="player.onlyUnlearned">僅播放未學</label>
                     <input type="checkbox" id="newWordsOnly" class="custom-checkbox">
                 </div>
                 <div class="toggle-row setting-view" data-setting-views="words">
-                    <label for="readEnglishDefinition">读英文释义</label>
+                    <label for="readEnglishDefinition" data-i18n="player.readEnglish">讀英文釋義</label>
                     <input type="checkbox" id="readEnglishDefinition" class="custom-checkbox" checked>
                 </div>
                 <div class="toggle-row setting-view" data-setting-views="words">
-                    <label for="readExample">读例句</label>
+                    <label for="readExample" data-i18n="player.readExample">讀例句</label>
                     <input type="checkbox" id="readExample" class="custom-checkbox" checked>
                 </div>
                 <div class="toggle-row setting-view" data-setting-views="words">
-                    <label for="readChineseDefinition">读中文释义</label>
+                    <label for="readChineseDefinition" data-i18n="player.readChinese">讀中文釋義</label>
                     <input type="checkbox" id="readChineseDefinition" class="custom-checkbox">
                 </div>
             </div>
@@ -2547,57 +2817,57 @@
         <section id="wordsSection" class="workspace-section" data-section="words">
             <div class="section-intro">
                 <div>
-                    <p class="eyebrow">Vocabulary · 词汇</p>
-                    <h1 class="section-title">听见一个词，记住一个词。</h1>
+                    <p class="eyebrow" data-i18n="content.wordEyebrow">Vocabulary · 詞彙</p>
+                    <h1 class="section-title" data-i18n="content.wordTitle">聽見一個詞，記住一個詞。</h1>
                 </div>
-                <p class="section-description">按自己的节奏循环、跟读和复习，让每一次播放都成为有效输入。</p>
+                <p class="section-description" data-i18n="content.wordDescription">按自己的節奏循環、跟讀和複習，讓每一次播放都成為有效輸入。</p>
             </div>
 
             <div class="player-stage">
         <!-- Word Card -->
         <div id="currentWordCard" class="word-card relative w-full p-8 mb-8 animate-fade-in">
-            <button id="wordNotebookToggle" class="notebook-toggle" type="button" aria-label="加入生词本" title="加入生词本">
+            <button id="wordNotebookToggle" class="notebook-toggle" type="button" aria-label="加入生詞本" title="加入生詞本">
                 <i class="fa fa-plus" aria-hidden="true"></i>
             </button>
-            <button id="wordPreviousPreview" class="fullscreen-neighbor" type="button"><span class="neighbor-label">上一个单词</span><span class="neighbor-text"></span></button>
-            <div class="fullscreen-focus" tabindex="0" aria-label="当前单词内容">
+            <button id="wordPreviousPreview" class="fullscreen-neighbor" type="button"><span class="neighbor-label">上一個單詞</span><span class="neighbor-text"></span></button>
+            <div class="fullscreen-focus" tabindex="0" aria-label="目前單詞內容" data-i18n-aria-label="content.currentWordAria">
             <div class="flex justify-between items-start mb-4">
                 <div>
                     <div class="flex items-center">
-                        <h2 id="currentWord" class="text-4xl font-bold text-dark mb-2">abandon</h2>
-                        <button id="wordSpeakBtn" class="ml-3 text-primary hover:text-secondary text-2xl transition-all-300" title="Speak word">
+                        <h2 id="currentWord" class="text-4xl font-bold text-dark mb-2" lang="en" dir="ltr">abandon</h2>
+                        <button id="wordSpeakBtn" class="ml-3 text-primary hover:text-secondary text-2xl transition-all-300" title="播放" aria-label="播放" data-i18n-title="common.play" data-i18n-aria-label="common.play">
                             <i class="fa fa-volume-up"></i>
                         </button>
                         <span id="learnedBadge" class="learned-badge hidden">
-                            <i class="fa fa-check-circle"></i> Learned
+                            <i class="fa fa-check-circle"></i><span data-i18n="common.learned">已學習</span>
                         </span>
                     </div>
-                    <p id="phonetic" class="text-gray-500 italic">/əˈbændən/</p>
+                    <p id="phonetic" class="text-gray-500 italic" lang="en" dir="ltr">/əˈbændən/</p>
                 </div>
                 <span id="wordIndex" class="bg-primary text-white px-3 py-1 rounded-full text-sm">1/70</span>
             </div>
             
             <div id="englishDefinitionBlock" class="mb-6">
-                <h3 class="text-lg font-semibold mb-2 text-gray-700">English Definition</h3>
-                <p id="englishDefinition" class="text-lg">to leave a place, thing, or person, usually for ever</p>
+                <h3 class="text-lg font-semibold mb-2 text-gray-700" data-i18n="content.englishDefinition">英文釋義</h3>
+                <p id="englishDefinition" class="text-lg" lang="en" dir="ltr">to leave a place, thing, or person, usually for ever</p>
             </div>
 
             <div id="definitionBlock" class="mb-6 hidden">
-                <h3 class="text-lg font-semibold mb-2 text-gray-700">中文释义</h3>
-                <p id="definition" class="text-lg"></p>
+                <h3 class="text-lg font-semibold mb-2 text-gray-700" data-i18n="content.chineseDefinition">中文釋義</h3>
+                <p id="definition" class="text-lg" lang="zh-Hans" dir="auto"></p>
             </div>
             
             <div id="exampleBlock">
                 <div class="example-heading-row">
-                    <h3 class="text-lg font-semibold text-gray-700">Example</h3>
-                    <button id="wordFullscreenBtn" class="card-fullscreen-toggle" type="button" aria-label="全屏查看单词" title="全屏查看" aria-pressed="false">
+                    <h3 class="text-lg font-semibold text-gray-700" data-i18n="content.example">例句</h3>
+                    <button id="wordFullscreenBtn" class="card-fullscreen-toggle" type="button" aria-label="全屏查看單詞" title="全屏查看" aria-pressed="false">
                         <i id="wordFullscreenIcon" class="fa fa-expand" aria-hidden="true"></i>
                     </button>
                 </div>
-                <p id="example" class="text-lg italic text-gray-600">The climbers had to abandon their attempt to reach the summit due to the bad weather.</p>
+                <p id="example" class="text-lg italic text-gray-600" lang="en" dir="ltr">The climbers had to abandon their attempt to reach the summit due to the bad weather.</p>
             </div>
             </div>
-            <button id="wordNextPreview" class="fullscreen-neighbor" type="button"><span class="neighbor-label">下一个单词</span><span class="neighbor-text"></span></button>
+            <button id="wordNextPreview" class="fullscreen-neighbor" type="button"><span class="neighbor-label">下一個單詞</span><span class="neighbor-text"></span></button>
         </div>
         
         <!-- Progress Bar -->
@@ -2609,13 +2879,13 @@
         
         <!-- Control Buttons -->
         <div class="flex items-center justify-center gap-6 w-full mb-4">
-            <button id="prevBtn" class="control-btn prev-btn">
+            <button id="prevBtn" class="control-btn prev-btn" aria-label="上一個單詞" title="上一個單詞">
                 <i class="fa fa-step-backward text-xl"></i>
             </button>
-            <button id="playBtn" class="control-btn play-btn">
+            <button id="playBtn" class="control-btn play-btn" aria-label="播放單詞" title="播放單詞">
                 <i id="playIcon" class="fa fa-play text-xl"></i>
             </button>
-            <button id="nextBtn" class="control-btn next-btn">
+            <button id="nextBtn" class="control-btn next-btn" aria-label="下一個單詞" title="下一個單詞">
                 <i class="fa fa-step-forward text-xl"></i>
             </button>
         </div>
@@ -2626,23 +2896,23 @@
         <section id="sentencesSection" class="workspace-section hidden" data-section="sentences">
             <div class="section-intro">
                 <div>
-                    <p class="eyebrow">Sentences · 句子</p>
-                    <h1 class="section-title">把英语放回真实场景。</h1>
+                    <p class="eyebrow" data-i18n="content.sentenceEyebrow">Sentences · 句子</p>
+                    <h1 class="section-title" data-i18n="content.sentenceTitle">把英語放回真實場景。</h1>
                 </div>
-                <p class="section-description">围绕生活场景听句子、看译文、反复跟读，建立更自然的表达反应。</p>
+                <p class="section-description" data-i18n="content.sentenceDescription">圍繞生活場景聽句子、看譯文、反覆跟讀，建立更自然的表達反應。</p>
             </div>
 
             <div class="player-stage">
         <!-- Sentence Player -->
         <div id="currentSentenceCard" class="word-card relative w-full p-8 mb-8 animate-fade-in">
-            <button id="phraseNotebookToggle" class="notebook-toggle" type="button" aria-label="加入生词本" title="加入生词本">
+            <button id="phraseNotebookToggle" class="notebook-toggle" type="button" aria-label="加入生詞本" title="加入生詞本">
                 <i class="fa fa-plus" aria-hidden="true"></i>
             </button>
             <button id="sentencePreviousPreview" class="fullscreen-neighbor" type="button"><span class="neighbor-label">上一句</span><span class="neighbor-text"></span></button>
-            <div class="fullscreen-focus" tabindex="0" aria-label="当前句子内容">
+            <div class="fullscreen-focus" tabindex="0" aria-label="目前句子內容" data-i18n-aria-label="content.currentSentenceAria">
             <div class="flex justify-between items-start mb-4">
                 <div class="flex items-center gap-3">
-                    <h2 class="text-2xl font-bold text-primary">Sentence Player</h2>
+                    <h2 class="text-2xl font-bold text-primary" data-i18n="nav.sentences">句子</h2>
                 </div>
                 <span id="phraseIndex" class="bg-primary text-white px-3 py-1 rounded-full text-sm">1/1</span>
             </div>
@@ -2650,25 +2920,25 @@
                 <div class="flex items-center justify-between mb-2">
                     <span id="phraseSceneLabel" class="text-sm text-gray-600 font-semibold bg-neutral px-3 py-1 rounded-full"></span>
                     <span id="phraseLearnedBadge" class="learned-badge hidden">
-                        <i class="fa fa-check-circle"></i> Learned
+                        <i class="fa fa-check-circle"></i><span data-i18n="common.learned">已學習</span>
                     </span>
                 </div>
                 <div class="flex items-center">
-                    <p id="currentPhrase" class="text-xl text-dark flex-1">Loading phrases...</p>
+                    <p id="currentPhrase" class="text-xl text-dark flex-1" lang="en" dir="ltr">Loading phrases...</p>
                 </div>
-                <p id="currentPhraseNote" class="text-sm text-gray-600 mt-2"></p>
+                <p id="currentPhraseNote" class="text-sm text-gray-600 mt-2" lang="zh-Hans" dir="auto"></p>
             </div>
             </div>
             <button id="sentenceNextPreview" class="fullscreen-neighbor" type="button"><span class="neighbor-label">下一句</span><span class="neighbor-text"></span></button>
             <div class="sentence-player-footer">
                 <div class="sentence-player-controls flex items-center justify-center gap-6">
-                    <button id="phrasePrevBtn" class="control-btn prev-btn">
+                    <button id="phrasePrevBtn" class="control-btn prev-btn" aria-label="上一句" title="上一句">
                         <i class="fa fa-step-backward text-xl"></i>
                     </button>
-                    <button id="phrasePlayBtn" class="control-btn play-btn">
+                    <button id="phrasePlayBtn" class="control-btn play-btn" aria-label="播放句子" title="播放句子">
                         <i id="phrasePlayIcon" class="fa fa-play text-xl"></i>
                     </button>
-                    <button id="phraseNextBtn" class="control-btn next-btn">
+                    <button id="phraseNextBtn" class="control-btn next-btn" aria-label="下一句" title="下一句">
                         <i class="fa fa-step-forward text-xl"></i>
                     </button>
                 </div>
@@ -2682,25 +2952,25 @@
 
         <section id="articlesSection" class="workspace-section hidden" data-section="articles">
             <div id="articleEmpty" class="article-empty">
-                <span class="eyebrow">Articles · 文章</span>
+                <span class="eyebrow" data-i18n="articleEmpty.eyebrow">Articles · 文章</span>
                 <div class="article-icon mt-5"><i class="fa fa-book"></i></div>
-                <h1 class="section-title mt-6">文章播放器，正在等待第一篇内容。</h1>
-                <p class="mt-4 max-w-xl text-gray-500 leading-7">文章库目前还是空的。后续上传例文后，这里会提供连续播放、逐段跟读和生词标记，让长文本也能像单词一样循序学习。</p>
-                <div class="article-features" aria-label="规划中的文章播放器功能">
+                <h1 class="section-title mt-6" data-i18n="articleEmpty.title">文章播放器正在等待第一篇內容。</h1>
+                <p class="mt-4 max-w-xl text-gray-500 leading-7" data-i18n="articleEmpty.description">文章庫目前還是空的。上傳例文後，這裡會提供連續播放、逐段跟讀和生詞標記，讓長文本也能循序學習。</p>
+                <div class="article-features" aria-label="規劃中的文章播放器功能" data-i18n-aria-label="articleEmpty.featuresAria">
                     <div class="article-feature">
                         <i class="fa fa-play-circle"></i>
-                        <strong>连续播放</strong>
-                        <span>全文与段落两种播放方式</span>
+                        <strong data-i18n="articleEmpty.continuousTitle">連續播放</strong>
+                        <span data-i18n="articleEmpty.continuousDescription">全文與段落兩種播放方式</span>
                     </div>
                     <div class="article-feature">
                         <i class="fa fa-align-left"></i>
-                        <strong>逐段跟读</strong>
-                        <span>当前段落高亮并同步进度</span>
+                        <strong data-i18n="articleEmpty.followTitle">逐段跟讀</strong>
+                        <span data-i18n="articleEmpty.followDescription">目前段落高亮並同步進度</span>
                     </div>
                     <div class="article-feature">
                         <i class="fa fa-bookmark-o"></i>
-                        <strong>生词标记</strong>
-                        <span>随时收藏并加入单词复习</span>
+                        <strong data-i18n="articleEmpty.saveWordsTitle">生詞標記</strong>
+                        <span data-i18n="articleEmpty.saveWordsDescription">隨時收藏並加入單詞複習</span>
                     </div>
                 </div>
             </div>
@@ -2717,37 +2987,37 @@
                             <span id="articleIndex" class="article-meta-chip">1/12</span>
                         </div>
                         <div class="article-heading">
-                            <h1 id="articleTitle">Untitled</h1>
-                            <p id="articleTitleZh" class="article-title-zh"></p>
+                            <h1 id="articleTitle" lang="en" dir="ltr">Untitled</h1>
+                            <p id="articleTitleZh" class="article-title-zh" lang="zh-Hans" dir="auto"></p>
                         </div>
                         <p id="articleSummary" class="article-summary"></p>
                     </header>
 
-                    <footer class="article-transport" aria-label="文章播放控制">
+                    <footer class="article-transport" aria-label="文章播放控制" data-i18n-aria-label="article.controlsAria">
                         <div class="article-progress-meta">
-                            <span id="articlePlaybackStatus" aria-live="polite" aria-atomic="true">准备播放 · 第 1 句</span>
-                            <span id="articleSentenceCount">1/1 句</span>
+                            <span id="articlePlaybackStatus" aria-live="polite" aria-atomic="true">準備播放 · 第 1/1 句</span>
+                            <span id="articleSentenceCount">第 1/1 句</span>
                         </div>
                         <div class="article-progress-track" aria-hidden="true">
                             <div id="articleProgressFill" class="article-progress-fill"></div>
                         </div>
                         <div class="article-controls">
                             <div>
-                                <button id="articlePrevBtn" class="article-control-secondary" type="button" aria-label="上一篇文章" title="上一篇文章"><i class="fa fa-angle-double-left" aria-hidden="true"></i></button>
-                                <div class="article-control-label article-track-label" aria-hidden="true">上一篇</div>
+                                <button id="articlePrevBtn" class="article-control-secondary" type="button" aria-label="上一篇文章" title="上一篇文章" data-i18n-aria-label="article.previousArticle" data-i18n-title="article.previousArticle"><i class="fa fa-angle-double-left" aria-hidden="true"></i></button>
+                                <div class="article-control-label article-track-label" aria-hidden="true" data-i18n="common.previous">上一篇</div>
                             </div>
                             <div>
-                                <button id="articlePrevSentenceBtn" class="article-control-secondary" type="button" aria-label="上一句" title="上一句"><i class="fa fa-step-backward" aria-hidden="true"></i></button>
-                                <div class="article-control-label">上一句</div>
+                                <button id="articlePrevSentenceBtn" class="article-control-secondary" type="button" aria-label="上一句" title="上一句" data-i18n-aria-label="article.previousSentence" data-i18n-title="article.previousSentence"><i class="fa fa-step-backward" aria-hidden="true"></i></button>
+                                <div class="article-control-label" data-i18n="article.previousSentence">上一句</div>
                             </div>
                             <button id="articlePlayBtn" class="control-btn play-btn" type="button" aria-label="播放全文" title="播放全文"><i id="articlePlayIcon" class="fa fa-play" aria-hidden="true"></i></button>
                             <div>
-                                <button id="articleNextSentenceBtn" class="article-control-secondary" type="button" aria-label="下一句" title="下一句"><i class="fa fa-step-forward" aria-hidden="true"></i></button>
-                                <div class="article-control-label">下一句</div>
+                                <button id="articleNextSentenceBtn" class="article-control-secondary" type="button" aria-label="下一句" title="下一句" data-i18n-aria-label="article.nextSentence" data-i18n-title="article.nextSentence"><i class="fa fa-step-forward" aria-hidden="true"></i></button>
+                                <div class="article-control-label" data-i18n="article.nextSentence">下一句</div>
                             </div>
                             <div>
-                                <button id="articleNextBtn" class="article-control-secondary" type="button" aria-label="下一篇文章" title="下一篇文章"><i class="fa fa-angle-double-right" aria-hidden="true"></i></button>
-                                <div class="article-control-label article-track-label" aria-hidden="true">下一篇</div>
+                                <button id="articleNextBtn" class="article-control-secondary" type="button" aria-label="下一篇文章" title="下一篇文章" data-i18n-aria-label="article.nextArticle" data-i18n-title="article.nextArticle"><i class="fa fa-angle-double-right" aria-hidden="true"></i></button>
+                                <div class="article-control-label article-track-label" aria-hidden="true" data-i18n="common.next">下一篇</div>
                             </div>
                             <div>
                                 <button id="articleFullscreenBtn" class="article-control-secondary article-fullscreen-toggle" type="button" aria-label="全屏阅读文章" aria-controls="articleReaderCard" title="全屏阅读" aria-pressed="false">
@@ -2758,18 +3028,18 @@
                         </div>
                     </footer>
 
-                    <div id="articleSentenceList" class="article-sentence-list" aria-label="文章逐句对照"></div>
+                    <div id="articleSentenceList" class="article-sentence-list" aria-label="文章逐句對照" data-i18n-aria-label="article.sentenceListAria"></div>
                 </article>
             </div>
         </section>
         </div>
 
-        <aside id="libraryShelf" class="library-shelf" aria-label="我的书架">
+        <aside id="libraryShelf" class="library-shelf" aria-label="我的書架" data-i18n-aria-label="shelf.title">
             <div class="shelf-header">
                 <div class="panel-heading">
                     <div>
                         <span class="panel-kicker">Library</span>
-                        <h2>我的书架</h2>
+                        <h2 data-i18n="shelf.title">我的書架</h2>
                     </div>
                     <span id="libraryCount" class="text-xs font-bold text-gray-400">1 本</span>
                 </div>
@@ -2777,23 +3047,19 @@
             <div id="libraryList" class="shelf-list"></div>
             <div class="shelf-actions">
                 <button id="uploadLibraryBtn" class="upload-library-button" type="button">
-                    <i class="fa fa-plus"></i><span>导入内容库</span>
+                    <i class="fa fa-plus"></i><span data-i18n="shelf.import">匯入內容庫</span>
                 </button>
-                <p class="format-note">本机书架支持 UTF‑8 CSV / TSV / JSON；文章也支持 TXT / Markdown。</p>
-                <p id="sentenceSourceNote" class="format-note hidden">
-                    扩展句库文本来源
-                    <a href="https://tatoeba.org" target="_blank" rel="noopener noreferrer">Tatoeba</a>，采用
-                    <a href="https://creativecommons.org/licenses/by/2.0/fr/" target="_blank" rel="noopener noreferrer">CC BY 2.0 FR</a>。
-                </p>
-                <p id="articleSourceNote" class="format-note hidden">分级文章为本站原创内容，依据中高考常见主题与能力要求编写，不复制历年真题原文。</p>
+                <p class="format-note" data-i18n="shelf.formatNote">本機書架支援 UTF‑8 CSV / TSV / JSON；文章也支援 TXT / Markdown。</p>
+                <p id="sentenceSourceNote" class="format-note hidden" data-i18n="shelf.sentenceSource">擴充句庫文本來源 Tatoeba，採用 CC BY 2.0 FR。</p>
+                <p id="articleSourceNote" class="format-note hidden" data-i18n="shelf.articleSource">分級文章為本站原創內容，依據中高考常見主題與能力要求編寫，不複製歷年真題原文。</p>
             </div>
         </aside>
     </main>
 
-    <aside id="vocabularyNotebookWidget" class="vocabulary-notebook-widget" aria-label="生词本">
-        <button id="notebookOrb" class="notebook-orb" type="button" aria-label="打开生词本" title="打开生词本">
+    <aside id="vocabularyNotebookWidget" class="vocabulary-notebook-widget" aria-label="生詞本" data-i18n-aria-label="notebook.title">
+        <button id="notebookOrb" class="notebook-orb" type="button" aria-label="開啟生詞本" title="開啟生詞本" data-i18n-aria-label="notebook.open" data-i18n-title="notebook.open">
             <i class="fa fa-book" aria-hidden="true"></i>
-            <span id="notebookCount" class="notebook-count" aria-label="生词数量">0</span>
+            <span id="notebookCount" class="notebook-count" aria-label="生詞數量" data-i18n-aria-label="notebook.countAria">0</span>
         </button>
     </aside>
 
@@ -2802,17 +3068,17 @@
             <div class="notebook-modal-header">
                 <div>
                     <span class="panel-kicker">Vocabulary Notebook</span>
-                    <h2 id="notebookModalTitle">我的生词本</h2>
-                    <p id="notebookSummary" class="text-xs text-gray-500 mt-1">共 0 个单词</p>
+                    <h2 id="notebookModalTitle" data-i18n="notebook.title">我的生詞本</h2>
+                    <p id="notebookSummary" class="text-xs text-gray-500 mt-1">0 個單詞 · 0 個句子</p>
                 </div>
                 <div class="notebook-modal-actions">
-                    <button id="notebookPlayWordsBtn" class="notebook-play-all" type="button" aria-label="播放全部单词">
-                        <i id="notebookPlayWordsIcon" class="fa fa-play" aria-hidden="true"></i><span>播放单词</span>
+                    <button id="notebookPlayWordsBtn" class="notebook-play-all" type="button" aria-label="播放全部單詞" data-i18n-aria-label="notebook.playWords">
+                        <i id="notebookPlayWordsIcon" class="fa fa-play" aria-hidden="true"></i><span data-i18n="notebook.playWords">播放單詞</span>
                     </button>
-                    <button id="notebookPlaySentencesBtn" class="notebook-play-all sentences" type="button" aria-label="播放全部句子">
-                        <i id="notebookPlaySentencesIcon" class="fa fa-play" aria-hidden="true"></i><span>播放句子</span>
+                    <button id="notebookPlaySentencesBtn" class="notebook-play-all sentences" type="button" aria-label="播放全部句子" data-i18n-aria-label="notebook.playSentences">
+                        <i id="notebookPlaySentencesIcon" class="fa fa-play" aria-hidden="true"></i><span data-i18n="notebook.playSentences">播放句子</span>
                     </button>
-                    <button id="closeNotebookModal" class="text-gray-400 hover:text-gray-700" type="button" aria-label="关闭生词本">
+                    <button id="closeNotebookModal" class="text-gray-400 hover:text-gray-700" type="button" aria-label="關閉生詞本" data-i18n-aria-label="notebook.close">
                         <i class="fa fa-times text-xl" aria-hidden="true"></i>
                     </button>
                 </div>
@@ -2822,24 +3088,24 @@
     </div>
 
     <!-- History Modal -->
-    <div id="historyModal" class="modal">
+    <div id="historyModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="historyModalTitle">
         <div class="modal-content w-full max-w-2xl max-h-[80vh]">
             <div class="flex justify-between items-center mb-4">
                 <div class="flex items-center gap-3">
-                    <h2 class="text-xl font-bold text-primary">学习记录</h2>
+                    <h2 id="historyModalTitle" class="text-xl font-bold text-primary" data-i18n="history.title">學習記錄</h2>
                     <select id="historyType" class="border border-gray-300 rounded px-2 py-1 text-sm">
-                        <option value="words">单词</option>
-                        <option value="phrases">句子</option>
+                        <option value="words" data-i18n="nav.words">單詞</option>
+                        <option value="phrases" data-i18n="nav.sentences">句子</option>
                     </select>
                     <div class="flex items-center gap-2">
-                        <label for="historyFilter" class="text-sm text-gray-600">日期</label>
+                        <label for="historyFilter" class="text-sm text-gray-600" data-i18n="history.date">日期</label>
                         <select id="historyFilter" class="border border-gray-300 rounded px-2 py-1 text-sm">
-                            <option value="all">全部</option>
+                            <option value="all" data-i18n="history.all">全部</option>
                         </select>
                     </div>
                 </div>
-                <button id="closeModal" class="text-gray-500 hover:text-gray-700">
-                    <i class="fa fa-times text-xl"></i>
+                <button id="closeModal" class="text-gray-500 hover:text-gray-700" type="button" aria-label="關閉" data-i18n-aria-label="common.close">
+                    <i class="fa fa-times text-xl" aria-hidden="true"></i>
                 </button>
             </div>
             <div id="historyList" class="space-y-2 max-h-[60vh] overflow-y-auto">
@@ -2854,40 +3120,40 @@
             <div class="flex items-start justify-between gap-4 mb-5">
                 <div>
                     <span class="panel-kicker">Personal Library</span>
-                    <h2 class="text-2xl font-bold text-dark mt-1">导入到本机书架</h2>
-                    <p class="text-sm text-gray-500 mt-2">内容保存在当前浏览器，不会公开上传；导入后可立即切换播放。</p>
+                    <h2 class="text-2xl font-bold text-dark mt-1" data-i18n="import.title">匯入到本機書架</h2>
+                    <p class="text-sm text-gray-500 mt-2" data-i18n="import.description">內容會儲存在目前瀏覽器中，不會公開上傳；匯入後可立即切換播放。</p>
                 </div>
-                <button id="closeUploadModal" class="text-gray-400 hover:text-gray-700" type="button" aria-label="关闭">
+                <button id="closeUploadModal" class="text-gray-400 hover:text-gray-700" type="button" aria-label="關閉" data-i18n-aria-label="common.close">
                     <i class="fa fa-times text-xl"></i>
                 </button>
             </div>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
                 <div class="setting-field !mt-0">
-                    <label for="uploadLibraryType">内容类型</label>
+                    <label for="uploadLibraryType" data-i18n="import.contentType">內容類型</label>
                     <select id="uploadLibraryType">
-                        <option value="words">单词库</option>
-                        <option value="sentences">句子库</option>
-                        <option value="articles">文章库</option>
+                        <option value="words" data-i18n="import.wordLibrary">單詞庫</option>
+                        <option value="sentences" data-i18n="import.sentenceLibrary">句子庫</option>
+                        <option value="articles" data-i18n="import.articleLibrary">文章庫</option>
                     </select>
                 </div>
                 <div class="setting-field !mt-0">
-                    <label for="uploadLibraryName">书架名称</label>
-                    <input id="uploadLibraryName" type="text" maxlength="80" placeholder="例如：商务英语词库">
+                    <label for="uploadLibraryName" data-i18n="import.name">書架名稱</label>
+                    <input id="uploadLibraryName" type="text" maxlength="80" placeholder="例如：商務英語詞庫" data-i18n-placeholder="import.namePlaceholder">
                 </div>
             </div>
             <label class="upload-dropzone" for="uploadLibraryFile">
                 <span>
                     <i class="fa fa-cloud-upload text-2xl text-primary"></i>
-                    <strong class="block mt-2 text-sm">选择内容文件</strong>
+                    <strong class="block mt-2 text-sm" data-i18n="import.chooseFile">選擇內容檔案</strong>
                     <span id="uploadFormatHint" class="block mt-1 text-xs text-gray-500">CSV / TSV / JSON</span>
                 </span>
                 <input id="uploadLibraryFile" class="hidden" type="file" accept=".csv,.tsv,.json,.txt,.md,.markdown,text/csv,text/tab-separated-values,application/json,text/plain,text/markdown">
             </label>
-            <div id="selectedLibraryFile" class="mt-3 text-xs text-gray-500">尚未选择文件</div>
+            <div id="selectedLibraryFile" class="mt-3 text-xs text-gray-500" data-i18n="import.noFile">尚未選擇檔案</div>
             <div id="uploadLibraryStatus" class="upload-status text-gray-500"></div>
             <div class="flex justify-end gap-3 mt-4">
-                <button id="cancelUploadLibrary" class="px-4 py-2 rounded-lg border border-gray-200 text-sm font-bold text-gray-600" type="button">取消</button>
-                <button id="confirmUploadLibrary" class="px-4 py-2 rounded-lg bg-dark text-white text-sm font-bold disabled:opacity-40" type="button" disabled>导入书架</button>
+                <button id="cancelUploadLibrary" class="px-4 py-2 rounded-lg border border-gray-200 text-sm font-bold text-gray-600" type="button" data-i18n="import.cancel">取消</button>
+                <button id="confirmUploadLibrary" class="px-4 py-2 rounded-lg bg-dark text-white text-sm font-bold disabled:opacity-40" type="button" disabled data-i18n="import.confirm">匯入書架</button>
             </div>
         </div>
     </div>
@@ -2910,6 +3176,20 @@
 
         function escapeHtml(value) {
             return String(value ?? '').replace(/[&<>"']/g, character => HTML_ESCAPE_MAP[character]);
+        }
+
+        const i18n = window.EnplayI18n;
+
+        function t(key, variables = {}) {
+            return i18n ? i18n.t(key, variables) : key;
+        }
+
+        function formatUiNumber(value) {
+            return i18n ? i18n.formatNumber(value) : String(value);
+        }
+
+        function formatUiDate(value) {
+            return i18n ? i18n.formatDate(value) : String(value);
         }
 
         // DOM Elements
@@ -2963,6 +3243,10 @@
         const searchShell = document.getElementById('searchShell');
         const playerSettings = document.getElementById('playerSettings');
         const historyButtonLabel = document.getElementById('historyButtonLabel');
+        const languageMenuButton = document.getElementById('languageMenuButton');
+        const languageMenu = document.getElementById('languageMenu');
+        const languageCurrentCode = document.getElementById('languageCurrentCode');
+        const languageOptions = Array.from(document.querySelectorAll('[data-locale]'));
         const libraryListEl = document.getElementById('libraryList');
         const libraryCountEl = document.getElementById('libraryCount');
         const sentenceSourceNote = document.getElementById('sentenceSourceNote');
@@ -3080,6 +3364,7 @@
         let articlePassCount = 0;
         let articlePlaybackMode = 'article';
         let articlePlaybackCompleted = false;
+        let articleStatusKey = 'article.ready';
         let isArticlePlaying = false;
         let speechSessionId = 0;
         let speechUtteranceId = 0;
@@ -3107,6 +3392,7 @@
         const builtInWordItems = cet4Words.map(item => ({ ...item }));
         const activeLibraryIds = loadActiveLibraryIds();
         function getApiBaseUrl(hostname = window.location.hostname) {
+            if (hostname === '192.168.0.103') return '/api';
             return hostname === 'enplay.aoke.ltd'
                 ? 'https://api-enplay.aoke.ltd'
                 : 'https://api-enplay.ningboaoke.com';
@@ -3118,6 +3404,8 @@
         let presenceToken = localStorage.getItem(PRESENCE_TOKEN_KEY) || '';
         let presenceTimer = null;
         let presenceFailures = 0;
+        let latestPresencePayload = null;
+        let presenceConnected = false;
         let applicationInitialized = false;
         
         // Local Storage Keys
@@ -3145,6 +3433,8 @@
         function init() {
             console.log('Initializing app...');
             applicationInitialized = true;
+
+            initLanguageInterface();
             
             // Check if speech synthesis is available
             checkSpeechSupport();
@@ -3261,6 +3551,135 @@
             console.log('App initialized successfully');
         }
 
+        function syncLanguageMenuSelection() {
+            if (!i18n) return;
+            const locale = i18n.getLocale();
+            const shortLabels = {
+                'zh-Hant': '繁',
+                ja: '日',
+                ko: '한',
+                fr: 'FR',
+                es: 'ES',
+                pt: 'PT',
+                ru: 'RU',
+                th: 'ไทย',
+                ar: 'ع'
+            };
+            languageCurrentCode.textContent = shortLabels[locale] || '繁';
+            languageOptions.forEach(option => {
+                option.setAttribute('aria-checked', option.dataset.locale === locale ? 'true' : 'false');
+            });
+        }
+
+        function setLanguageMenuOpen(isOpen, { focusSelected = false } = {}) {
+            languageMenu.classList.toggle('hidden', !isOpen);
+            languageMenuButton.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+            if (isOpen && focusSelected) {
+                const selected = languageOptions.find(option => option.getAttribute('aria-checked') === 'true');
+                (selected || languageOptions[0])?.focus();
+            }
+        }
+
+        function updateTransportButtonLabels() {
+            const setLabel = (element, key) => {
+                const label = t(key);
+                element.setAttribute('aria-label', label);
+                element.title = label;
+            };
+            setLabel(prevBtn, 'fullscreen.previousWord');
+            const notebookWordsPlaying = isNotebookPlaying && notebookPlaybackType === 'word';
+            const notebookSentencesPlaying = isNotebookPlaying && notebookPlaybackType === 'sentence';
+            setLabel(playBtn, isPlaying || notebookWordsPlaying ? 'common.pause' : 'common.play');
+            setLabel(nextBtn, 'fullscreen.nextWord');
+            setLabel(phrasePrevBtn, 'fullscreen.previousSentence');
+            setLabel(phrasePlayBtn, isPhrasePlaying || notebookSentencesPlaying ? 'common.pause' : 'common.play');
+            setLabel(phraseNextBtn, 'fullscreen.nextSentence');
+            setLabel(articlePlayBtn, isArticlePlaying ? 'article.pause' : 'article.playAll');
+            setLabel(notebookPlayWordsBtn, notebookWordsPlaying ? 'common.pause' : 'notebook.playWords');
+            setLabel(notebookPlaySentencesBtn, notebookSentencesPlaying ? 'common.pause' : 'notebook.playSentences');
+            notebookPlayWordsBtn.querySelector('span').textContent = t(notebookWordsPlaying ? 'common.pause' : 'notebook.playWords');
+            notebookPlaySentencesBtn.querySelector('span').textContent = t(notebookSentencesPlaying ? 'common.pause' : 'notebook.playSentences');
+        }
+
+        function refreshLocalizedInterface() {
+            if (!i18n) return;
+            i18n.apply(document);
+            syncLanguageMenuSelection();
+            populateVoiceOptions();
+            syncPlayerSettingsForView(currentWorkspaceView);
+            updateTransportButtonLabels();
+            updateWordFullscreenButton(isWordCardFullscreen());
+            updateSentenceFullscreenButton(isSentenceCardFullscreen());
+            updateArticleFullscreenButton(isArticleCardFullscreen());
+            updateWordNotebookToggle();
+            updatePhraseNotebookToggle();
+            renderVocabularyNotebook();
+            renderLibraryShelf();
+            updatePresenceDisplay(latestPresencePayload, presenceConnected);
+
+            if (phraseList.length && !notebookDisplayedEntry) {
+                phraseSceneLabel.textContent = formatPhraseCategory(phraseList[phraseIndex].scene);
+            }
+            if (articleList.length) {
+                const article = articleList[articleIndex];
+                const genre = getArticleGenreMeta(article.genre);
+                articleGenreEl.replaceChildren();
+                const genreIcon = document.createElement('i');
+                genreIcon.className = `fa ${genre.icon}`;
+                genreIcon.setAttribute('aria-hidden', 'true');
+                articleGenreEl.append(genreIcon, document.createTextNode(genre.label));
+                articleWordCountEl.textContent = t('article.approxWords', { count: formatUiNumber(article.estimatedWords || 0) });
+                renderArticleSentences(article);
+                updateArticleSentenceUi({ scroll: false });
+            }
+
+            if (currentWorkspaceView === 'sentences') {
+                updateTodaySentenceCount();
+            } else if (currentWorkspaceView === 'articles') {
+                todayLearnedEl.textContent = t('player.currentArticles', { count: formatUiNumber(articleList.length) });
+            } else {
+                updateTodayLearnedCount();
+            }
+            updateDocumentTitleForView(currentWorkspaceView);
+            if (historyModal.style.display === 'block') refreshHistoryModal();
+        }
+
+        function initLanguageInterface() {
+            if (!i18n || !languageMenuButton || !languageMenu) return;
+            i18n.apply(document);
+            syncLanguageMenuSelection();
+            languageMenuButton.addEventListener('click', () => {
+                setLanguageMenuOpen(languageMenu.classList.contains('hidden'), { focusSelected: true });
+            });
+            languageOptions.forEach(option => {
+                option.addEventListener('click', () => {
+                    i18n.setLocale(option.dataset.locale);
+                    setLanguageMenuOpen(false);
+                    languageMenuButton.focus();
+                });
+            });
+            languageMenu.addEventListener('keydown', event => {
+                const currentIndex = languageOptions.indexOf(document.activeElement);
+                if (event.key === 'Escape') {
+                    event.preventDefault();
+                    setLanguageMenuOpen(false);
+                    languageMenuButton.focus();
+                } else if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+                    event.preventDefault();
+                    const direction = event.key === 'ArrowDown' ? 1 : -1;
+                    const nextIndex = (Math.max(0, currentIndex) + direction + languageOptions.length) % languageOptions.length;
+                    languageOptions[nextIndex].focus();
+                } else if (event.key === 'Home' || event.key === 'End') {
+                    event.preventDefault();
+                    languageOptions[event.key === 'Home' ? 0 : languageOptions.length - 1].focus();
+                }
+            });
+            document.addEventListener('click', event => {
+                if (!event.target.closest('.language-switcher')) setLanguageMenuOpen(false);
+            });
+            window.addEventListener('enplay:localechange', refreshLocalizedInterface);
+        }
+
         function getFullscreenElement() {
             return document.fullscreenElement || document.webkitFullscreenElement || null;
         }
@@ -3284,10 +3703,15 @@
                 const text = item ? (type === 'sentence' ? item.text : item.word) : '';
                 preview.disabled = !text;
                 preview.querySelector('.neighbor-text').textContent = text || '';
-                const label = type === 'sentence' ? ['上一句', '下一句'][index] : ['上一个单词', '下一个单词'][index];
-                preview.querySelector('.neighbor-label').textContent = text ? label : ['已到开头', '已到末尾'][index];
+                const labelKey = type === 'sentence'
+                    ? ['fullscreen.previousSentence', 'fullscreen.nextSentence'][index]
+                    : ['fullscreen.previousWord', 'fullscreen.nextWord'][index];
+                const boundaryKey = ['fullscreen.start', 'fullscreen.end'][index];
+                const label = t(labelKey);
+                const boundary = t(boundaryKey);
+                preview.querySelector('.neighbor-label').textContent = text ? label : boundary;
                 preview.title = text || '';
-                preview.setAttribute('aria-label', text ? `${label}：${text}` : ['已到开头', '已到末尾'][index]);
+                preview.setAttribute('aria-label', text ? `${label}: ${text}` : boundary);
             });
         }
 
@@ -3303,9 +3727,10 @@
 
         function updateWordFullscreenButton(isActive) {
             if (isActive) updateFullscreenNeighbors('word');
+            const label = t(isActive ? 'fullscreen.wordExit' : 'fullscreen.wordEnter');
             wordFullscreenBtn.setAttribute('aria-pressed', isActive ? 'true' : 'false');
-            wordFullscreenBtn.setAttribute('aria-label', isActive ? '退出单词全屏' : '全屏查看单词');
-            wordFullscreenBtn.title = isActive ? '退出全屏' : '全屏查看';
+            wordFullscreenBtn.setAttribute('aria-label', label);
+            wordFullscreenBtn.title = label;
             wordFullscreenIcon.classList.toggle('fa-expand', !isActive);
             wordFullscreenIcon.classList.toggle('fa-compress', isActive);
         }
@@ -3406,9 +3831,10 @@
 
         function updateSentenceFullscreenButton(isActive) {
             if (isActive) updateFullscreenNeighbors('sentence');
+            const label = t(isActive ? 'fullscreen.sentenceExit' : 'fullscreen.sentenceEnter');
             sentenceFullscreenBtn.setAttribute('aria-pressed', isActive ? 'true' : 'false');
-            sentenceFullscreenBtn.setAttribute('aria-label', isActive ? '退出句子全屏' : '全屏查看句子');
-            sentenceFullscreenBtn.title = isActive ? '退出全屏' : '全屏查看';
+            sentenceFullscreenBtn.setAttribute('aria-label', label);
+            sentenceFullscreenBtn.title = label;
             sentenceFullscreenIcon.classList.toggle('fa-expand', !isActive);
             sentenceFullscreenIcon.classList.toggle('fa-compress', isActive);
         }
@@ -3496,12 +3922,13 @@
         }
 
         function updateArticleFullscreenButton(isActive) {
+            const label = t(isActive ? 'article.exitFullscreen' : 'article.fullscreen');
             articleFullscreenBtn.setAttribute('aria-pressed', isActive ? 'true' : 'false');
-            articleFullscreenBtn.setAttribute('aria-label', isActive ? '退出文章全屏' : '全屏阅读文章');
-            articleFullscreenBtn.title = isActive ? '退出全屏' : '全屏阅读';
+            articleFullscreenBtn.setAttribute('aria-label', label);
+            articleFullscreenBtn.title = label;
             articleFullscreenIcon.classList.toggle('fa-expand', !isActive);
             articleFullscreenIcon.classList.toggle('fa-compress', isActive);
-            articleFullscreenLabel.textContent = isActive ? '退出' : '全屏';
+            articleFullscreenLabel.textContent = t(isActive ? 'common.exitFullscreen' : 'common.fullscreen');
         }
 
         function queueArticleSentenceCentering() {
@@ -3614,19 +4041,19 @@
         function syncPlayerSettingsForView(view) {
             const labels = {
                 words: {
-                    repeat: '单词重复',
-                    loop: '单词循环',
-                    autoPlay: '连续播放'
+                    repeat: t('player.wordRepeat'),
+                    loop: t('player.wordLoop'),
+                    autoPlay: t('player.continuous')
                 },
                 sentences: {
-                    repeat: '句子重复',
-                    loop: '单句循环',
-                    autoPlay: '连续播放'
+                    repeat: t('player.sentenceRepeat'),
+                    loop: t('player.sentenceLoop'),
+                    autoPlay: t('player.continuous')
                 },
                 articles: {
-                    repeat: '整篇重复',
+                    repeat: t('player.articleRepeat'),
                     loop: '',
-                    autoPlay: '连续下一篇'
+                    autoPlay: t('player.continuousArticles')
                 }
             }[view];
 
@@ -3689,20 +4116,19 @@
 
             if (view === 'sentences') {
                 historyTypeSelect.value = 'phrases';
-                historyButtonLabel.textContent = '句子记录';
+                historyButtonLabel.textContent = t('nav.sentenceRecord');
                 updateTodaySentenceCount();
-                document.title = '句子播放器 · Enplay';
             } else if (view === 'articles') {
-                historyButtonLabel.textContent = '学习记录';
+                historyButtonLabel.textContent = t('nav.learningRecord');
                 exitWordReviewBtn.classList.add('hidden');
-                todayLearnedEl.textContent = `当前书库：${articleList.length} 篇`;
-                document.title = '文章播放器 · Enplay';
+                todayLearnedEl.textContent = t('player.currentArticles', { count: formatUiNumber(articleList.length) });
             } else {
                 historyTypeSelect.value = 'words';
-                historyButtonLabel.textContent = '单词记录';
+                historyButtonLabel.textContent = t('nav.wordRecord');
                 updateTodayLearnedCount();
-                document.title = '单词播放器 · Enplay';
             }
+            updateDocumentTitleForView(view);
+            updateTransportButtonLabels();
 
             if (updateHash && window.location.hash !== `#${view}`) {
                 history.replaceState(null, '', `#${view}`);
@@ -3715,7 +4141,16 @@
             const today = new Date().toISOString().split('T')[0];
             const learned = getPhraseLearnedByDate();
             const count = new Set(learned[today] || []).size;
-            todayLearnedEl.textContent = `今日进度：${count} 句`;
+            todayLearnedEl.textContent = t('player.todaySentences', { count: formatUiNumber(count) });
+        }
+
+        function updateDocumentTitleForView(view) {
+            const key = {
+                words: 'document.words',
+                sentences: 'document.sentences',
+                articles: 'document.articles'
+            }[view] || 'document.words';
+            document.title = t(key);
         }
 
         function loadActiveLibraryIds() {
@@ -3736,23 +4171,23 @@
                 words: {
                     id: 'builtin-words',
                     type: 'words',
-                    name: 'CET-4 核心词库',
-                    format: '内置',
+                    name: t('shelf.cet4Name'),
+                    format: t('common.builtIn'),
                     items: builtInWordItems
                 },
                 sentences: {
                     id: 'builtin-sentences',
                     type: 'sentences',
-                    name: '日常英语句库',
-                    format: '内置',
+                    name: t('shelf.dailySentencesName'),
+                    format: t('common.builtIn'),
                     items: builtInPhraseItems
                 },
                 articles: {
                     id: 'builtin-articles',
                     type: 'articles',
-                    name: '中高考分级文章全集',
-                    format: '原创 · 分级',
-                    description: '依据课程标准与中高考常见主题原创，含逐句翻译与自然音频。',
+                    name: t('shelf.gradedArticlesName'),
+                    format: t('shelf.originalGraded'),
+                    description: t('shelf.articleSource'),
                     items: Array.isArray(window.ALL_GRADED_ARTICLES) ? window.ALL_GRADED_ARTICLES : []
                 }
             };
@@ -3785,7 +4220,7 @@
                 ...customLibraries.filter(item => item.type === currentWorkspaceView)
             ];
             libraryListEl.innerHTML = '';
-            libraryCountEl.textContent = `${libraries.length} 本`;
+            libraryCountEl.textContent = t('shelf.count', { count: formatUiNumber(libraries.length) });
             sentenceSourceNote.classList.toggle('hidden', currentWorkspaceView !== 'sentences');
             articleSourceNote.classList.toggle('hidden', currentWorkspaceView !== 'articles');
 
@@ -3819,9 +4254,13 @@
                 title.textContent = library.name;
                 const meta = document.createElement('span');
                 meta.className = 'book-meta';
-                const unit = currentWorkspaceView === 'words' ? '词' : currentWorkspaceView === 'sentences' ? '句' : '篇';
+                const unit = t(currentWorkspaceView === 'words'
+                    ? 'shelf.wordUnit'
+                    : currentWorkspaceView === 'sentences'
+                        ? 'shelf.sentenceUnit'
+                        : 'shelf.articleUnit');
                 const itemCount = Array.isArray(library.items) ? library.items.length : library.itemCount || 0;
-                meta.textContent = `${itemCount} ${unit} · ${library.format || '自定义'}`;
+                meta.textContent = `${formatUiNumber(itemCount)} ${unit} · ${library.format || t('common.custom')}`;
                 copy.append(title, meta);
 
                 const check = document.createElement('i');
@@ -3859,7 +4298,7 @@
                 } catch (error) {
                     if (selectionId !== librarySelectionId) return;
                     console.error('Unable to load remote wordbook:', error);
-                    window.alert('词书加载失败，请检查网络后重试。');
+                    window.alert(t('errors.wordbookLoad'));
                     loadingLibraryId = '';
                     renderLibraryShelf();
                     return;
@@ -3935,7 +4374,7 @@
                 articleSentenceIndex = 0;
                 updateArticleCard();
                 if (currentWorkspaceView === 'articles') {
-                    todayLearnedEl.textContent = `当前书库：${articleList.length} 篇`;
+                    todayLearnedEl.textContent = t('player.currentArticles', { count: formatUiNumber(articleList.length) });
                 }
             }
         }
@@ -4040,7 +4479,7 @@
             uploadLibraryType.value = currentWorkspaceView;
             uploadLibraryName.value = '';
             uploadLibraryFile.value = '';
-            selectedLibraryFile.textContent = '尚未选择文件';
+            selectedLibraryFile.textContent = t('import.noFile');
             uploadLibraryStatus.textContent = '';
             updateUploadFormatHint();
             updateUploadButtonState();
@@ -4064,7 +4503,7 @@
         function handleLibraryFileSelection() {
             const file = uploadLibraryFile.files[0];
             if (!file) {
-                selectedLibraryFile.textContent = '尚未选择文件';
+                selectedLibraryFile.textContent = t('import.noFile');
             } else {
                 selectedLibraryFile.textContent = `${file.name} · ${formatFileSize(file.size)}`;
                 if (!uploadLibraryName.value.trim()) {
@@ -4090,11 +4529,11 @@
             if (!file) return;
             confirmUploadLibraryBtn.disabled = true;
             uploadLibraryStatus.className = 'upload-status text-gray-500';
-            uploadLibraryStatus.textContent = '正在解析并校验内容…';
+            uploadLibraryStatus.textContent = t('import.parsing');
             try {
                 const type = uploadLibraryType.value;
                 const items = await parseLibraryFile(file, type);
-                if (!items.length) throw new Error('文件中没有找到可导入的有效内容');
+                if (!items.length) throw new Error(t('import.noValid'));
                 const library = {
                     id: `local-${type}-${Date.now()}`,
                     type,
@@ -4109,11 +4548,11 @@
                 switchWorkspace(type);
                 selectLibrary(library.id);
                 uploadLibraryStatus.className = 'upload-status text-green-600';
-                uploadLibraryStatus.textContent = `导入成功：${items.length} 条内容已加入书架`;
+                uploadLibraryStatus.textContent = t('import.success', { count: formatUiNumber(items.length) });
                 setTimeout(closeUploadLibraryModal, 700);
             } catch (error) {
                 uploadLibraryStatus.className = 'upload-status text-red-600';
-                uploadLibraryStatus.textContent = `导入失败：${error.message}`;
+                uploadLibraryStatus.textContent = t('import.failed', { message: error.message });
                 updateUploadButtonState();
             }
         }
@@ -4132,7 +4571,7 @@
             } else {
                 rawItems = tableRowsToObjects(parseDelimitedRows(text), type);
             }
-            if (!Array.isArray(rawItems)) throw new Error('JSON 顶层必须是数组或包含 items 数组');
+            if (!Array.isArray(rawItems)) throw new Error(t('import.jsonError'));
             return normalizeLibraryItems(rawItems, type);
         }
 
@@ -4208,7 +4647,7 @@
             }
             if (type === 'sentences') {
                 return items.map((item, index) => ({
-                    scene: pick(item, ['scene', 'category', 'tag']) || 'Imported',
+                    scene: pick(item, ['scene', 'category', 'tag']) || t('common.import'),
                     idx: index,
                     text: pick(item, ['text', 'sentence', 'source', 'front']),
                     note: pick(item, ['translation', 'note', 'target', 'back'])
@@ -4244,7 +4683,7 @@
                     titleZh: pick(item, ['titleZh', 'title_zh', 'chineseTitle']),
                     content: content || sentences.map(sentence => sentence.en).join(' '),
                     translation: translation || sentences.map(sentence => sentence.zh).filter(Boolean).join(''),
-                    level: pick(item, ['level', 'difficulty']) || '文章',
+                    level: pick(item, ['level', 'difficulty']) || t('article.defaultLevel'),
                     cefr: pick(item, ['cefr', 'cefrLevel']),
                     genre: pick(item, ['genre', 'type']) || 'reading',
                     topic: pick(item, ['topic', 'theme']),
@@ -4281,8 +4720,8 @@
             articleTitleEl.textContent = article.title;
             articleTitleZhEl.textContent = article.titleZh || '';
             articleTitleZhEl.classList.toggle('hidden', !article.titleZh);
-            articleSummaryEl.textContent = article.summary || '逐句阅读、对照翻译，并跟随自然语音完成听读训练。';
-            const levelLabel = article.level || '分级文章';
+            articleSummaryEl.textContent = article.summary || t('article.defaultSummary');
+            const levelLabel = article.level || t('article.defaultLevel');
             articleLevelEl.textContent = article.cefr && !levelLabel.includes(article.cefr)
                 ? `${levelLabel} · ${article.cefr}`
                 : levelLabel;
@@ -4292,13 +4731,13 @@
             genreIcon.className = `fa ${genre.icon}`;
             genreIcon.setAttribute('aria-hidden', 'true');
             articleGenreEl.append(genreIcon, document.createTextNode(genre.label));
-            articleTopicEl.textContent = article.topic || '综合主题';
-            articleWordCountEl.textContent = `约 ${article.estimatedWords || 0} 词`;
+            articleTopicEl.textContent = article.topic || t('article.defaultTopic');
+            articleWordCountEl.textContent = t('article.approxWords', { count: formatUiNumber(article.estimatedWords || 0) });
             articleIndexEl.textContent = `${articleIndex + 1}/${articleList.length}`;
             articleSentenceIndex = Math.min(articleSentenceIndex, Math.max(0, article.sentences.length - 1));
             articlePlaybackCompleted = false;
             renderArticleSentences(article);
-            updateArticleSentenceUi({ status: '准备播放', scroll: false });
+            updateArticleSentenceUi({ statusKey: 'article.ready', scroll: false });
             articlePrevBtn.disabled = articleList.length < 2;
             articleNextBtn.disabled = articleList.length < 2;
             articlePrevSentenceBtn.disabled = article.sentences.length < 2;
@@ -4308,9 +4747,9 @@
         function getArticleGenreMeta(value) {
             const normalized = String(value || '').toLowerCase();
             if (normalized === 'listening' || normalized.includes('听力')) {
-                return { label: '听力短文', icon: 'fa-headphones' };
+                return { label: t('article.listening'), icon: 'fa-headphones' };
             }
-            return { label: '阅读理解', icon: 'fa-book' };
+            return { label: t('article.readingComprehension'), icon: 'fa-book' };
         }
 
         function renderArticleSentences(article) {
@@ -4323,18 +4762,26 @@
                 const copy = document.createElement('div');
                 const english = document.createElement('p');
                 english.className = 'article-sentence-en';
+                english.lang = 'en';
+                english.dir = 'ltr';
                 english.textContent = sentence.en;
                 const chinese = document.createElement('p');
                 chinese.className = 'article-sentence-zh';
-                chinese.textContent = sentence.zh || '暂无对应翻译';
+                chinese.lang = 'zh-Hans';
+                chinese.dir = 'auto';
+                chinese.textContent = sentence.zh || t('article.noTranslation');
                 copy.append(english, chinese);
 
                 const play = document.createElement('button');
                 play.type = 'button';
                 play.className = 'article-sentence-play';
                 play.dataset.articleSentencePlay = String(sentenceIndex);
-                play.setAttribute('aria-label', `播放第 ${sentenceIndex + 1} 句`);
-                play.title = '播放本句';
+                const playLabel = `${t('common.play')} · ${t('article.sentenceProgress', {
+                    current: formatUiNumber(sentenceIndex + 1),
+                    total: formatUiNumber(article.sentences.length)
+                })}`;
+                play.setAttribute('aria-label', playLabel);
+                play.title = playLabel;
                 const icon = document.createElement('i');
                 icon.className = 'fa fa-volume-up';
                 icon.setAttribute('aria-hidden', 'true');
@@ -4345,8 +4792,9 @@
             });
         }
 
-        function updateArticleSentenceUi({ status = '', scroll = false } = {}) {
+        function updateArticleSentenceUi({ statusKey = '', scroll = false } = {}) {
             const article = articleList[articleIndex];
+            if (statusKey) articleStatusKey = statusKey;
             const sentenceCount = article && Array.isArray(article.sentences) ? article.sentences.length : 0;
             const rows = Array.from(articleSentenceListEl.querySelectorAll('.article-sentence'));
             rows.forEach((row, rowIndex) => {
@@ -4362,12 +4810,20 @@
                 row.setAttribute('aria-current', isCurrent ? 'true' : 'false');
             });
             const currentNumber = sentenceCount ? articleSentenceIndex + 1 : 0;
-            articleSentenceCountEl.textContent = `${currentNumber}/${sentenceCount} 句`;
-            const showPass = articlePlaybackMode === 'article' && (isArticlePlaying || status === '已暂停');
+            const sentenceProgress = t('article.sentenceProgress', {
+                current: formatUiNumber(currentNumber),
+                total: formatUiNumber(sentenceCount)
+            });
+            articleSentenceCountEl.textContent = sentenceProgress;
+            const showPass = articlePlaybackMode === 'article' && (isArticlePlaying || articleStatusKey === 'article.paused');
             const passStatus = showPass
-                ? ` · 第 ${Math.min(articlePassCount + 1, playRepeatCount)}/${playRepeatCount} 遍`
+                ? ` · ${t('article.passProgress', {
+                    current: formatUiNumber(Math.min(articlePassCount + 1, playRepeatCount)),
+                    total: formatUiNumber(playRepeatCount)
+                })}`
                 : '';
-            articlePlaybackStatusEl.textContent = `${status || (isArticlePlaying ? '正在朗读' : '准备播放')} · 第 ${currentNumber} 句${passStatus}`;
+            const resolvedStatusKey = articleStatusKey || (isArticlePlaying ? 'article.reading' : 'article.ready');
+            articlePlaybackStatusEl.textContent = `${t(resolvedStatusKey)} · ${sentenceProgress}${passStatus}`;
             articleProgressFillEl.style.width = sentenceCount ? `${(currentNumber / sentenceCount) * 100}%` : '0%';
             if (scroll && rows[articleSentenceIndex]) {
                 centerArticleSentence(rows[articleSentenceIndex]);
@@ -4424,13 +4880,13 @@
             stopArticlePlayback();
             articlePlaybackCompleted = false;
             articleSentenceIndex = (articleSentenceIndex + direction + article.sentences.length) % article.sentences.length;
-            updateArticleSentenceUi({ status: shouldResume ? '正在切换' : '准备播放', scroll: true });
+            updateArticleSentenceUi({ statusKey: shouldResume ? 'article.switching' : 'article.ready', scroll: true });
             if (shouldResume) startArticlePlayback(articleSentenceIndex, 'article');
         }
 
         function toggleArticlePlay() {
             if (isArticlePlaying) {
-                stopArticlePlayback({ status: '已暂停', resetPass: false });
+                stopArticlePlayback({ statusKey: 'article.paused', resetPass: false });
                 return;
             }
             if (!articleList.length) return;
@@ -4452,8 +4908,8 @@
             articlePlaybackCompleted = false;
             isArticlePlaying = true;
             articlePlayIcon.classList.replace('fa-play', 'fa-pause');
-            articlePlayBtn.setAttribute('aria-label', '暂停文章');
-            articlePlayBtn.title = '暂停文章';
+            articleStatusKey = 'article.reading';
+            updateTransportButtonLabels();
             playCurrentArticleSentence();
         }
 
@@ -4465,13 +4921,13 @@
                 finishArticlePlayback();
                 return;
             }
-            updateArticleSentenceUi({ status: '正在朗读', scroll: true });
+            updateArticleSentenceUi({ statusKey: 'article.reading', scroll: true });
             const row = articleSentenceListEl.querySelector(`[data-article-sentence-index="${articleSentenceIndex}"]`);
             const english = row && row.querySelector('.article-sentence-en');
             playTextWithHighlight(sentence.en, english || articleTitleEl, () => {
                 if (!isArticlePlaying) return;
                 if (articlePlaybackMode === 'single') {
-                    stopArticlePlayback({ status: '本句播放完成' });
+                    stopArticlePlayback({ statusKey: 'article.sentenceDone' });
                     return;
                 }
                 if (articleSentenceIndex < article.sentences.length - 1) {
@@ -4482,7 +4938,7 @@
                 finishArticlePlayback();
             }, {
                 recorded: true,
-                onUnavailable: () => stopArticlePlayback({ status: '暂无可用语音，请检查网络或系统语音' })
+                onUnavailable: () => stopArticlePlayback({ statusKey: 'article.noVoice' })
             });
         }
 
@@ -4490,7 +4946,7 @@
             articlePassCount += 1;
             if (articlePlaybackMode === 'article' && articlePassCount < playRepeatCount) {
                 articleSentenceIndex = 0;
-                updateArticleSentenceUi({ status: '开始下一遍', scroll: true });
+                updateArticleSentenceUi({ statusKey: 'article.nextPass', scroll: true });
                 playCurrentArticleSentence();
                 return;
             }
@@ -4503,19 +4959,19 @@
                 return;
             }
             articlePlaybackCompleted = true;
-            stopArticlePlayback({ status: '全文播放完成' });
+            stopArticlePlayback({ statusKey: 'article.complete' });
         }
 
-        function stopArticlePlayback({ status = '已暂停', resetPass = true } = {}) {
+        function stopArticlePlayback({ statusKey = 'article.paused', resetPass = true } = {}) {
             if (isNotebookPlaying) stopVocabularyNotebookPlayback();
             isArticlePlaying = false;
             if (resetPass) articlePassCount = 0;
             articlePlayIcon.classList.remove('fa-pause');
             articlePlayIcon.classList.add('fa-play');
-            articlePlayBtn.setAttribute('aria-label', '播放全文');
-            articlePlayBtn.title = '播放全文';
+            articleStatusKey = statusKey;
+            updateTransportButtonLabels();
             cancelSpeechSession();
-            if (articleList.length) updateArticleSentenceUi({ status, scroll: false });
+            if (articleList.length) updateArticleSentenceUi({ statusKey, scroll: false });
         }
 
         function isPlaybackSessionActive() {
@@ -4553,9 +5009,9 @@
         function updateMediaSessionMetadata(text) {
             if (!('mediaSession' in navigator) || typeof MediaMetadata === 'undefined') return;
             const albumByView = {
-                words: '单词学习',
-                sentences: '句子学习',
-                articles: '文章学习'
+                words: t('nav.words'),
+                sentences: t('nav.sentences'),
+                articles: t('nav.articles')
             };
             try {
                 navigator.mediaSession.metadata = new MediaMetadata({
@@ -4649,12 +5105,12 @@
                 return opt;
             };
 
-            recordedVoiceSelect.appendChild(makeOpt('Heart · 美式女声', 'af_heart'));
-            recordedVoiceSelect.appendChild(makeOpt('Bella · 美式女声', 'af_bella'));
-            recordedVoiceSelect.appendChild(makeOpt('Emma · 英式女声', 'bf_emma'));
-            recordedVoiceSelect.appendChild(makeOpt('Michael · 美式男声', 'am_michael'));
-            recordedVoiceSelect.appendChild(makeOpt('George · 英式男声', 'bm_george'));
-            systemVoiceSelect.appendChild(makeOpt('系统自动选择', 'auto'));
+            recordedVoiceSelect.appendChild(makeOpt(`Heart · ${t('player.voiceUsFemale')}`, 'af_heart'));
+            recordedVoiceSelect.appendChild(makeOpt(`Bella · ${t('player.voiceUsFemale')}`, 'af_bella'));
+            recordedVoiceSelect.appendChild(makeOpt(`Emma · ${t('player.voiceGbFemale')}`, 'bf_emma'));
+            recordedVoiceSelect.appendChild(makeOpt(`Michael · ${t('player.voiceUsMale')}`, 'am_michael'));
+            recordedVoiceSelect.appendChild(makeOpt(`George · ${t('player.voiceGbMale')}`, 'bm_george'));
+            systemVoiceSelect.appendChild(makeOpt(t('player.systemAuto'), 'auto'));
 
             // All English voices
             const englishVoices = voices.filter(v => /^en/i.test(v.lang));
@@ -4772,23 +5228,13 @@
         // Format category key to readable label
         function formatPhraseCategory(key) {
             if (!key) return '';
-            const categoryLabels = {
-                greetingsSocial: '问候与社交',
-                dailyRoutine: '日常起居',
-                diningFood: '饮食与餐厅',
-                familyFriends: '家人与朋友',
-                foodDining: '饮食与餐厅',
-                shoppingMoney: '购物与消费',
-                travelTransport: '旅行与交通',
-                workBusiness: '工作与商务',
-                schoolStudy: '学校与学习',
-                healthWellness: '健康与休息',
-                weatherTime: '天气与时间',
-                technologyCommunication: '科技与沟通',
-                feelingsOpinions: '感受与观点',
-                generalConversation: '常用表达'
-            };
-            if (categoryLabels[key]) return categoryLabels[key];
+            const categoryKeys = new Set([
+                'greetingsSocial', 'dailyRoutine', 'diningFood', 'familyFriends', 'foodDining',
+                'shoppingMoney', 'travelTransport', 'workBusiness', 'schoolStudy',
+                'healthWellness', 'weatherTime', 'technologyCommunication',
+                'feelingsOpinions', 'generalConversation'
+            ]);
+            if (categoryKeys.has(key)) return t(`categories.${key}`);
             const spaced = key.replace(/([A-Z])/g, ' $1').trim();
             return spaced.charAt(0).toUpperCase() + spaced.slice(1);
         }
@@ -4796,7 +5242,7 @@
         // Phrase controls: flatten all scenes into one list with scene label
         function initPhrases() {
             if (!window.COMMON_ENGLISH_SENTENCES) {
-                currentPhraseEl.textContent = 'Phrases data not loaded';
+                currentPhraseEl.textContent = t('errors.wordbookLoad');
                 phraseIndexEl.textContent = '0/0';
                 phraseSceneLabel.textContent = '';
                 setTimeout(initPhrases, 300);
@@ -4817,7 +5263,7 @@
                 });
             });
             if (!phraseList.length) {
-                currentPhraseEl.textContent = 'No phrases available';
+                currentPhraseEl.textContent = t('history.noSentences');
                 phraseIndexEl.textContent = '0/0';
                 phraseSceneLabel.textContent = '';
                 return;
@@ -4837,7 +5283,7 @@
             notebookDisplayedEntry = null;
             updateFullscreenNeighbors('sentence');
             if (!phraseList.length) {
-                currentPhraseEl.textContent = 'No phrases available';
+                currentPhraseEl.textContent = t('history.noSentences');
                 phraseIndexEl.textContent = '0/0';
                 phraseLearnedBadge.classList.add('hidden');
                 currentPhraseNoteEl.textContent = '';
@@ -4851,7 +5297,7 @@
             phraseSceneLabel.textContent = formatPhraseCategory(item.scene);
             phraseIndexEl.textContent = `${phraseIndex + 1}/${phraseList.length}`;
             const note = item.note || getPhraseNote(item.scene, item.text);
-            currentPhraseNoteEl.textContent = note ? note : '（暂无中文释义）';
+            currentPhraseNoteEl.textContent = note ? note : t('content.noChinese');
             updatePhraseBadge();
             updatePhraseNotebookToggle();
         }
@@ -4985,6 +5431,7 @@
             phrasePlayCount = 0;
             phrasePlayIcon.classList.remove('fa-play');
             phrasePlayIcon.classList.add('fa-pause');
+            updateTransportButtonLabels();
             playCurrentPhrase();
         }
 
@@ -5028,6 +5475,7 @@
             isPhrasePlaying = false;
             phrasePlayIcon.classList.remove('fa-pause');
             phrasePlayIcon.classList.add('fa-play');
+            updateTransportButtonLabels();
             if (manual) continueAutoPlay = false;
             if (phraseRepeatTimer) {
                 clearTimeout(phraseRepeatTimer);
@@ -5316,7 +5764,7 @@
                 definitionZh: definitions.chinese || '',
                 example: word.example || '',
                 sourceId,
-                sourceName: library.name || '未知词库',
+                sourceName: library.name || t('notebook.unknownWords'),
                 addedAt: new Date().toISOString()
             };
         }
@@ -5336,8 +5784,9 @@
                 text: item.text,
                 translation,
                 scene: formatPhraseCategory(item.scene),
+                sceneKey: item.scene,
                 sourceId,
-                sourceName: library.name || '未知句库',
+                sourceName: library.name || t('notebook.unknownSentences'),
                 addedAt: new Date().toISOString()
             };
         }
@@ -5349,9 +5798,10 @@
 
         function updateWordNotebookToggle() {
             const isSaved = isCurrentWordInNotebook();
+            const label = t(isSaved ? 'content.removeWord' : 'content.addWord');
             wordNotebookToggle.classList.toggle('saved', isSaved);
-            wordNotebookToggle.setAttribute('aria-label', isSaved ? '移出生词本' : '加入生词本');
-            wordNotebookToggle.title = isSaved ? '移出生词本' : '加入生词本';
+            wordNotebookToggle.setAttribute('aria-label', label);
+            wordNotebookToggle.title = label;
             const icon = wordNotebookToggle.querySelector('i');
             icon.classList.toggle('fa-plus', !isSaved);
             icon.classList.toggle('fa-minus', isSaved);
@@ -5360,9 +5810,10 @@
         function updatePhraseNotebookToggle() {
             const entry = getCurrentPhraseNotebookEntry();
             const isSaved = Boolean(entry && vocabularyNotebook.some(item => item.id === entry.id));
+            const label = t(isSaved ? 'content.removeSentence' : 'content.addSentence');
             phraseNotebookToggle.classList.toggle('saved', isSaved);
-            phraseNotebookToggle.setAttribute('aria-label', isSaved ? '将句子移出生词本' : '将句子加入生词本');
-            phraseNotebookToggle.title = isSaved ? '将句子移出生词本' : '将句子加入生词本';
+            phraseNotebookToggle.setAttribute('aria-label', label);
+            phraseNotebookToggle.title = label;
             const icon = phraseNotebookToggle.querySelector('i');
             icon.classList.toggle('fa-plus', !isSaved);
             icon.classList.toggle('fa-minus', isSaved);
@@ -5401,8 +5852,11 @@
         function renderVocabularyNotebook() {
             const wordCount = vocabularyNotebook.filter(entry => entry.type !== 'sentence').length;
             const sentenceCount = vocabularyNotebook.filter(entry => entry.type === 'sentence').length;
-            notebookCountEl.textContent = vocabularyNotebook.length > 99 ? '99+' : String(vocabularyNotebook.length);
-            notebookSummaryEl.textContent = `${wordCount} 个单词 · ${sentenceCount} 个句子`;
+            notebookCountEl.textContent = vocabularyNotebook.length > 99 ? '99+' : formatUiNumber(vocabularyNotebook.length);
+            notebookSummaryEl.textContent = t('notebook.summary', {
+                words: formatUiNumber(wordCount),
+                sentences: formatUiNumber(sentenceCount)
+            });
             notebookPlayWordsBtn.disabled = wordCount === 0;
             notebookPlaySentencesBtn.disabled = sentenceCount === 0;
             notebookListEl.innerHTML = '';
@@ -5416,10 +5870,10 @@
                 icon.setAttribute('aria-hidden', 'true');
                 const title = document.createElement('strong');
                 title.className = 'block text-dark';
-                title.textContent = '还没有收藏生词';
+                title.textContent = t('notebook.emptyTitle');
                 const note = document.createElement('p');
                 note.className = 'text-xs mt-2';
-                note.textContent = '点击单词或句子卡片左上角的 +，把需要复习的内容收进来。';
+                note.textContent = t('notebook.emptyHint');
                 message.append(icon, title, note);
                 empty.appendChild(message);
                 notebookListEl.appendChild(empty);
@@ -5436,7 +5890,7 @@
                 const entryTitle = document.createElement('strong');
                 entryTitle.textContent = isSentence ? entry.text : entry.word;
                 const phonetic = document.createElement('span');
-                phonetic.textContent = isSentence ? (entry.scene || '') : (entry.phonetic || '');
+                phonetic.textContent = isSentence ? (entry.sceneKey ? formatPhraseCategory(entry.sceneKey) : (entry.scene || '')) : (entry.phonetic || '');
                 heading.append(entryTitle, phonetic);
                 content.appendChild(heading);
 
@@ -5461,9 +5915,11 @@
                 const sourceIcon = document.createElement('i');
                 sourceIcon.className = 'fa fa-book';
                 sourceIcon.setAttribute('aria-hidden', 'true');
+                const sourceType = t(isSentence ? 'notebook.entrySentence' : 'notebook.entryWord');
+                const sourceName = entry.sourceName || t(isSentence ? 'notebook.unknownSentences' : 'notebook.unknownWords');
                 source.append(
                     sourceIcon,
-                    document.createTextNode(`${isSentence ? '句子' : '单词'} · 来源：${entry.sourceName || (isSentence ? '未知句库' : '未知词库')}`)
+                    document.createTextNode(`${sourceType} · ${t('notebook.source')}: ${sourceName}`)
                 );
                 content.appendChild(source);
 
@@ -5471,8 +5927,8 @@
                 remove.type = 'button';
                 remove.className = 'notebook-remove';
                 remove.dataset.notebookId = entry.id;
-                remove.setAttribute('aria-label', `移除 ${isSentence ? entry.text : entry.word}`);
-                remove.title = '移出生词本';
+                remove.setAttribute('aria-label', `${t('notebook.remove')}: ${isSentence ? entry.text : entry.word}`);
+                remove.title = t('notebook.remove');
                 remove.innerHTML = '<i class="fa fa-trash-o" aria-hidden="true"></i>';
                 item.append(content, remove);
                 notebookListEl.appendChild(item);
@@ -5517,7 +5973,7 @@
             ));
             if (!queue.length) return;
             if (!isSpeechAvailable) {
-                alert('当前浏览器不支持语音朗读');
+                alert(t('errors.speechUnsupported'));
                 return;
             }
             closeVocabularyNotebook();
@@ -5551,6 +6007,7 @@
             const playerIcon = notebookPlaybackType === 'sentence' ? phrasePlayIcon : playIcon;
             playerIcon.classList.remove('fa-play');
             playerIcon.classList.add('fa-pause');
+            updateTransportButtonLabels();
             playNextNotebookEntry();
         }
 
@@ -5559,9 +6016,9 @@
             updateFullscreenNeighbors(entry.type === 'sentence' ? 'sentence' : 'word');
             if (entry.type === 'sentence') {
                 currentPhraseEl.textContent = entry.text || '';
-                currentPhraseNoteEl.textContent = entry.translation || '（暂无中文释义）';
-                phraseSceneLabel.textContent = entry.scene || '生词本句子';
-                phraseIndexEl.textContent = `${position}/${total} · 生词本`;
+                currentPhraseNoteEl.textContent = entry.translation || t('content.noChinese');
+                phraseSceneLabel.textContent = entry.scene || t('notebook.entrySentence');
+                phraseIndexEl.textContent = `${formatUiNumber(position)}/${formatUiNumber(total)} · ${t('notebook.aria')}`;
                 phraseLearnedBadge.classList.add('hidden');
                 updatePhraseNotebookToggle();
                 return;
@@ -5575,7 +6032,7 @@
             definitionBlock.classList.toggle('hidden', !entry.definitionZh);
             exampleEl.textContent = entry.example || '';
             exampleBlock.classList.toggle('hidden', !entry.example);
-            wordIndexEl.textContent = `${position}/${total} · 生词本`;
+            wordIndexEl.textContent = `${formatUiNumber(position)}/${formatUiNumber(total)} · ${t('notebook.aria')}`;
             learnedBadge.classList.add('hidden');
             updateWordNotebookToggle();
         }
@@ -5680,6 +6137,7 @@
                 icon.classList.remove('fa-pause');
                 icon.classList.add('fa-play');
             });
+            updateTransportButtonLabels();
             cancelSpeechSession();
         }
 
@@ -5823,6 +6281,7 @@
             playIcon.classList.remove('fa-play');
             playIcon.classList.add('fa-pause');
             playIcon.classList.add('pulse-animation');
+            updateTransportButtonLabels();
             
             // Reset play count
             playCount = 0;
@@ -5848,6 +6307,7 @@
             playIcon.classList.remove('fa-pause');
             playIcon.classList.add('fa-play');
             playIcon.classList.remove('pulse-animation');
+            updateTransportButtonLabels();
             if (manual) {
                 continueAutoPlay = false;
             }
@@ -5879,7 +6339,7 @@
             
             if (!isSpeechAvailable) {
                 console.log('Speech synthesis not available');
-                alert('Your browser does not support speech synthesis');
+                alert(t('errors.speechUnsupported'));
                 stopPlayback();
                 return;
             }
@@ -6186,13 +6646,17 @@
             const onlineStatus = document.getElementById('onlineStatus');
             const onlineCount = document.getElementById('onlineCount');
             if (!onlineStatus || !onlineCount) return;
+            latestPresencePayload = payload;
+            presenceConnected = connected;
             onlineStatus.classList.toggle('is-connecting', !connected);
             if (connected && payload) {
-                onlineCount.textContent = `${payload.online} / ${payload.capacity}`;
-                onlineStatus.title = `当前在线 ${payload.online} 人，最多 ${payload.capacity} 人；每 30 秒更新`;
+                const online = formatUiNumber(payload.online);
+                const capacity = formatUiNumber(payload.capacity);
+                onlineCount.textContent = `${online} / ${capacity}`;
+                onlineStatus.title = t('online.currentTitle', { online, capacity });
             } else {
-                onlineCount.textContent = '连接中';
-                onlineStatus.title = '正在重新连接在线人数服务';
+                onlineCount.textContent = t('online.connecting');
+                onlineStatus.title = t('online.reconnectingTitle');
             }
         }
 
@@ -6220,8 +6684,11 @@
                 updatePresenceDisplay(payload, true);
                 if (!payload.admitted) {
                     showAccessGate(
-                        '当前学习空间已满',
-                        `目前已有 ${payload.online} 人在线，上限为 ${payload.capacity} 人。系统会自动重试，有空位后即可进入。`
+                        t('online.gateFullTitle'),
+                        t('online.gateFullMessage', {
+                            online: formatUiNumber(payload.online),
+                            capacity: formatUiNumber(payload.capacity)
+                        })
                     );
                     schedulePresenceRefresh(10000);
                     return;
@@ -6235,7 +6702,7 @@
                 presenceFailures += 1;
                 updatePresenceDisplay(null, false);
                 if (!applicationInitialized || presenceFailures >= 3) {
-                    showAccessGate('正在重新连接', '在线人数服务暂时不可用，连接恢复后会自动进入学习页面。');
+                    showAccessGate(t('online.gateRetryTitle'), t('online.gateRetryMessage'));
                 }
                 console.warn('Unable to refresh visitor presence:', error);
                 schedulePresenceRefresh(10000);
@@ -6346,7 +6813,7 @@
             stopArticlePlayback();
             stopVocabularyNotebookPlayback();
             if (!isSpeechAvailable) {
-                alert('Your browser does not support speech synthesis');
+                alert(t('errors.speechUnsupported'));
                 return;
             }
             const word = cet4Words[currentIndex];
@@ -6471,15 +6938,12 @@
         function updateTodayLearnedCount() {
             exitWordReviewBtn.classList.toggle('hidden', !isReviewMode);
             if (isReviewMode) {
-                const [year, month, day] = reviewDate.split('-');
-                const fullDate = year && month && day
-                    ? `${year}年${parseInt(month, 10)}月${parseInt(day, 10)}日`
-                    : '日期记录';
-                const compactDate = month && day
-                    ? `${parseInt(month, 10)}月${parseInt(day, 10)}日`
-                    : '日期记录';
-                todayLearnedEl.textContent = `${compactDate} · ${reviewOrder.length} 个单词`;
-                exitWordReviewBtn.title = `退出${fullDate}回放，返回原词典位置`;
+                const localizedDate = formatUiDate(reviewDate) || t('history.dateRecord');
+                todayLearnedEl.textContent = t('player.dateReviewWords', {
+                    date: localizedDate,
+                    count: formatUiNumber(reviewOrder.length)
+                });
+                exitWordReviewBtn.title = t('player.exitDateReviewTitle', { date: localizedDate });
                 return;
             }
             const today = new Date().toISOString().split('T')[0];
@@ -6489,7 +6953,7 @@
             // Only count words not learned on previous days
             const newToday = Array.from(todaySet).filter(idx => !historical.has(idx));
             todayLearnedCount = newToday.length;
-            todayLearnedEl.textContent = `今日进度：${todayLearnedCount} 个单词`;
+            todayLearnedEl.textContent = t('player.todayWords', { count: formatUiNumber(todayLearnedCount) });
         }
         
         // Open history modal
@@ -6515,11 +6979,15 @@
 
         // History filter handling
         function populateHistoryFilter() {
-            historyFilter.innerHTML = '<option value="all">全部</option>';
+            historyFilter.replaceChildren();
+            const allOption = document.createElement('option');
+            allOption.value = 'all';
+            allOption.textContent = t('history.all');
+            historyFilter.appendChild(allOption);
             historyDates.forEach(date => {
                 const opt = document.createElement('option');
                 opt.value = date;
-                opt.textContent = date;
+                opt.textContent = formatUiDate(date) || date;
                 historyFilter.appendChild(opt);
             });
         }
@@ -6535,7 +7003,7 @@
             if (!dates.length) {
                 const emptyMessage = document.createElement('p');
                 emptyMessage.className = 'text-center text-gray-500 py-4';
-                emptyMessage.textContent = type === 'phrases' ? '还没有学习短句' : '还没有学习单词';
+                emptyMessage.textContent = t(type === 'phrases' ? 'history.noSentences' : 'history.noWords');
                 historyList.appendChild(emptyMessage);
                 return;
             }
@@ -6544,8 +7012,7 @@
             const dateSection = document.createElement('div');
             dateSection.className = 'mb-6';
 
-            const [year, month, day] = date.split('-');
-            const formattedDate = `${year}年${month}月${day}日`;
+            const formattedDate = formatUiDate(date) || date;
 
                 const dateHeader = document.createElement('div');
                 dateHeader.className = 'flex items-center justify-between mb-3 pb-2 border-b border-gray-200';
@@ -6553,9 +7020,11 @@
                 const dateTitle = document.createElement('h3');
                 dateTitle.className = 'text-lg font-semibold text-primary cursor-pointer hover:text-secondary transition-all-300';
                 dateTitle.setAttribute('data-date', date);
+                const countText = document.createElement('span');
+                countText.className = 'text-sm font-normal text-gray-500';
                 if (type === 'phrases') {
                     const phrasesForDate = Array.from(new Set(historyData[date] || []));
-                    dateTitle.innerHTML = `${formattedDate} <span class="text-sm font-normal text-gray-500">(${phrasesForDate.length} phrases)</span>`;
+                    countText.textContent = ` (${formatUiNumber(phrasesForDate.length)} ${t('nav.sentences')})`;
                     dateTitle.addEventListener('click', function() {
                         // No bulk review for phrases for now
                     });
@@ -6566,16 +7035,21 @@
                     if (date === today) {
                         wordsForDate = wordsForDate.filter(idx => !historical.has(idx));
                     }
-                    dateTitle.innerHTML = `${formattedDate} <span class="text-sm font-normal text-gray-500">(${wordsForDate.length} words)</span>`;
+                    countText.textContent = ` (${formatUiNumber(wordsForDate.length)} ${t('nav.words')})`;
                     dateTitle.addEventListener('click', function() {
                         const dateToReview = this.getAttribute('data-date');
                         reviewWordsByDate(dateToReview);
                     });
                 }
+                dateTitle.append(document.createTextNode(formattedDate), countText);
 
                 const clearBtn = document.createElement('button');
                 clearBtn.className = 'text-sm text-red-500 hover:text-red-700 flex items-center gap-1 transition-all-300';
-                clearBtn.innerHTML = '<i class="fa fa-trash-o"></i> 清空';
+                clearBtn.setAttribute('aria-label', `${t('history.clear')} · ${formattedDate}`);
+                const clearIcon = document.createElement('i');
+                clearIcon.className = 'fa fa-trash-o';
+                clearIcon.setAttribute('aria-hidden', 'true');
+                clearBtn.append(clearIcon, document.createTextNode(t('history.clear')));
                 clearBtn.addEventListener('click', function(e) {
                     e.stopPropagation();
                     if (type === 'phrases') {
@@ -6619,6 +7093,8 @@
                             }
                         });
                         const deleteBtn = listItem.querySelector('.delete-phrase-btn');
+                        deleteBtn.setAttribute('aria-label', `${t('notebook.remove')}: ${item.text}`);
+                        deleteBtn.title = t('notebook.remove');
                         deleteBtn.addEventListener('click', function() {
                             const key = this.getAttribute('data-key');
                             const dateToDelete = this.getAttribute('data-date');
@@ -6664,6 +7140,8 @@
                         wordsContainer.appendChild(listItem);
 
                         const deleteBtn = listItem.querySelector('.delete-word-btn');
+                        deleteBtn.setAttribute('aria-label', `${t('notebook.remove')}: ${wordData.word}`);
+                        deleteBtn.title = t('notebook.remove');
                         deleteBtn.addEventListener('click', function() {
                             const indexToDelete = parseInt(this.getAttribute('data-index'));
                             const dateToDelete = this.getAttribute('data-date');
@@ -6710,13 +7188,12 @@
                             todaySection.className = 'mb-6';
                             todaySection.setAttribute('data-date', today);
                             
-                            // Format date for display (YYYY-MM-DD to YYYY年MM月DD日)
-                            const formattedDate = `${year}年${month}月${day}日`;
+                            const formattedDate = formatUiDate(today) || today;
                             
                             // Create date header with word count
                             const dateHeader = document.createElement('h3');
                             dateHeader.className = 'text-lg font-semibold text-primary mb-3 pb-2 border-b border-gray-200 cursor-pointer hover:text-secondary transition-all-300';
-                            dateHeader.innerHTML = `${formattedDate} <span class="text-sm font-normal text-gray-500">(${wordsFromFile.length} words)</span>`;
+                            dateHeader.textContent = `${formattedDate} (${formatUiNumber(wordsFromFile.length)} ${t('nav.words')})`;
                             dateHeader.setAttribute('data-date', today);
                             dateHeader.addEventListener('click', function() {
                                 const dateToReview = this.getAttribute('data-date');
@@ -6772,11 +7249,11 @@
                     
                     console.log(`Successfully loaded word at index: ${index} for review`);
                 } else {
-                    alert(`无法在当前顺序中找到该单词。`);
+                    alert(t('history.wordNotFound'));
                 }
             } else {
                 console.log(`Index: ${index} is out of bounds`);
-                alert(`Invalid word index.`);
+                alert(t('errors.wordNotFound'));
             }
         }
         
@@ -6797,7 +7274,7 @@
                 }
                 wordsForDate = wordsForDate.filter(index => index >= 0 && index < cet4Words.length);
                 if (!wordsForDate.length) {
-                    alert(`No words found for ${date}.`);
+                    alert(t('errors.wordNotFound'));
                     return;
                 }
                 enterReviewMode(wordsForDate, date);
@@ -6810,7 +7287,7 @@
                 console.log(`Started review for ${date}`);
             } else {
                 console.log(`No words found for date: ${date}`);
-                alert(`No words found for ${date}.`);
+                alert(t('errors.wordNotFound'));
             }
         }
 
@@ -6867,7 +7344,7 @@
 
         // Clear all learned words for a specific date
         function clearLearnedWordsByDate(date) {
-            if (!confirm('确定要清空该日期的已学单词吗？')) return;
+            if (!confirm(t('history.confirmWords'))) return;
             
             const learnedWords = JSON.parse(localStorage.getItem(LEARNED_WORDS_KEY) || '{}');
             if (learnedWords[date]) {
@@ -6882,18 +7359,20 @@
                 refreshHistoryModal();
                 console.log(`Cleared learned words for date: ${date}`);
             } else {
-                alert('该日期没有已学单词可清除');
+                alert(t('history.noClearWords'));
             }
         }
 
         function clearLearnedPhrasesByDate(date) {
-            if (!confirm('确定要清空该日期的已学短句吗？')) return;
+            if (!confirm(t('history.confirmSentences'))) return;
             const learned = getPhraseLearnedByDate();
             if (learned[date]) {
                 delete learned[date];
                 localStorage.setItem(LEARNED_PHRASES_KEY, JSON.stringify(learned));
                 refreshHistoryModal();
                 updatePhraseBadge();
+            } else {
+                alert(t('history.noClearSentences'));
             }
         }
         
