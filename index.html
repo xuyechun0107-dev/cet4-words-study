@@ -255,6 +255,8 @@
 
         .app-header,
         .app-header *,
+        .workspace-nav,
+        .workspace-nav *,
         .workspace-main,
         .workspace-main *,
         .app-footer,
@@ -278,8 +280,7 @@
             display: grid;
             grid-template-columns: minmax(190px, 1fr) max-content;
             align-items: center;
-            column-gap: 1.5rem;
-            row-gap: 0.65rem;
+            gap: 1.5rem;
             min-height: 76px;
             padding: 0.75rem clamp(1rem, 3vw, 2.75rem);
             background: rgba(255, 255, 255, 0.82);
@@ -326,12 +327,11 @@
 
         .workspace-nav {
             display: flex;
-            grid-column: 1 / -1;
-            grid-row: 2;
-            justify-self: center;
             align-items: center;
             gap: 0.25rem;
+            width: max-content;
             max-width: 100%;
+            margin: 0.75rem auto 0;
             padding: 0.3rem;
             border: 1px solid var(--line);
             border-radius: 999px;
@@ -989,7 +989,7 @@
             min-width: 0;
             position: sticky;
             z-index: 8;
-            top: calc(8.65rem + env(safe-area-inset-top));
+            top: calc(5.15rem + env(safe-area-inset-top));
             margin: 1rem clamp(1rem, 3vw, 2rem) 0;
             padding: 0.85rem 1rem;
             border: 1px solid rgba(255, 255, 255, 0.96);
@@ -1327,7 +1327,7 @@
         .control-panel,
         .library-shelf {
             position: sticky;
-            top: 9.75rem;
+            top: 6.25rem;
             border: 1px solid rgba(255, 255, 255, 0.96);
             border-radius: 1.25rem;
             background: rgba(255, 255, 255, 0.8);
@@ -1903,7 +1903,7 @@
 
         .vocabulary-notebook-widget {
             position: fixed;
-            top: 9.7rem;
+            top: 6.2rem;
             right: max(1rem, calc((100vw - 96rem) / 2 + 0.75rem));
             z-index: 45;
             display: grid;
@@ -2156,9 +2156,7 @@
             }
 
             .workspace-nav {
-                grid-column: 1 / -1;
-                grid-row: 2;
-                width: 100%;
+                width: calc(100% - 2rem);
             }
 
             .nav-tab { flex: 1 1 auto; min-width: 0; }
@@ -2223,7 +2221,7 @@
             .online-status-label { display: none; }
             .language-trigger { width: 2.5rem; min-width: 2.5rem; height: 2.5rem; padding: 0; }
             .language-trigger i { display: none; }
-            .workspace-nav { overflow: hidden; }
+            .workspace-nav { width: calc(100% - 1.5rem); overflow: hidden; }
             .nav-tab { min-width: 0; gap: 0.3rem; padding: 0.6rem 0.3rem; font-size: 0.8rem; }
             .section-intro { grid-template-columns: 1fr; gap: 0.6rem; }
             .section-description { text-align: left; }
@@ -2656,18 +2654,6 @@
             </span>
         </a>
 
-        <nav class="workspace-nav" aria-label="學習內容" data-i18n-aria-label="nav.content">
-            <button class="nav-tab active" type="button" data-view="words" aria-selected="true">
-                <i class="fa fa-font"></i><span data-i18n="nav.words">單詞</span>
-            </button>
-            <button class="nav-tab" type="button" data-view="sentences" aria-selected="false">
-                <i class="fa fa-comment-o"></i><span data-i18n="nav.sentences">句子</span>
-            </button>
-            <button class="nav-tab" type="button" data-view="articles" aria-selected="false">
-                <i class="fa fa-file-text-o"></i><span data-i18n="nav.articles">文章</span>
-            </button>
-        </nav>
-
         <div class="header-actions">
             <div id="searchShell" class="search-shell">
                 <input id="searchInput" type="text" placeholder="搜尋單詞…" autocomplete="off" aria-label="搜尋單詞" data-i18n-placeholder="nav.searchWord" data-i18n-aria-label="nav.searchWord">
@@ -2704,6 +2690,18 @@
             </button>
         </div>
     </header>
+
+    <nav class="workspace-nav" aria-label="學習內容" data-i18n-aria-label="nav.content">
+        <button class="nav-tab active" type="button" data-view="words" aria-selected="true">
+            <i class="fa fa-font"></i><span data-i18n="nav.words">單詞</span>
+        </button>
+        <button class="nav-tab" type="button" data-view="sentences" aria-selected="false">
+            <i class="fa fa-comment-o"></i><span data-i18n="nav.sentences">句子</span>
+        </button>
+        <button class="nav-tab" type="button" data-view="articles" aria-selected="false">
+            <i class="fa fa-file-text-o"></i><span data-i18n="nav.articles">文章</span>
+        </button>
+    </nav>
 
     <div id="accessGate" class="access-gate" role="alert" aria-live="assertive">
         <div class="access-gate-card">
