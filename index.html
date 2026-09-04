@@ -331,10 +331,16 @@
             justify-self: center;
             align-items: center;
             gap: 0.25rem;
+            max-width: 100%;
             padding: 0.3rem;
             border: 1px solid var(--line);
             border-radius: 999px;
             background: rgba(245, 247, 251, 0.9);
+        }
+
+        .workspace-nav .nav-tab span {
+            overflow-wrap: normal;
+            white-space: nowrap;
         }
 
         .nav-tab {
@@ -983,7 +989,7 @@
             min-width: 0;
             position: sticky;
             z-index: 8;
-            top: calc(5.15rem + env(safe-area-inset-top));
+            top: calc(8.65rem + env(safe-area-inset-top));
             margin: 1rem clamp(1rem, 3vw, 2rem) 0;
             padding: 0.85rem 1rem;
             border: 1px solid rgba(255, 255, 255, 0.96);
@@ -1321,7 +1327,7 @@
         .control-panel,
         .library-shelf {
             position: sticky;
-            top: 6.25rem;
+            top: 9.75rem;
             border: 1px solid rgba(255, 255, 255, 0.96);
             border-radius: 1.25rem;
             background: rgba(255, 255, 255, 0.8);
@@ -1897,7 +1903,7 @@
 
         .vocabulary-notebook-widget {
             position: fixed;
-            top: 6.2rem;
+            top: 9.7rem;
             right: max(1rem, calc((100vw - 96rem) / 2 + 0.75rem));
             z-index: 45;
             display: grid;
@@ -2155,7 +2161,7 @@
                 width: 100%;
             }
 
-            .nav-tab { flex: 1; min-width: 0; }
+            .nav-tab { flex: 1 1 auto; min-width: 0; }
             .header-actions { grid-column: 2; grid-row: 1; }
             .search-shell { display: none; }
             .workspace-main {
