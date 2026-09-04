@@ -105,3 +105,17 @@ test('translations avoid known count and terminology traps', () => {
     assert.match(api.locales.th.messages['history.confirmWords'], /วันที่เลือก/);
     assert.equal(api.locales.ar.messages['import.success'], 'العناصر المستوردة: {count}');
 });
+
+test('definition and attribution labels stay language-neutral in every locale', () => {
+    const { api } = createContext();
+    const forbiddenChineseLanguageLabels = /中文|中國語|中国語|중국어|chinois|chinoise|china|chinês|китай|ภาษาจีน|الصيني/u;
+    for (const locale of Object.keys(api.locales)) {
+        const messages = api.locales[locale].messages;
+        for (const key of ['player.readChinese', 'content.chineseDefinition', 'content.noChinese']) {
+            assert.ok(messages[key], `${locale} is missing ${key}`);
+            assert.doesNotMatch(messages[key].toLocaleLowerCase(), forbiddenChineseLanguageLabels, `${locale} ${key} is not neutral`);
+        }
+        assert.ok(messages['shelf.sourceLabel'], `${locale} is missing the visible source label`);
+        assert.ok(messages['shelf.licenseLabel'], `${locale} is missing the visible license label`);
+    }
+});

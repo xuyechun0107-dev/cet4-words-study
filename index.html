@@ -589,6 +589,11 @@
             animation: presencePulse 1.4s ease-in-out infinite;
         }
 
+        .online-status-count {
+            direction: ltr;
+            unicode-bidi: isolate;
+        }
+
         @keyframes presencePulse {
             50% { opacity: 0.35; transform: scale(0.75); }
         }
@@ -1425,12 +1430,24 @@
         .setting-pair {
             display: grid;
             grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+            align-items: start;
             gap: 0.5rem;
             margin-top: 0.8rem;
         }
 
         .setting-pair .setting-field {
+            grid-template-rows: minmax(1.95rem, auto) 2.25rem;
+            align-content: start;
             margin-top: 0;
+        }
+
+        .setting-pair .setting-field label {
+            align-self: end;
+        }
+
+        .setting-pair .setting-field :is(input, select) {
+            height: 2.25rem;
+            padding-block: 0.4rem;
         }
 
         .voice-fields {
@@ -1616,6 +1633,60 @@
             margin-top: 0.2rem;
             color: var(--muted);
             font-size: 0.65rem;
+        }
+
+        .book-attribution {
+            display: grid;
+            gap: 0.25rem;
+            min-width: 0;
+            margin-block: -0.35rem 0.15rem;
+            margin-inline: 3.85rem 0.65rem;
+            color: var(--muted);
+            font-size: 0.62rem;
+            line-height: 1.5;
+            overflow-wrap: anywhere;
+        }
+
+        .book-attribution-line {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: baseline;
+            gap: 0.2rem 0.35rem;
+            min-width: 0;
+            margin: 0;
+        }
+
+        .book-attribution-label {
+            flex: 0 0 auto;
+            color: var(--ink);
+            font-weight: 800;
+        }
+
+        .book-attribution-value {
+            min-width: 0;
+            unicode-bidi: plaintext;
+        }
+
+        .book-attribution a {
+            color: var(--blue);
+            font-weight: 700;
+            text-decoration: underline;
+            text-decoration-thickness: 1px;
+            text-underline-offset: 2px;
+        }
+
+        .book-attribution a:hover { color: var(--ink); }
+
+        .book-attribution a:focus-visible {
+            border-radius: 0.15rem;
+            outline: 2px solid var(--blue);
+            outline-offset: 2px;
+        }
+
+        .book-attribution-notice {
+            margin: 0.1rem 0 0;
+            color: #53627e;
+            unicode-bidi: plaintext;
         }
 
         .book-check {
@@ -2656,7 +2727,7 @@
             <div id="onlineStatus" class="online-status is-connecting" role="status" aria-live="polite" title="正在連線在線人數服務" data-i18n-title="online.reconnectingTitle">
                 <span class="online-status-dot" aria-hidden="true"></span>
                 <span class="online-status-label" data-i18n="online.label">在線</span>
-                <strong id="onlineCount" data-i18n="online.connecting">連線中</strong>
+                <strong id="onlineCount" class="online-status-count" dir="ltr" data-i18n="online.connecting">連線中</strong>
             </div>
             <div class="language-switcher">
                 <button id="languageMenuButton" class="language-trigger" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="languageMenu" aria-label="介面語言" title="介面語言" data-i18n-aria-label="language.label" data-i18n-title="language.label">
@@ -2790,7 +2861,7 @@
                     <input type="checkbox" id="readExample" class="custom-checkbox" checked>
                 </div>
                 <div class="toggle-row setting-view" data-setting-views="words">
-                    <label for="readChineseDefinition" data-i18n="player.readChinese">讀中文釋義</label>
+                    <label for="readChineseDefinition" data-i18n="player.readChinese">朗讀釋義</label>
                     <input type="checkbox" id="readChineseDefinition" class="custom-checkbox">
                 </div>
             </div>
@@ -2836,14 +2907,14 @@
             </div>
 
             <div id="definitionBlock" class="mb-6 hidden">
-                <h3 class="text-lg font-semibold mb-2 text-gray-700" data-i18n="content.chineseDefinition">中文釋義</h3>
+                <h3 class="text-lg font-semibold mb-2 text-gray-700" data-i18n="content.chineseDefinition">釋義</h3>
                 <p id="definition" class="text-lg" lang="zh-Hans" dir="auto"></p>
             </div>
             
             <div id="exampleBlock">
                 <div class="example-heading-row">
                     <h3 class="text-lg font-semibold text-gray-700" data-i18n="content.example">例句</h3>
-                    <button id="wordFullscreenBtn" class="card-fullscreen-toggle" type="button" aria-label="全屏查看單詞" title="全屏查看" aria-pressed="false">
+                    <button id="wordFullscreenBtn" class="card-fullscreen-toggle" type="button" aria-label="全屏查看單詞" title="全屏查看單詞" aria-pressed="false" data-i18n-aria-label="fullscreen.wordEnter" data-i18n-title="fullscreen.wordEnter">
                         <i id="wordFullscreenIcon" class="fa fa-expand" aria-hidden="true"></i>
                     </button>
                 </div>
@@ -2925,7 +2996,7 @@
                         <i class="fa fa-step-forward text-xl"></i>
                     </button>
                 </div>
-                <button id="sentenceFullscreenBtn" class="card-fullscreen-toggle" type="button" aria-label="全屏查看句子" title="全屏查看" aria-pressed="false">
+                <button id="sentenceFullscreenBtn" class="card-fullscreen-toggle" type="button" aria-label="全屏查看句子" title="全屏查看句子" aria-pressed="false" data-i18n-aria-label="fullscreen.sentenceEnter" data-i18n-title="fullscreen.sentenceEnter">
                     <i id="sentenceFullscreenIcon" class="fa fa-expand" aria-hidden="true"></i>
                 </button>
             </div>
@@ -3003,10 +3074,10 @@
                                 <div class="article-control-label article-track-label" aria-hidden="true" data-i18n="common.next">下一篇</div>
                             </div>
                             <div>
-                                <button id="articleFullscreenBtn" class="article-control-secondary article-fullscreen-toggle" type="button" aria-label="全屏阅读文章" aria-controls="articleReaderCard" title="全屏阅读" aria-pressed="false">
+                                <button id="articleFullscreenBtn" class="article-control-secondary article-fullscreen-toggle" type="button" aria-label="全屏閱讀文章" aria-controls="articleReaderCard" title="全屏閱讀文章" aria-pressed="false" data-i18n-aria-label="article.fullscreen" data-i18n-title="article.fullscreen">
                                     <i id="articleFullscreenIcon" class="fa fa-expand" aria-hidden="true"></i>
                                 </button>
-                                <div id="articleFullscreenLabel" class="article-control-label">全屏</div>
+                                <div id="articleFullscreenLabel" class="article-control-label" data-i18n="common.fullscreen">全屏</div>
                             </div>
                         </div>
                     </footer>
@@ -3339,6 +3410,26 @@
         let customLibraries = [];
         let remoteWordbooks = [];
         const remoteWordbookCache = new Map();
+        const localizedCatalogCache = new Map();
+        const localizedCatalogRequests = new Map();
+        const localizedLibraryCache = new Map();
+        const appliedLibraryIds = {
+            words: 'builtin-words',
+            sentences: 'builtin-sentences',
+            articles: 'builtin-articles'
+        };
+        const appliedLibraryVersions = {
+            words: '',
+            sentences: '',
+            articles: ''
+        };
+        const appliedLibraryLocales = {
+            words: 'zh-Hant',
+            sentences: 'zh-Hant',
+            articles: 'zh-Hant'
+        };
+        let pendingLocaleLibrarySwitch = null;
+        let pendingLocaleLibraryTimer = null;
         let loadingLibraryId = '';
         let builtInPhraseItems = [];
         let articleList = [];
@@ -3373,7 +3464,7 @@
         let isSentenceCardFallbackFullscreen = false;
         let isArticleCardFallbackFullscreen = false;
         const builtInWordItems = cet4Words.map(item => ({ ...item }));
-        const activeLibraryIds = loadActiveLibraryIds();
+        let activeLibraryIds = loadActiveLibraryIds();
         function getApiBaseUrl(hostname = window.location.hostname) {
             if (hostname === '192.168.0.103') return '/api';
             return hostname === 'enplay.aoke.ltd'
@@ -3381,6 +3472,955 @@
                 : 'https://api-enplay.ningboaoke.com';
         }
         const API_BASE_URL = getApiBaseUrl();
+        const CONTENT_FALLBACK_LOCALE = 'zh-Hans';
+        const CONTENT_BUNDLE_SCHEMA_VERSION = 1;
+        const CONTENT_SPEECH_LANGS = Object.freeze({
+            'zh-Hans': 'zh-CN',
+            'zh-Hant': 'zh-TW',
+            ja: 'ja-JP',
+            ko: 'ko-KR',
+            fr: 'fr-FR',
+            es: 'es-ES',
+            pt: 'pt-PT',
+            ru: 'ru-RU',
+            th: 'th-TH',
+            ar: 'ar-SA'
+        });
+        const contentBundleCache = new Map();
+        const contentBundleRequests = new Map();
+        const LOCALE_CATALOG_TTL_MS = 5 * 60 * 1000;
+        const localizedCatalogFetchedAt = new Map();
+        const YAITRON_ATTRIBUTION_NOTICE = 'This product is created by the adaptation of LEXiTRON developed by NECTEC (http://www.nectec.or.th/).';
+
+        function getContentLocale() {
+            return i18n && typeof i18n.getLocale === 'function'
+                ? i18n.getLocale()
+                : CONTENT_FALLBACK_LOCALE;
+        }
+
+        function getContentDirection(locale = getContentLocale()) {
+            return locale === 'ar' ? 'rtl' : 'ltr';
+        }
+
+        function getContentSpeechLanguage(locale = getContentLocale()) {
+            return CONTENT_SPEECH_LANGS[locale] || 'en-US';
+        }
+
+        function normalizeContentLookupKey(value) {
+            const raw = String(value == null ? '' : value);
+            const normalized = typeof raw.normalize === 'function' ? raw.normalize('NFKC') : raw;
+            return normalized.trim().replace(/\s+/g, ' ').toLocaleLowerCase('en-US');
+        }
+
+        function getLibraryContentDataset(type, library) {
+            if (!library) return '';
+            if (library.dataset) return String(library.dataset);
+            if (type === 'words') {
+                if (library.id === 'builtin-words') return 'words-cet4';
+                if (library.slug) return `wordbook-${library.slug}`;
+                if (String(library.id || '').startsWith('remote-')) {
+                    return `wordbook-${String(library.id).slice('remote-'.length)}`;
+                }
+            }
+            if (type === 'sentences') {
+                const datasets = {
+                    'builtin-sentences': 'sentences-daily',
+                    'builtin-sentences-tatoeba-basic': 'sentences-tatoeba-basic',
+                    'builtin-sentences-tatoeba-intermediate': 'sentences-tatoeba-intermediate'
+                };
+                return datasets[library.id] || '';
+            }
+            if (type === 'articles') {
+                return {
+                    'builtin-articles': 'articles-graded',
+                    'builtin-articles-junior-basic': 'articles-graded-junior-basic',
+                    'builtin-articles-junior-advanced': 'articles-graded-junior-advanced',
+                    'builtin-articles-senior-basic': 'articles-graded-senior-basic',
+                    'builtin-articles-senior-advanced': 'articles-graded-senior-advanced'
+                }[String(library.id || '')] || '';
+            }
+            return '';
+        }
+
+        function getContentDatasetFromSourceId(type, sourceId) {
+            const id = String(sourceId || '');
+            if (type === 'words') {
+                if (id === 'builtin-words') return 'words-cet4';
+                if (id.startsWith('remote-')) return `wordbook-${id.slice('remote-'.length)}`;
+            }
+            if (type === 'sentences') {
+                return {
+                    'builtin-sentences': 'sentences-daily',
+                    'builtin-sentences-tatoeba-basic': 'sentences-tatoeba-basic',
+                    'builtin-sentences-tatoeba-intermediate': 'sentences-tatoeba-intermediate'
+                }[id] || '';
+            }
+            if (type === 'articles') {
+                return {
+                    'builtin-articles': 'articles-graded',
+                    'builtin-articles-junior-basic': 'articles-graded-junior-basic',
+                    'builtin-articles-junior-advanced': 'articles-graded-junior-advanced',
+                    'builtin-articles-senior-basic': 'articles-graded-senior-basic',
+                    'builtin-articles-senior-advanced': 'articles-graded-senior-advanced'
+                }[id] || '';
+            }
+            return '';
+        }
+
+        function getContentItemKey(type, item) {
+            if (!item || typeof item !== 'object') return '';
+            if (item.contentKey) return String(item.contentKey);
+            if (item.i18nKey) return String(item.i18nKey);
+            if (type === 'words') return normalizeContentLookupKey(item.word || item.text || item.term);
+            if (type === 'sentences') {
+                if (Array.isArray(item.sourceIds) && item.sourceIds[0] != null) {
+                    return String(item.sourceIds[0]);
+                }
+                return normalizeContentLookupKey(item.text || item.sentence || item.source);
+            }
+            if (type === 'articles') {
+                return String(item.id || item.slug || normalizeContentLookupKey(item.title || item.name));
+            }
+            return '';
+        }
+
+        function getContentBundleCacheKey(dataset, locale, contentVersion = '') {
+            return `${dataset}::${locale}::${contentVersion || 'unversioned'}`;
+        }
+
+        function normalizeContentBundle(payload, dataset, locale) {
+            const items = payload && payload.items && typeof payload.items === 'object' && !Array.isArray(payload.items)
+                ? payload.items
+                : {};
+            const content = Array.isArray(payload && payload.content)
+                ? payload.content.slice()
+                : Array.isArray(payload && payload.items)
+                    ? payload.items.slice()
+                    : [];
+            return {
+                schemaVersion: Number(payload && payload.schemaVersion) || CONTENT_BUNDLE_SCHEMA_VERSION,
+                dataset: String((payload && payload.dataset) || dataset),
+                locale: String((payload && payload.locale) || locale),
+                contentVersion: String((payload && (payload.contentVersion || payload.content_version)) || ''),
+                items,
+                content
+            };
+        }
+
+        async function loadContentBundle(dataset, locale = getContentLocale(), contentVersion = '') {
+            if (!dataset || !locale || locale === CONTENT_FALLBACK_LOCALE) return null;
+            const expectedVersion = String(contentVersion || '');
+            const cacheKey = getContentBundleCacheKey(dataset, locale, expectedVersion);
+            if (contentBundleCache.has(cacheKey)) {
+                const cachedBundle = contentBundleCache.get(cacheKey);
+                if (!expectedVersion || cachedBundle.contentVersion === expectedVersion) return cachedBundle;
+                contentBundleCache.delete(cacheKey);
+            }
+            if (contentBundleRequests.has(cacheKey)) return contentBundleRequests.get(cacheKey);
+
+            const request = (async () => {
+                try {
+                    const versionQuery = expectedVersion ? `?v=${encodeURIComponent(expectedVersion)}` : '';
+                    const url = `${API_BASE_URL}/v1/i18n/bundles/${encodeURIComponent(dataset)}/${encodeURIComponent(locale)}${versionQuery}`;
+                    const response = await presenceFetch(url);
+                    if (response.status === 404) {
+                        if (expectedVersion) {
+                            invalidateLocaleCatalog(locale);
+                            return {
+                                ...normalizeContentBundle({ contentVersion: expectedVersion }, dataset, locale),
+                                notFound: true,
+                                requestedContentVersion: expectedVersion
+                            };
+                        }
+                        const emptyBundle = normalizeContentBundle({}, dataset, locale);
+                        contentBundleCache.set(cacheKey, emptyBundle);
+                        return emptyBundle;
+                    }
+                    if (!response.ok) throw new Error(`Content bundle request failed: ${response.status}`);
+                    const bundle = normalizeContentBundle(await response.json(), dataset, locale);
+                    if (expectedVersion && bundle.contentVersion !== expectedVersion) {
+                        invalidateLocaleCatalog(locale);
+                        return {
+                            ...bundle,
+                            notFound: true,
+                            requestedContentVersion: expectedVersion,
+                            versionMismatch: true
+                        };
+                    }
+                    contentBundleCache.set(cacheKey, bundle);
+                    return bundle;
+                } catch (error) {
+                    console.warn(`Unable to load ${dataset} translations for ${locale}:`, error);
+                    return null;
+                } finally {
+                    contentBundleRequests.delete(cacheKey);
+                }
+            })();
+            contentBundleRequests.set(cacheKey, request);
+            return request;
+        }
+
+        function normalizeLocaleCatalog(payload, locale) {
+            const libraries = Array.isArray(payload && payload.libraries) ? payload.libraries : [];
+            return libraries
+                .filter(library => library && ['words', 'sentences', 'articles'].includes(library.type))
+                .map(library => ({
+                    id: String(library.id || ''),
+                    type: library.type,
+                    dataset: String(library.dataset || ''),
+                    sourceLibraryId: String(library.sourceLibraryId || library.source_library_id || ''),
+                    name: String(library.name || ''),
+                    description: String(library.description || ''),
+                    format: String(library.format || ''),
+                    itemCount: Number(library.itemCount ?? library.item_count) || 0,
+                    sourceName: String((library.source && library.source.name) || library.sourceName || ''),
+                    sourceUrl: String((library.source && library.source.url) || library.sourceUrl || ''),
+                    sourceNotice: String((library.source && library.source.notice) || library.sourceNotice || library.source_notice || ''),
+                    licenseName: String((library.license && library.license.name) || library.licenseName || ''),
+                    licenseUrl: String((library.license && library.license.url) || library.licenseUrl || ''),
+                    licenseNotice: String((library.license && library.license.notice) || library.licenseNotice || library.license_notice || ''),
+                    notice: String(library.notice || ''),
+                    contentVersion: String(library.contentVersion || library.content_version || ''),
+                    locale,
+                    localized: true
+                }))
+                .filter(library => library.id && library.dataset && library.sourceLibraryId && library.contentVersion);
+        }
+
+        function isLocaleCatalogFresh(locale, now = Date.now()) {
+            const fetchedAt = localizedCatalogFetchedAt.get(locale);
+            return localizedCatalogCache.has(locale)
+                && Number.isFinite(fetchedAt)
+                && now - fetchedAt < LOCALE_CATALOG_TTL_MS;
+        }
+
+        function invalidateLocaleCatalog(locale) {
+            localizedCatalogCache.delete(locale);
+            localizedCatalogFetchedAt.delete(locale);
+            localizedLibraryCache.forEach((library, cacheKey) => {
+                if (library && library.locale === locale) localizedLibraryCache.delete(cacheKey);
+            });
+        }
+
+        async function loadLocaleCatalog(locale = getContentLocale(), options = null) {
+            if (locale === CONTENT_FALLBACK_LOCALE) return [];
+            const force = Boolean(options && options.force);
+            if (!force && isLocaleCatalogFresh(locale)) return localizedCatalogCache.get(locale);
+            if (force && localizedCatalogRequests.has(locale)) {
+                try {
+                    await localizedCatalogRequests.get(locale);
+                } catch (error) {
+                    // The forced request below is the recovery path.
+                }
+            }
+            invalidateLocaleCatalog(locale);
+            if (localizedCatalogRequests.has(locale)) return localizedCatalogRequests.get(locale);
+            const request = (async () => {
+                try {
+                    const refreshQuery = force ? `?refresh=${encodeURIComponent(Date.now())}` : '';
+                    const response = await presenceFetch(
+                        `${API_BASE_URL}/v1/i18n/catalog/${encodeURIComponent(locale)}${refreshQuery}`,
+                        force ? { cache: 'no-store' } : undefined
+                    );
+                    if (!response.ok) throw new Error(`Locale catalog request failed: ${response.status}`);
+                    const libraries = normalizeLocaleCatalog(await response.json(), locale);
+                    if (libraries.length) {
+                        localizedCatalogCache.set(locale, libraries);
+                        localizedCatalogFetchedAt.set(locale, Date.now());
+                    }
+                    return libraries;
+                } catch (error) {
+                    console.warn(`Unable to load the ${locale} library catalog:`, error);
+                    return [];
+                } finally {
+                    localizedCatalogRequests.delete(locale);
+                }
+            })();
+            localizedCatalogRequests.set(locale, request);
+            return request;
+        }
+
+        function getSourceLibrary(type, sourceLibraryId) {
+            const builtIn = getBuiltInLibraries(type).find(library => library.id === sourceLibraryId);
+            if (builtIn) return builtIn;
+            if (type === 'words') {
+                const remote = remoteWordbooks.find(library => library.id === sourceLibraryId);
+                if (remote) return remote;
+            }
+            return customLibraries.find(library => library.type === type && library.id === sourceLibraryId) || null;
+        }
+
+        function getAvailableLibraries(type, locale = getContentLocale()) {
+            const localizedLibraries = localizedCatalogCache.get(locale) || [];
+            const localizedForType = localizedLibraries.filter(library => library.type === type);
+            if (localizedForType.length) return localizedForType;
+            if (locale !== 'zh-Hant') return [];
+            return [
+                ...getBuiltInLibraries(type),
+                ...(type === 'words' ? remoteWordbooks : []),
+                ...customLibraries.filter(library => library.type === type)
+            ];
+        }
+
+        function getLocalizedBundleRecords(bundle, library) {
+            if (!bundle || !Array.isArray(bundle.content) || !bundle.content.length) return [];
+            const wrapped = bundle.content.some(entry => entry && typeof entry === 'object' && (
+                Object.prototype.hasOwnProperty.call(entry, 'payload')
+                || Object.prototype.hasOwnProperty.call(entry, 'libraryId')
+                || Object.prototype.hasOwnProperty.call(entry, 'library_id')
+            ));
+            if (!wrapped) return bundle.content.slice();
+            const matching = bundle.content.filter(entry => {
+                const libraryId = String(entry && (entry.libraryId || entry.library_id) || '');
+                return libraryId === library.id || libraryId === library.sourceLibraryId;
+            });
+            return matching
+                .slice()
+                .sort((a, b) => (Number(a.position) || 0) - (Number(b.position) || 0))
+                .map(entry => {
+                    const payload = entry && (entry.payload || entry.item || entry.content || entry);
+                    if (!payload || typeof payload !== 'object') return null;
+                    const wrapperKey = entry.itemKey || entry.item_key || '';
+                    return wrapperKey && !(payload.contentKey || payload.i18nKey || payload.content_key)
+                        ? { ...payload, contentKey: String(wrapperKey) }
+                        : payload;
+                })
+                .filter(entry => entry && typeof entry === 'object');
+        }
+
+        function normalizeLocalizedLibraryItems(items, type, locale) {
+            return normalizeLibraryItems(items, type).map(item => ({
+                ...item,
+                contentLocale: locale,
+                sentences: type === 'articles'
+                    ? item.sentences.map(sentence => ({ ...sentence, contentLocale: locale }))
+                    : item.sentences
+            }));
+        }
+
+        async function materializeLocalizedLibrary(library, options = null) {
+            if (!library.contentVersion) throw new Error(`Localized library ${library.id} has no content version`);
+            const cacheKey = `${library.id}::${library.contentVersion || 'current'}`;
+            if (localizedLibraryCache.has(cacheKey)) return localizedLibraryCache.get(cacheKey);
+            const bundle = await loadContentBundle(library.dataset, library.locale, library.contentVersion);
+            if (bundle && bundle.notFound) {
+                if (!(options && options.catalogRetried)) {
+                    const refreshedCatalog = await loadLocaleCatalog(library.locale, { force: true });
+                    const refreshedLibrary = refreshedCatalog.find(item => (
+                        item.type === library.type && item.dataset === library.dataset
+                    ));
+                    if (refreshedLibrary && refreshedLibrary.contentVersion !== library.contentVersion) {
+                        return materializeLocalizedLibrary(refreshedLibrary, { catalogRetried: true });
+                    }
+                }
+                throw new Error(`Translation content is unavailable for ${library.id}`);
+            }
+            if (!bundle) throw new Error(`Translation content is unavailable for ${library.id}`);
+            if (bundle.contentVersion !== library.contentVersion) {
+                throw new Error(`Localized library ${library.id} received stale content`);
+            }
+            const records = getLocalizedBundleRecords(bundle, library);
+            const items = records.length
+                ? normalizeLocalizedLibraryItems(records, library.type, library.locale)
+                : [];
+            if (!items.length) throw new Error(`Localized library ${library.id} has no content`);
+            const materialized = { ...library, items, itemCount: items.length };
+            localizedLibraryCache.set(cacheKey, materialized);
+            const catalog = localizedCatalogCache.get(library.locale) || [];
+            const index = catalog.findIndex(item => item.id === library.id);
+            if (index !== -1) catalog[index] = materialized;
+            return materialized;
+        }
+
+        function clearPendingLocaleLibrarySwitch() {
+            pendingLocaleLibrarySwitch = null;
+            if (pendingLocaleLibraryTimer) {
+                clearTimeout(pendingLocaleLibraryTimer);
+                pendingLocaleLibraryTimer = null;
+            }
+        }
+
+        function isViewPlaybackActive(view) {
+            if (isNotebookPlaying) return true;
+            if (view === 'words') return isPlaying;
+            if (view === 'sentences') return isPhrasePlaying;
+            return isArticlePlaying;
+        }
+
+        function captureLocalePlaybackResumeContext(view) {
+            return {
+                resumeAfterSwitch: isViewPlaybackActive(view) && isAutoPlaying && continueAutoPlay,
+                playbackKind: isNotebookPlaying ? 'notebook' : view,
+                notebookType: isNotebookPlaying ? notebookPlaybackType : '',
+                notebookIndex: isNotebookPlaying ? notebookPlaybackIndex : -1
+            };
+        }
+
+        function cancelPendingLocalePlaybackResume(view = currentWorkspaceView) {
+            if (!pendingLocaleLibrarySwitch || pendingLocaleLibrarySwitch.view !== view) return;
+            pendingLocaleLibrarySwitch.resumeAfterSwitch = false;
+        }
+
+        function resumePendingLocalePlayback(pending) {
+            if (!pending || !pending.resumeAfterSwitch || !isAutoPlaying || !continueAutoPlay) return false;
+            if (pending.playbackKind === 'notebook') {
+                if (!notebookPlaybackQueue.length) return false;
+                notebookPlaybackType = pending.notebookType === 'sentence' ? 'sentence' : 'word';
+                notebookPlaybackIndex = Math.max(0, Math.min(
+                    Number.isInteger(pending.notebookIndex) ? pending.notebookIndex : 0,
+                    notebookPlaybackQueue.length - 1
+                ));
+                notebookEntryPlayCount = 0;
+                resumeVocabularyNotebookPlayback();
+                return true;
+            }
+            if (pending.view === 'words') startPlayback();
+            else if (pending.view === 'sentences') startPhrasePlayback();
+            else startArticlePlayback();
+            return true;
+        }
+
+        function showLocaleContentEmpty(view) {
+            const message = t('shelf.localeEmpty');
+            if (view === 'words') {
+                cet4Words.splice(0, cet4Words.length);
+                order = [];
+                orderPosition = 0;
+                currentIndex = 0;
+                currentWordEl.textContent = message;
+                phoneticEl.textContent = '';
+                englishDefinitionEl.textContent = '';
+                definitionEl.textContent = '';
+                exampleEl.textContent = '';
+                englishDefinitionBlock.classList.add('hidden');
+                definitionBlock.classList.add('hidden');
+                exampleBlock.classList.add('hidden');
+                wordIndexEl.textContent = '0/0';
+                progressEl.style.width = '0%';
+                [prevBtn, playBtn, nextBtn, wordNotebookToggle].forEach(button => { button.disabled = true; });
+            } else if (view === 'sentences') {
+                phraseList = [];
+                phraseIndex = 0;
+                updatePhraseCard();
+                [phrasePrevBtn, phrasePlayBtn, phraseNextBtn, phraseNotebookToggle].forEach(button => { button.disabled = true; });
+            } else {
+                articleList = [];
+                articleIndex = 0;
+                articleSentenceIndex = 0;
+                updateArticleCard();
+            }
+            appliedLibraryIds[view] = '';
+            appliedLibraryVersions[view] = '';
+            appliedLibraryLocales[view] = getContentLocale();
+        }
+
+        async function flushPendingLocaleLibrarySwitch() {
+            const pending = pendingLocaleLibrarySwitch;
+            if (!pending || pending.locale !== getContentLocale()) return;
+            if (pending.waitingForCatalog) return;
+            if (isViewPlaybackActive(pending.view)) {
+                if (!pendingLocaleLibraryTimer) {
+                    pendingLocaleLibraryTimer = setTimeout(() => {
+                        pendingLocaleLibraryTimer = null;
+                        void flushPendingLocaleLibrarySwitch();
+                    }, 200);
+                }
+                return;
+            }
+            clearPendingLocaleLibrarySwitch();
+            if (!pending.libraryId) {
+                showLocaleContentEmpty(pending.view);
+                return;
+            }
+            if (pending.view !== currentWorkspaceView) return;
+            const switched = await selectLibrary(pending.libraryId, { localeTransition: true });
+            if (switched && pending.resumeAfterSwitch && pending.locale === getContentLocale() && pending.view === currentWorkspaceView) {
+                resumePendingLocalePlayback(pending);
+            }
+        }
+
+        function scheduleLocaleLibrarySwitch(locale, view, libraryId, resumeAfterSwitch) {
+            if (locale !== getContentLocale()) return;
+            const targetLibrary = getAvailableLibraries(view, locale).find(library => library.id === libraryId);
+            const targetVersion = targetLibrary && targetLibrary.contentVersion || '';
+            const needsLibrarySwitch = (
+                appliedLibraryLocales[view] !== locale
+                || appliedLibraryIds[view] !== (libraryId || '')
+                || appliedLibraryVersions[view] !== targetVersion
+            );
+            if (
+                libraryId
+                && !needsLibrarySwitch
+            ) {
+                clearPendingLocaleLibrarySwitch();
+                return;
+            }
+            const shouldFailClosed = Boolean(targetLibrary && targetLibrary.localized)
+                || (locale !== 'zh-Hant' && !targetLibrary);
+            if (needsLibrarySwitch && shouldFailClosed && !isViewPlaybackActive(view)) {
+                showLocaleContentEmpty(view);
+            }
+            const playbackContext = captureLocalePlaybackResumeContext(view);
+            const shouldResume = resumeAfterSwitch == null
+                ? playbackContext.resumeAfterSwitch
+                : Boolean(resumeAfterSwitch);
+            clearPendingLocaleLibrarySwitch();
+            pendingLocaleLibrarySwitch = {
+                locale,
+                view,
+                libraryId: libraryId || '',
+                resumeAfterSwitch: shouldResume,
+                playbackKind: playbackContext.playbackKind,
+                notebookType: playbackContext.notebookType,
+                notebookIndex: playbackContext.notebookIndex,
+                waitingForCatalog: false
+            };
+            void flushPendingLocaleLibrarySwitch();
+        }
+
+        function completePendingLocaleSwitchAtBoundary(view) {
+            if (!pendingLocaleLibrarySwitch || pendingLocaleLibrarySwitch.view !== view) return false;
+            void flushPendingLocaleLibrarySwitch();
+            return true;
+        }
+
+        async function synchronizeLocaleLibraries(locale = getContentLocale()) {
+            clearPendingLocaleLibrarySwitch();
+            const transitionView = currentWorkspaceView;
+            const playbackContext = captureLocalePlaybackResumeContext(transitionView);
+            const pending = {
+                locale,
+                view: transitionView,
+                libraryId: '',
+                ...playbackContext,
+                waitingForCatalog: true
+            };
+            pendingLocaleLibrarySwitch = pending;
+            if (!isViewPlaybackActive(transitionView) && appliedLibraryLocales[transitionView] !== locale) {
+                showLocaleContentEmpty(transitionView);
+            }
+            activeLibraryIds = loadActiveLibraryIds(locale);
+            await loadLocaleCatalog(locale);
+            if (locale !== getContentLocale() || pendingLocaleLibrarySwitch !== pending) return;
+            if (vocabularyNotebook.length) void requestNotebookContentBundles();
+
+            for (const type of ['words', 'sentences', 'articles']) {
+                const libraries = getAvailableLibraries(type, locale);
+                activeLibraryIds[type] = resolveAvailableLibraryId(type, activeLibraryIds[type], libraries, locale);
+            }
+            saveActiveLibraryIds(locale);
+            renderLibraryShelf();
+            pending.libraryId = activeLibraryIds[transitionView] || '';
+            pending.waitingForCatalog = false;
+            void flushPendingLocaleLibrarySwitch();
+        }
+
+        function getContentLibrary(type, libraryId = activeLibraryIds[type]) {
+            const available = getAvailableLibraries(type).find(library => library.id === libraryId);
+            if (available) return available;
+            return getContentLocale() === 'zh-Hant' && !(localizedCatalogCache.get('zh-Hant') || []).length
+                ? getSourceLibrary(type, libraryId) || null
+                : null;
+        }
+
+        function getCatalogLibraryForContent(dataset, type, locale = getContentLocale(), sourceLibraryId = '') {
+            if (!dataset || locale === CONTENT_FALLBACK_LOCALE) return null;
+            const libraries = localizedCatalogCache.get(locale) || [];
+            return libraries.find(library => library.dataset === dataset && library.type === type)
+                || libraries.find(library => (
+                    library.type === type
+                    && (library.id === sourceLibraryId || library.sourceLibraryId === sourceLibraryId)
+                ))
+                || null;
+        }
+
+        function getContentBundleItem(
+            dataset,
+            itemKey,
+            locale = getContentLocale(),
+            library = null,
+            position = null
+        ) {
+            if (!dataset || (!itemKey && !Number.isInteger(position))) return null;
+            const contentVersion = library && library.contentVersion || '';
+            const usesFullBundle = Boolean(library && library.localized);
+            if (usesFullBundle && !contentVersion) return null;
+            const bundle = contentBundleCache.get(getContentBundleCacheKey(dataset, locale, contentVersion));
+            if (!bundle || (contentVersion && bundle.contentVersion !== contentVersion)) return null;
+
+            if (usesFullBundle) {
+                const type = library && library.type || '';
+                const contentEntry = (bundle.content || []).find(entry => {
+                    if (!entry || typeof entry !== 'object') return false;
+                    const payload = entry.payload || entry.item || entry.content || entry;
+                    const entryLibraryId = String(entry.libraryId || entry.library_id || '');
+                    const libraryMatches = !entryLibraryId || (
+                        library && (entryLibraryId === library.id || entryLibraryId === library.sourceLibraryId)
+                    );
+                    if (!libraryMatches) return false;
+                    const entryKey = String(entry.itemKey || entry.item_key || getContentItemKey(type, payload) || '');
+                    if (itemKey) return entryKey === String(itemKey);
+                    return Number.isInteger(position) && Number(entry.position) === position;
+                });
+                return contentEntry
+                    ? contentEntry.payload || contentEntry.item || contentEntry.content || contentEntry
+                    : null;
+            }
+
+            return bundle.items ? bundle.items[itemKey] || null : null;
+        }
+
+        function getInlineLocalizedItem(item, locale = getContentLocale()) {
+            if (!item || typeof item !== 'object') return null;
+            for (const map of [item.i18n, item.localized, item.translations]) {
+                if (!map || typeof map !== 'object' || Array.isArray(map)) continue;
+                if (Object.prototype.hasOwnProperty.call(map, locale)) return map[locale];
+            }
+            return null;
+        }
+
+        function getLocalizedField(item, type, field, library, locale = getContentLocale()) {
+            const inline = getInlineLocalizedItem(item, locale);
+            if (typeof inline === 'string' && ['definition', 'translation'].includes(field)) return inline.trim();
+            if (inline && typeof inline === 'object' && inline[field] != null) return String(inline[field]).trim();
+            const dataset = getLibraryContentDataset(type, library);
+            const bundled = getContentBundleItem(dataset, getContentItemKey(type, item), locale, library);
+            if (typeof bundled === 'string' && ['definition', 'translation'].includes(field)) return bundled.trim();
+            if (bundled && typeof bundled === 'object') {
+                const fields = bundled.fields && typeof bundled.fields === 'object' ? bundled.fields : bundled;
+                if (fields[field] != null) return String(fields[field]).trim();
+            }
+            return '';
+        }
+
+        function resolvedContent(text, locale, fallbackText, fallbackLocale = CONTENT_FALLBACK_LOCALE) {
+            const localized = String(text || '').trim();
+            if (localized) return { text: localized, locale };
+            const fallback = String(fallbackText || '').trim();
+            return { text: fallback, locale: fallback ? fallbackLocale : locale };
+        }
+
+        function resolveWordTranslation(word, library = getContentLibrary('words'), locale = getContentLocale()) {
+            const usesLocalizedLibrary = Boolean(library && library.localized);
+            const materialized = usesLocalizedLibrary && word && word.contentLocale === locale
+                ? word.definitionLocalized || (word.definitionEn ? word.definition : '')
+                : '';
+            const localized = materialized || getLocalizedField(word, 'words', 'definition', library, locale);
+            const legacy = usesLocalizedLibrary ? '' : getWordDefinitionParts(word).chinese;
+            return resolvedContent(localized, locale, legacy, word && word.contentLocale || CONTENT_FALLBACK_LOCALE);
+        }
+
+        function resolveSentenceTranslation(item, library = getContentLibrary('sentences'), locale = getContentLocale()) {
+            const usesLocalizedLibrary = Boolean(library && library.localized);
+            const materialized = usesLocalizedLibrary && item && item.contentLocale === locale
+                ? item.translationLocalized || item.note
+                : '';
+            const localized = materialized || getLocalizedField(item, 'sentences', 'translation', library, locale);
+            const legacy = usesLocalizedLibrary ? '' : item && (item.note || getPhraseNote(item.scene, item.text || item.sentence));
+            return resolvedContent(localized, locale, legacy, item && item.contentLocale || CONTENT_FALLBACK_LOCALE);
+        }
+
+        function getArticleBundleItem(article, library, locale = getContentLocale()) {
+            const inline = getInlineLocalizedItem(article, locale);
+            if (inline && typeof inline === 'object') return inline;
+            const dataset = getLibraryContentDataset('articles', library);
+            return getContentBundleItem(dataset, getContentItemKey('articles', article), locale, library);
+        }
+
+        function resolveArticleTranslation(article, field, library = getContentLibrary('articles'), locale = getContentLocale()) {
+            const bundled = getArticleBundleItem(article, library, locale);
+            const fields = bundled && bundled.fields && typeof bundled.fields === 'object' ? bundled.fields : bundled;
+            const usesLocalizedLibrary = Boolean(library && library.localized);
+            const materialized = usesLocalizedLibrary && article && article.contentLocale === locale
+                ? field === 'title' ? article.titleLocalized : article.summaryLocalized
+                : '';
+            const localized = materialized || (fields && fields[field] != null ? String(fields[field]).trim() : '');
+            const legacy = usesLocalizedLibrary ? '' : field === 'title' ? article.titleZh : article.summary;
+            return resolvedContent(localized, locale, legacy, article && article.contentLocale || CONTENT_FALLBACK_LOCALE);
+        }
+
+        function resolveArticleSentenceTranslation(article, sentence, sentenceIndex, library = getContentLibrary('articles'), locale = getContentLocale()) {
+            const inline = getInlineLocalizedItem(sentence, locale);
+            let localized = library && library.localized && sentence && sentence.contentLocale === locale
+                ? sentence.translationLocalized
+                : '';
+            localized = localized || (typeof inline === 'string'
+                ? inline
+                : inline && typeof inline === 'object'
+                    ? inline.translation || inline.text || ''
+                    : '');
+            if (!localized) {
+                const articleBundle = getArticleBundleItem(article, library, locale);
+                const fields = articleBundle && articleBundle.fields && typeof articleBundle.fields === 'object'
+                    ? articleBundle.fields
+                    : articleBundle;
+                const sentenceMap = fields && fields.sentences && typeof fields.sentences === 'object'
+                    ? fields.sentences
+                    : null;
+                const entry = sentenceMap ? sentenceMap[String(sentenceIndex)] : null;
+                localized = typeof entry === 'string'
+                    ? entry
+                    : entry && typeof entry === 'object'
+                        ? entry.translation || entry.text || ''
+                        : '';
+            }
+            const legacy = library && library.localized ? '' : sentence && sentence.zh;
+            return resolvedContent(localized, locale, legacy, sentence && sentence.contentLocale || CONTENT_FALLBACK_LOCALE);
+        }
+
+        function resolveArticleMetadata(article, library = getContentLibrary('articles'), locale = getContentLocale()) {
+            const hasLocalizedPayload = Boolean(
+                library
+                && library.localized
+                && article
+                && article.contentLocale === locale
+            );
+            const genreFallbackKey = article && (
+                String(article.genre || '').toLowerCase() === 'listening'
+                || String(article.genre || '').includes('聽力')
+                || String(article.genre || '').includes('听力')
+            )
+                ? 'article.listening'
+                : 'article.readingComprehension';
+            if (hasLocalizedPayload || locale !== 'zh-Hant') {
+                return {
+                    level: hasLocalizedPayload && article.levelLocalized || t('article.defaultLevel'),
+                    genre: hasLocalizedPayload && article.genreLocalized || t(genreFallbackKey),
+                    topic: hasLocalizedPayload && article.topicLocalized || t('article.defaultTopic')
+                };
+            }
+            return {
+                level: article && article.level || t('article.defaultLevel'),
+                genre: t(genreFallbackKey),
+                topic: article && article.topic || t('article.defaultTopic')
+            };
+        }
+
+        function updateArticleMetadata(article, library = getContentLibrary('articles')) {
+            if (!article) return;
+            const metadata = resolveArticleMetadata(article, library);
+            articleLevelEl.textContent = article.cefr && !metadata.level.includes(article.cefr)
+                ? `${metadata.level} · ${article.cefr}`
+                : metadata.level;
+            const genre = getArticleGenreMeta(article.genre, metadata.genre);
+            articleGenreEl.replaceChildren();
+            const genreIcon = document.createElement('i');
+            genreIcon.className = `fa ${genre.icon}`;
+            genreIcon.setAttribute('aria-hidden', 'true');
+            articleGenreEl.append(genreIcon, document.createTextNode(genre.label));
+            articleTopicEl.textContent = metadata.topic;
+            articleWordCountEl.textContent = t('article.approxWords', { count: formatUiNumber(article.estimatedWords || 0) });
+        }
+
+        function setLocalizedElementText(element, resolved, emptyText = '') {
+            if (!element) return;
+            const value = resolved && resolved.text ? resolved.text : emptyText;
+            const locale = resolved && resolved.text ? resolved.locale : getContentLocale();
+            element.textContent = value;
+            element.lang = locale;
+            element.dir = getContentDirection(locale);
+        }
+
+        function getNotebookContentDataset(entry) {
+            if (!entry) return '';
+            if (entry.dataset) return String(entry.dataset);
+            return getContentDatasetFromSourceId(entry.type === 'sentence' ? 'sentences' : 'words', entry.sourceId);
+        }
+
+        function getNotebookContentKey(entry) {
+            if (!entry) return '';
+            return String(entry.contentKey || getContentItemKey(entry.type === 'sentence' ? 'sentences' : 'words', entry));
+        }
+
+        function getNotebookSourceLibraryId(library) {
+            return String(library && (library.sourceLibraryId || library.id) || '');
+        }
+
+        function getNotebookSourceDataset(type, library) {
+            const sourceLibraryId = getNotebookSourceLibraryId(library);
+            return getContentDatasetFromSourceId(type, sourceLibraryId)
+                || getLibraryContentDataset(type, library);
+        }
+
+        function getNotebookIdentityDataset(entry) {
+            const dataset = getNotebookContentDataset(entry);
+            if (dataset) return dataset;
+            return entry && entry.type === 'sentence' ? 'sentences-local' : 'words-local';
+        }
+
+        function getStableNotebookEntryId(entry) {
+            if (!entry) return '';
+            const type = entry.type === 'sentence' ? 'sentence' : 'word';
+            const dataset = getNotebookIdentityDataset(entry);
+            const contentKey = getNotebookContentKey(entry).trim();
+            return dataset && contentKey ? `${type}::${dataset}::${contentKey}` : String(entry.id || '');
+        }
+
+        function getNotebookEntryContentLocale(entry) {
+            const explicitLocale = String(entry && entry.contentLocale || '').trim();
+            const sourceLocaleMatch = String(entry && entry.sourceId || '').match(/^(ja|ko|fr|es|pt|ru|th|ar):/i);
+            const locale = explicitLocale || (sourceLocaleMatch ? sourceLocaleMatch[1].toLowerCase() : '');
+            return !locale || /^zh(?:-|$)/i.test(locale) ? 'zh-Hant' : locale;
+        }
+
+        function normalizeVocabularyNotebookEntry(entry) {
+            if (!entry || (!entry.word && !entry.text)) return null;
+            const normalized = {
+                ...entry,
+                type: entry.type || (entry.text ? 'sentence' : 'word')
+            };
+            normalized.dataset = getNotebookIdentityDataset(normalized);
+            normalized.contentKey = getNotebookContentKey(normalized).trim();
+            normalized.contentLocale = getNotebookEntryContentLocale(normalized);
+            normalized.id = getStableNotebookEntryId(normalized);
+            return normalized.id && normalized.contentKey ? normalized : null;
+        }
+
+        function getNotebookCatalogLibrary(entry, locale = getContentLocale()) {
+            if (!entry || locale === CONTENT_FALLBACK_LOCALE) return null;
+            const type = entry.type === 'sentence' ? 'sentences' : 'words';
+            return getCatalogLibraryForContent(getNotebookContentDataset(entry), type, locale, entry.sourceId);
+        }
+
+        function getNotebookBundleDataset(entry, catalogLibrary = null) {
+            return String(catalogLibrary && catalogLibrary.dataset || getNotebookContentDataset(entry) || '');
+        }
+
+        function getLocalizedPayloadField(payload, field) {
+            if (!payload || typeof payload !== 'object') return '';
+            const names = field === 'definition'
+                ? ['definitionLocalized', 'definition_localized', 'localizedDefinition']
+                : ['translationLocalized', 'translation_localized', 'localizedTranslation'];
+            for (const name of names) {
+                if (payload[name] != null && String(payload[name]).trim()) return String(payload[name]).trim();
+            }
+            return '';
+        }
+
+        function getNotebookLocalizedField(entry, field, locale = getContentLocale()) {
+            const inline = getInlineLocalizedItem(entry, locale);
+            if (typeof inline === 'string') return inline.trim();
+            if (inline && typeof inline === 'object' && inline[field] != null) return String(inline[field]).trim();
+            const catalogLibrary = getNotebookCatalogLibrary(entry, locale);
+            const bundled = getContentBundleItem(
+                getNotebookBundleDataset(entry, catalogLibrary),
+                getNotebookContentKey(entry),
+                locale,
+                catalogLibrary,
+                Number.isInteger(entry && entry.contentPosition) ? entry.contentPosition : null
+            );
+            if (typeof bundled === 'string') return bundled.trim();
+            if (bundled && typeof bundled === 'object') {
+                const fields = bundled.fields && typeof bundled.fields === 'object' ? bundled.fields : bundled;
+                const localized = getLocalizedPayloadField(fields, field);
+                if (localized) return localized;
+                if (locale === 'zh-Hant' && !catalogLibrary && fields[field] != null) return String(fields[field]).trim();
+            }
+            return '';
+        }
+
+        function resolveNotebookTranslation(entry, locale = getContentLocale()) {
+            const localized = getNotebookLocalizedField(
+                entry,
+                entry && entry.type === 'sentence' ? 'translation' : 'definition',
+                locale
+            );
+            const savedForLocale = entry && getNotebookEntryContentLocale(entry) === locale
+                ? entry.type === 'sentence' ? entry.translation : entry.definitionZh
+                : '';
+            return resolvedContent(localized || savedForLocale, locale, '', locale);
+        }
+
+        function refreshCurrentContentTranslations(type = currentWorkspaceView) {
+            if (type === 'words') {
+                const entry = notebookDisplayedEntry && notebookDisplayedEntry.type !== 'sentence'
+                    ? notebookDisplayedEntry
+                    : null;
+                const resolved = entry
+                    ? resolveNotebookTranslation(entry)
+                    : resolveWordTranslation(cet4Words[currentIndex], getContentLibrary('words'));
+                setLocalizedElementText(definitionEl, resolved);
+                definitionBlock.classList.toggle('hidden', !resolved.text);
+                return;
+            }
+            if (type === 'sentences') {
+                const entry = notebookDisplayedEntry && notebookDisplayedEntry.type === 'sentence'
+                    ? notebookDisplayedEntry
+                    : null;
+                const resolved = entry
+                    ? resolveNotebookTranslation(entry)
+                    : resolveSentenceTranslation(phraseList[phraseIndex], getContentLibrary('sentences'));
+                setLocalizedElementText(currentPhraseNoteEl, resolved, t('content.noChinese'));
+                return;
+            }
+            if (type !== 'articles' || !articleList.length) return;
+            const article = articleList[articleIndex];
+            const library = getContentLibrary('articles');
+            const title = resolveArticleTranslation(article, 'title', library);
+            const summary = resolveArticleTranslation(article, 'summary', library);
+            setLocalizedElementText(articleTitleZhEl, title);
+            articleTitleZhEl.classList.toggle('hidden', !title.text);
+            setLocalizedElementText(articleSummaryEl, summary, t('article.defaultSummary'));
+            updateArticleMetadata(article, library);
+            articleSentenceListEl.querySelectorAll('.article-sentence-zh').forEach((element, sentenceIndex) => {
+                const resolved = resolveArticleSentenceTranslation(
+                    article,
+                    article.sentences[sentenceIndex],
+                    sentenceIndex,
+                    library
+                );
+                setLocalizedElementText(element, resolved, t('article.noTranslation'));
+            });
+        }
+
+        async function requestContentBundleForLibrary(type, library = getContentLibrary(type)) {
+            if (!library || !library.localized) return null;
+            const dataset = getLibraryContentDataset(type, library);
+            const locale = getContentLocale();
+            if (!dataset || locale === CONTENT_FALLBACK_LOCALE) return null;
+            const bundle = await loadContentBundle(dataset, locale, library.contentVersion);
+            if (getContentLocale() !== locale) return bundle;
+            const activeLibrary = getContentLibrary(type);
+            if (getLibraryContentDataset(type, activeLibrary) === dataset) {
+                refreshCurrentContentTranslations(type);
+                if (historyModal && historyModal.style.display === 'block') refreshHistoryModal();
+            }
+            if (vocabularyNotebookModal && vocabularyNotebookModal.style.display === 'block') {
+                renderVocabularyNotebook();
+            }
+            return bundle;
+        }
+
+        async function requestNotebookContentBundles(options = null) {
+            const locale = getContentLocale();
+            const requests = new Map();
+            vocabularyNotebook.forEach(entry => {
+                const library = getNotebookCatalogLibrary(entry, locale);
+                if (locale !== 'zh-Hant' && !library) return;
+                const dataset = getNotebookBundleDataset(entry, library);
+                if (!dataset) return;
+                const contentVersion = library && library.contentVersion || '';
+                const key = getContentBundleCacheKey(dataset, locale, contentVersion);
+                if (!requests.has(key)) {
+                    requests.set(key, loadContentBundle(dataset, locale, contentVersion));
+                }
+            });
+            const bundles = await Promise.all(requests.values());
+            if (
+                !(options && options.catalogRetried)
+                && bundles.some(bundle => bundle && bundle.notFound)
+            ) {
+                await loadLocaleCatalog(locale, { force: true });
+                if (getContentLocale() === locale) {
+                    return requestNotebookContentBundles({ catalogRetried: true });
+                }
+            }
+            if (getContentLocale() !== locale) return;
+            if (vocabularyNotebookModal && vocabularyNotebookModal.style.display === 'block') renderVocabularyNotebook();
+            if (notebookDisplayedEntry) {
+                refreshCurrentContentTranslations(notebookDisplayedEntry.type === 'sentence' ? 'sentences' : 'words');
+            }
+        }
         const AUDIO_LIBRARY_VERSION = '20260830-articles1';
         const PRESENCE_TOKEN_KEY = 'enplay_presence_token_v1';
         const PRESENCE_HEARTBEAT_MS = 30000;
@@ -3605,16 +4645,10 @@
             }
             if (articleList.length) {
                 const article = articleList[articleIndex];
-                const genre = getArticleGenreMeta(article.genre);
-                articleGenreEl.replaceChildren();
-                const genreIcon = document.createElement('i');
-                genreIcon.className = `fa ${genre.icon}`;
-                genreIcon.setAttribute('aria-hidden', 'true');
-                articleGenreEl.append(genreIcon, document.createTextNode(genre.label));
-                articleWordCountEl.textContent = t('article.approxWords', { count: formatUiNumber(article.estimatedWords || 0) });
-                renderArticleSentences(article);
-                updateArticleSentenceUi({ scroll: false });
+                updateArticleMetadata(article, getContentLibrary('articles'));
             }
+
+            void synchronizeLocaleLibraries(getContentLocale());
 
             if (currentWorkspaceView === 'sentences') {
                 updateTodaySentenceCount();
@@ -4117,6 +5151,22 @@
                 history.replaceState(null, '', `#${view}`);
             }
             renderLibraryShelf();
+            const locale = getContentLocale();
+            const hasLocalizedCatalog = (localizedCatalogCache.get(locale) || []).length > 0;
+            if ((locale !== 'zh-Hant' || hasLocalizedCatalog) && !isLocaleCatalogFresh(locale)) {
+                clearPendingLocaleLibrarySwitch();
+                pendingLocaleLibrarySwitch = {
+                    locale,
+                    view,
+                    libraryId: '',
+                    ...captureLocalePlaybackResumeContext(view),
+                    waitingForCatalog: true
+                };
+                if (!isViewPlaybackActive(view)) showLocaleContentEmpty(view);
+                void synchronizeLocaleLibraries(locale);
+            } else {
+                scheduleLocaleLibrarySwitch(locale, view, activeLibraryIds[view]);
+            }
         }
 
         function updateTodaySentenceCount() {
@@ -4136,16 +5186,71 @@
             document.title = t(key);
         }
 
-        function loadActiveLibraryIds() {
-            const defaults = {
-                words: 'builtin-words',
-                sentences: 'builtin-sentences',
-                articles: 'builtin-articles'
-            };
+        function getDefaultActiveLibraryIds(locale = getContentLocale()) {
+            return locale === 'zh-Hant'
+                ? { words: 'builtin-words', sentences: 'builtin-sentences', articles: 'builtin-articles' }
+                : { words: '', sentences: '', articles: '' };
+        }
+
+        function getLegacyActiveLibraryIds() {
             try {
-                return { ...defaults, ...JSON.parse(localStorage.getItem('enplay_active_libraries') || '{}') };
+                const stored = JSON.parse(localStorage.getItem('enplay_active_libraries') || '{}');
+                return stored && typeof stored === 'object' ? stored : {};
+            } catch (error) {
+                return {};
+            }
+        }
+
+        function resolveAvailableLibraryId(type, requestedId, libraries, locale = getContentLocale()) {
+            const available = Array.isArray(libraries) ? libraries : getAvailableLibraries(type, locale);
+            const direct = available.find(library => library.id === requestedId);
+            if (direct) return direct.id;
+            if (locale === 'zh-Hant') {
+                const sourceMatch = available.find(library => library.sourceLibraryId === requestedId);
+                if (sourceMatch) return sourceMatch.id;
+                const legacyId = getLegacyActiveLibraryIds()[type];
+                const legacyMatch = available.find(library => (
+                    library.id === legacyId || library.sourceLibraryId === legacyId
+                ));
+                if (legacyMatch) return legacyMatch.id;
+            }
+            return available[0] ? available[0].id : '';
+        }
+
+        function loadActiveLibraryIds(locale = getContentLocale()) {
+            const defaults = getDefaultActiveLibraryIds(locale);
+            try {
+                const scoped = JSON.parse(localStorage.getItem('enplay_active_libraries_by_locale_v2') || '{}');
+                if (scoped && scoped[locale] && typeof scoped[locale] === 'object') {
+                    return { ...defaults, ...scoped[locale] };
+                }
+                if (locale === 'zh-Hant') {
+                    return { ...defaults, ...JSON.parse(localStorage.getItem('enplay_active_libraries') || '{}') };
+                }
+                return defaults;
             } catch (error) {
                 return defaults;
+            }
+        }
+
+        function saveActiveLibraryIds(locale = getContentLocale()) {
+            try {
+                const scoped = JSON.parse(localStorage.getItem('enplay_active_libraries_by_locale_v2') || '{}');
+                scoped[locale] = { ...activeLibraryIds };
+                localStorage.setItem('enplay_active_libraries_by_locale_v2', JSON.stringify(scoped));
+                if (locale === 'zh-Hant') {
+                    const legacyIds = {};
+                    for (const type of ['words', 'sentences', 'articles']) {
+                        const library = getAvailableLibraries(type, locale)
+                            .find(item => item.id === activeLibraryIds[type]);
+                        legacyIds[type] = library && library.sourceLibraryId
+                            ? library.sourceLibraryId
+                            : activeLibraryIds[type];
+                    }
+                    localStorage.setItem('enplay_active_libraries', JSON.stringify(legacyIds));
+                }
+            } catch (error) {
+                console.warn('Unable to save the active library selection:', error);
             }
         }
 
@@ -4192,26 +5297,110 @@
             return libraries.find(library => library.id === libraryId) || libraries[0];
         }
 
+        function getSafeAttributionUrl(value) {
+            try {
+                const parsed = new URL(String(value || ''));
+                if (!['http:', 'https:'].includes(parsed.protocol) || parsed.username || parsed.password) return '';
+                return parsed.href;
+            } catch (error) {
+                return '';
+            }
+        }
+
+        function getLibraryAttributionNotices(library) {
+            const notices = [
+                library && library.notice,
+                library && library.sourceNotice,
+                library && library.licenseNotice
+            ]
+                .map(value => String(value || '').trim())
+                .filter(Boolean);
+            const visibleAttribution = `${library && library.sourceName || ''} ${library && library.licenseName || ''}`;
+            const hasVisibleYaitronNotice = visibleAttribution.includes(YAITRON_ATTRIBUTION_NOTICE)
+                || notices.includes(YAITRON_ATTRIBUTION_NOTICE);
+            if (
+                !hasVisibleYaitronNotice
+                && /yaitron|lexitron/i.test(`${library && library.id || ''} ${visibleAttribution}`)
+            ) {
+                notices.push(YAITRON_ATTRIBUTION_NOTICE);
+            }
+            return [...new Set(notices)];
+        }
+
+        function getLibraryAttributionNotice(library) {
+            return getLibraryAttributionNotices(library).join('\n');
+        }
+
+        function createLibraryAttributionValue(name, url) {
+            const safeUrl = getSafeAttributionUrl(url);
+            const element = document.createElement(safeUrl ? 'a' : 'span');
+            element.className = 'book-attribution-value';
+            element.textContent = String(name || '').trim();
+            element.dir = 'auto';
+            if (safeUrl) {
+                element.href = safeUrl;
+                element.target = '_blank';
+                element.rel = 'noopener noreferrer';
+            }
+            return element;
+        }
+
+        function createLibraryAttribution(library) {
+            const sourceName = String(library && library.sourceName || '').trim();
+            const licenseName = String(library && library.licenseName || '').trim();
+            const notices = getLibraryAttributionNotices(library);
+            if (!sourceName && !licenseName && !notices.length) return null;
+            const attribution = document.createElement('div');
+            attribution.className = 'book-attribution';
+
+            const appendLine = (labelKey, name, url) => {
+                if (!name) return;
+                const line = document.createElement('p');
+                line.className = 'book-attribution-line';
+                const label = document.createElement('span');
+                label.className = 'book-attribution-label';
+                label.textContent = `${t(labelKey)}:`;
+                line.append(label, createLibraryAttributionValue(name, url));
+                attribution.appendChild(line);
+            };
+            appendLine('shelf.sourceLabel', sourceName, library.sourceUrl);
+            appendLine('shelf.licenseLabel', licenseName, library.licenseUrl);
+            notices.forEach(notice => {
+                const noticeElement = document.createElement('p');
+                noticeElement.className = 'book-attribution-notice';
+                noticeElement.textContent = notice;
+                noticeElement.dir = 'auto';
+                attribution.appendChild(noticeElement);
+            });
+            return attribution;
+        }
+
         function renderLibraryShelf() {
             if (!libraryListEl) return;
-            const builtInLibraries = getBuiltInLibraries(currentWorkspaceView);
-            if (!builtInLibraries.length) return;
-            const remoteLibraries = currentWorkspaceView === 'words' ? remoteWordbooks : [];
-            const libraries = [
-                ...builtInLibraries,
-                ...remoteLibraries,
-                ...customLibraries.filter(item => item.type === currentWorkspaceView)
-            ];
+            const locale = getContentLocale();
+            const libraries = getAvailableLibraries(currentWorkspaceView, locale);
             libraryListEl.innerHTML = '';
             libraryCountEl.textContent = t('shelf.count', { count: formatUiNumber(libraries.length) });
-            sentenceSourceNote.classList.toggle('hidden', currentWorkspaceView !== 'sentences');
-            articleSourceNote.classList.toggle('hidden', currentWorkspaceView !== 'articles');
+            const usesLegacyChineseShelf = locale === 'zh-Hant' && !(localizedCatalogCache.get(locale) || []).some(
+                library => library.type === currentWorkspaceView
+            );
+            sentenceSourceNote.classList.toggle('hidden', currentWorkspaceView !== 'sentences' || !usesLegacyChineseShelf);
+            articleSourceNote.classList.toggle('hidden', currentWorkspaceView !== 'articles' || !usesLegacyChineseShelf);
+
+            if (!libraries.length) {
+                const empty = document.createElement('p');
+                empty.className = 'shelf-empty';
+                empty.textContent = t('shelf.localeEmpty');
+                libraryListEl.appendChild(empty);
+                return;
+            }
 
             libraries.forEach(library => {
                 const button = document.createElement('button');
                 button.type = 'button';
                 button.className = 'shelf-book';
-                if (activeLibraryIds[currentWorkspaceView] === library.id) {
+                const isActive = activeLibraryIds[currentWorkspaceView] === library.id;
+                if (isActive) {
                     button.classList.add('active');
                 }
                 if (loadingLibraryId === library.id) {
@@ -4253,47 +5442,69 @@
                 button.append(spine, copy, check);
                 button.addEventListener('click', () => selectLibrary(library.id));
                 libraryListEl.appendChild(button);
+                if (isActive && library.localized) {
+                    const attribution = createLibraryAttribution(library);
+                    if (attribution) libraryListEl.appendChild(attribution);
+                }
             });
         }
 
-        async function selectLibrary(libraryId) {
+        async function selectLibrary(libraryId, options = {}) {
             const selectionId = ++librarySelectionId;
+            const selectionLocale = getContentLocale();
+            const selectionView = currentWorkspaceView;
             loadingLibraryId = '';
-            if (currentWorkspaceView === 'words') {
-                stopPlayback(true);
-            } else if (currentWorkspaceView === 'sentences') {
-                stopPhrasePlayback(true);
+            if (!options.localeTransition) clearPendingLocaleLibrarySwitch();
+            if (selectionView === 'words') {
+                stopPlayback(!options.localeTransition);
+            } else if (selectionView === 'sentences') {
+                stopPhrasePlayback(!options.localeTransition);
             } else {
                 stopArticlePlayback();
             }
 
-            let library = libraryId.startsWith('builtin-')
-                ? getBuiltInLibrary(currentWorkspaceView, libraryId)
-                : customLibraries.find(item => item.id === libraryId && item.type === currentWorkspaceView)
-                    || remoteWordbooks.find(item => item.id === libraryId && item.type === currentWorkspaceView);
-            if (!library) return;
+            let library = getAvailableLibraries(selectionView).find(item => item.id === libraryId)
+                || (selectionLocale === 'zh-Hant' ? getSourceLibrary(selectionView, libraryId) : null);
+            if (!library) return false;
 
-            if (library.remote && !Array.isArray(library.items)) {
+            if (library.localized && !Array.isArray(library.items)) {
+                loadingLibraryId = library.id;
+                renderLibraryShelf();
+                try {
+                    library = await materializeLocalizedLibrary(library);
+                } catch (error) {
+                    if (selectionId !== librarySelectionId || selectionLocale !== getContentLocale() || selectionView !== currentWorkspaceView) return false;
+                    console.error('Unable to load localized library:', error);
+                    loadingLibraryId = '';
+                    showLocaleContentEmpty(selectionView);
+                    renderLibraryShelf();
+                    return false;
+                }
+                if (selectionId !== librarySelectionId || selectionLocale !== getContentLocale() || selectionView !== currentWorkspaceView) return false;
+                loadingLibraryId = '';
+            } else if (library.remote && !Array.isArray(library.items)) {
                 loadingLibraryId = library.id;
                 renderLibraryShelf();
                 try {
                     library = await loadRemoteWordbook(library);
                 } catch (error) {
-                    if (selectionId !== librarySelectionId) return;
+                    if (selectionId !== librarySelectionId || selectionLocale !== getContentLocale() || selectionView !== currentWorkspaceView) return false;
                     console.error('Unable to load remote wordbook:', error);
                     window.alert(t('errors.wordbookLoad'));
                     loadingLibraryId = '';
                     renderLibraryShelf();
-                    return;
+                    return false;
                 }
-                if (selectionId !== librarySelectionId) return;
+                if (selectionId !== librarySelectionId || selectionLocale !== getContentLocale() || selectionView !== currentWorkspaceView) return false;
                 loadingLibraryId = '';
             }
 
-            activeLibraryIds[currentWorkspaceView] = library.id;
-            localStorage.setItem('enplay_active_libraries', JSON.stringify(activeLibraryIds));
-            applyLibraryData(library);
+            if (selectionLocale !== getContentLocale() || selectionView !== currentWorkspaceView) return false;
+            activeLibraryIds[selectionView] = library.id;
+            saveActiveLibraryIds();
+            applyLibraryData(library, options);
             renderLibraryShelf();
+            return true;
         }
 
         async function loadRemoteWordbook(library) {
@@ -4327,10 +5538,20 @@
             }
         }
 
-        function applyLibraryData(library) {
-            setLibraryStorageScope(library.type, library.id);
+        function getLibraryStorageScopeId(library) {
+            if (!library) return '';
+            const locale = library.locale || getContentLocale();
+            if (locale === 'zh-Hant' && library.localized && library.sourceLibraryId) {
+                return library.sourceLibraryId;
+            }
+            return library.id || '';
+        }
+
+        function applyLibraryData(library, options = {}) {
+            setLibraryStorageScope(library.type, getLibraryStorageScopeId(library));
             if (library.type === 'words') {
-                stopPlayback(true);
+                stopPlayback(!options.localeTransition);
+                [prevBtn, playBtn, nextBtn, wordNotebookToggle].forEach(button => { button.disabled = false; });
                 cet4Words.splice(0, cet4Words.length, ...library.items.map(item => ({ ...item })));
                 const loadedOrder = loadOrCreateOrder();
                 order = loadedOrder.order;
@@ -4345,7 +5566,8 @@
                 updateProgress();
                 updateTodayLearnedCount();
             } else if (library.type === 'sentences') {
-                stopPhrasePlayback(true);
+                stopPhrasePlayback(!options.localeTransition);
+                [phrasePrevBtn, phrasePlayBtn, phraseNextBtn, phraseNotebookToggle].forEach(button => { button.disabled = false; });
                 phraseList = library.items.map((item, idx) => ({ ...item, idx }));
                 phraseIndex = 0;
                 updatePhraseCard();
@@ -4360,6 +5582,10 @@
                     todayLearnedEl.textContent = t('player.currentArticles', { count: formatUiNumber(articleList.length) });
                 }
             }
+            appliedLibraryIds[library.type] = library.id;
+            appliedLibraryVersions[library.type] = library.contentVersion || '';
+            appliedLibraryLocales[library.type] = library.locale || getContentLocale();
+            void requestContentBundleForLibrary(library.type, library);
         }
 
         async function initPersonalLibrary() {
@@ -4369,6 +5595,24 @@
             } catch (error) {
                 console.warn('Remote wordbook catalog is temporarily unavailable:', error);
                 remoteWordbooks = [];
+            }
+            const locale = getContentLocale();
+            await loadLocaleCatalog(locale);
+            const hasLocalizedCatalog = (localizedCatalogCache.get(locale) || []).length > 0;
+            if (locale !== 'zh-Hant' || hasLocalizedCatalog) {
+                activeLibraryIds = loadActiveLibraryIds(locale);
+                for (const type of ['words', 'sentences', 'articles']) {
+                    const libraries = getAvailableLibraries(type, locale);
+                    activeLibraryIds[type] = resolveAvailableLibraryId(type, activeLibraryIds[type], libraries, locale);
+                }
+                saveActiveLibraryIds(locale);
+                currentWorkspaceView = getViewFromHash();
+                const selected = getAvailableLibraries(currentWorkspaceView, locale)
+                    .find(library => library.id === activeLibraryIds[currentWorkspaceView]);
+                if (selected) await selectLibrary(selected.id, { localeTransition: true });
+                else showLocaleContentEmpty(currentWorkspaceView);
+                switchWorkspace(currentWorkspaceView, false);
+                return;
             }
             for (const type of ['words', 'sentences', 'articles']) {
                 const activeId = activeLibraryIds[type];
@@ -4393,7 +5637,7 @@
                     }
                 }
             }
-            localStorage.setItem('enplay_active_libraries', JSON.stringify(activeLibraryIds));
+            saveActiveLibraryIds(locale);
             switchWorkspace(getViewFromHash(), false);
         }
 
@@ -4620,29 +5864,47 @@
             };
             if (type === 'words') {
                 return items.map(item => ({
+                    id: pick(item, ['id', 'slug']),
+                    contentKey: pick(item, ['contentKey', 'i18nKey', 'content_key']),
                     word: pick(item, ['word', 'text', 'term', 'front']),
                     phonetic: pick(item, ['phonetic', 'ipa', 'pronunciation']),
                     definition: pick(item, ['definition', 'meaning', 'translation', 'back']),
                     definitionEn: pick(item, ['definition_en', 'english_definition', 'definitionEn']),
                     definitionZh: pick(item, ['definition_zh', 'chinese_definition', 'definitionZh']),
-                    example: pick(item, ['example', 'sentence'])
-                })).filter(item => item.word && item.definition);
+                    definitionLocalized: pick(item, ['definitionLocalized', 'definition_localized', 'localizedDefinition']),
+                    example: pick(item, ['example', 'sentence']),
+                    contentLocale: pick(item, ['contentLocale', 'content_locale']),
+                    i18n: item && typeof item.i18n === 'object' ? item.i18n : undefined,
+                    translations: item && typeof item.translations === 'object' ? item.translations : undefined
+                })).filter(item => item.word && (item.definition || item.definitionEn || item.definitionLocalized));
             }
             if (type === 'sentences') {
                 return items.map((item, index) => ({
+                    id: pick(item, ['id', 'slug']),
+                    contentKey: pick(item, ['contentKey', 'i18nKey', 'content_key']),
                     scene: pick(item, ['scene', 'category', 'tag']) || t('common.import'),
                     idx: index,
                     text: pick(item, ['text', 'sentence', 'source', 'front']),
-                    note: pick(item, ['translation', 'note', 'target', 'back'])
+                    note: pick(item, ['translation', 'note', 'target', 'back']),
+                    translationLocalized: pick(item, ['translationLocalized', 'translation_localized', 'localizedTranslation', 'translation']),
+                    contentLocale: pick(item, ['contentLocale', 'content_locale']),
+                    sourceIds: Array.isArray(item && item.sourceIds) ? item.sourceIds.slice() : undefined,
+                    i18n: item && typeof item.i18n === 'object' ? item.i18n : undefined,
+                    translations: item && typeof item.translations === 'object' ? item.translations : undefined
                 })).filter(item => item.text);
             }
             return items.map((item, index) => {
                 const content = pick(item, ['content', 'text', 'body']);
                 const translation = pick(item, ['translation', 'note']);
                 const providedSentences = Array.isArray(item && item.sentences)
-                    ? item.sentences.map(sentence => ({
+                    ? item.sentences.map((sentence, sentenceIndex) => ({
+                        id: pick(sentence, ['id', 'slug']) || String(sentenceIndex),
                         en: pick(sentence, ['en', 'english', 'text', 'sentence']),
-                        zh: pick(sentence, ['zh', 'chinese', 'translation', 'note'])
+                        zh: pick(sentence, ['zh', 'chinese', 'translation', 'note']),
+                        translationLocalized: pick(sentence, ['translationLocalized', 'translation_localized', 'localizedTranslation', 'translation']),
+                        contentLocale: pick(sentence, ['contentLocale', 'content_locale']),
+                        i18n: sentence && typeof sentence.i18n === 'object' ? sentence.i18n : undefined,
+                        translations: sentence && typeof sentence.translations === 'object' ? sentence.translations : undefined
                     })).filter(sentence => sentence.en)
                     : [];
                 const englishSentences = providedSentences.length
@@ -4654,6 +5916,7 @@
                 const sentences = providedSentences.length
                     ? providedSentences
                     : englishSentences.map((sentence, sentenceIndex) => ({
+                        id: String(sentenceIndex),
                         en: sentence,
                         zh: chineseSentences[sentenceIndex] || ''
                     }));
@@ -4664,14 +5927,22 @@
                     id: pick(item, ['id', 'slug']) || `article-${index + 1}`,
                     title,
                     titleZh: pick(item, ['titleZh', 'title_zh', 'chineseTitle']),
+                    titleLocalized: pick(item, ['titleLocalized', 'title_localized', 'localizedTitle']),
                     content: content || sentences.map(sentence => sentence.en).join(' '),
                     translation: translation || sentences.map(sentence => sentence.zh).filter(Boolean).join(''),
                     level: pick(item, ['level', 'difficulty']) || t('article.defaultLevel'),
+                    levelLocalized: pick(item, ['levelLocalized', 'level_localized', 'localizedLevel']),
                     cefr: pick(item, ['cefr', 'cefrLevel']),
                     genre: pick(item, ['genre', 'type']) || 'reading',
+                    genreLocalized: pick(item, ['genreLocalized', 'genre_localized', 'localizedGenre']),
                     topic: pick(item, ['topic', 'theme']),
+                    topicLocalized: pick(item, ['topicLocalized', 'topic_localized', 'localizedTopic']),
                     summary: pick(item, ['summary', 'description']),
+                    summaryLocalized: pick(item, ['summaryLocalized', 'summary_localized', 'localizedSummary']),
                     estimatedWords: Number(item && item.estimatedWords) || computedWords,
+                    contentLocale: pick(item, ['contentLocale', 'content_locale']),
+                    i18n: item && typeof item.i18n === 'object' ? item.i18n : undefined,
+                    translations: item && typeof item.translations === 'object' ? item.translations : undefined,
                     sentences
                 };
             }).filter(item => item.title && item.sentences.length);
@@ -4700,22 +5971,14 @@
             articleReader.classList.toggle('hidden', !hasArticles);
             if (!hasArticles) return;
             const article = articleList[articleIndex];
+            const articleLibrary = getContentLibrary('articles');
+            const localizedTitle = resolveArticleTranslation(article, 'title', articleLibrary);
+            const localizedSummary = resolveArticleTranslation(article, 'summary', articleLibrary);
             articleTitleEl.textContent = article.title;
-            articleTitleZhEl.textContent = article.titleZh || '';
-            articleTitleZhEl.classList.toggle('hidden', !article.titleZh);
-            articleSummaryEl.textContent = article.summary || t('article.defaultSummary');
-            const levelLabel = article.level || t('article.defaultLevel');
-            articleLevelEl.textContent = article.cefr && !levelLabel.includes(article.cefr)
-                ? `${levelLabel} · ${article.cefr}`
-                : levelLabel;
-            const genre = getArticleGenreMeta(article.genre);
-            articleGenreEl.replaceChildren();
-            const genreIcon = document.createElement('i');
-            genreIcon.className = `fa ${genre.icon}`;
-            genreIcon.setAttribute('aria-hidden', 'true');
-            articleGenreEl.append(genreIcon, document.createTextNode(genre.label));
-            articleTopicEl.textContent = article.topic || t('article.defaultTopic');
-            articleWordCountEl.textContent = t('article.approxWords', { count: formatUiNumber(article.estimatedWords || 0) });
+            setLocalizedElementText(articleTitleZhEl, localizedTitle);
+            articleTitleZhEl.classList.toggle('hidden', !localizedTitle.text);
+            setLocalizedElementText(articleSummaryEl, localizedSummary, t('article.defaultSummary'));
+            updateArticleMetadata(article, articleLibrary);
             articleIndexEl.textContent = `${articleIndex + 1}/${articleList.length}`;
             articleSentenceIndex = Math.min(articleSentenceIndex, Math.max(0, article.sentences.length - 1));
             articlePlaybackCompleted = false;
@@ -4727,16 +5990,21 @@
             articleNextSentenceBtn.disabled = article.sentences.length < 2;
         }
 
-        function getArticleGenreMeta(value) {
+        function getArticleGenreMeta(value, localizedLabel = '') {
             const normalized = String(value || '').toLowerCase();
-            if (normalized === 'listening' || normalized.includes('听力')) {
-                return { label: t('article.listening'), icon: 'fa-headphones' };
+            if (
+                normalized.includes('listening')
+                || normalized.includes('听力')
+                || normalized.includes('聽力')
+            ) {
+                return { label: localizedLabel || t('article.listening'), icon: 'fa-headphones' };
             }
-            return { label: t('article.readingComprehension'), icon: 'fa-book' };
+            return { label: localizedLabel || t('article.readingComprehension'), icon: 'fa-book' };
         }
 
         function renderArticleSentences(article) {
             articleSentenceListEl.replaceChildren();
+            const articleLibrary = getContentLibrary('articles');
             article.sentences.forEach((sentence, sentenceIndex) => {
                 const row = document.createElement('section');
                 row.className = 'article-sentence';
@@ -4750,9 +6018,13 @@
                 english.textContent = sentence.en;
                 const chinese = document.createElement('p');
                 chinese.className = 'article-sentence-zh';
-                chinese.lang = 'zh-Hans';
-                chinese.dir = 'auto';
-                chinese.textContent = sentence.zh || t('article.noTranslation');
+                const localizedSentence = resolveArticleSentenceTranslation(
+                    article,
+                    sentence,
+                    sentenceIndex,
+                    articleLibrary
+                );
+                setLocalizedElementText(chinese, localizedSentence, t('article.noTranslation'));
                 copy.append(english, chinese);
 
                 const play = document.createElement('button');
@@ -4869,7 +6141,7 @@
 
         function toggleArticlePlay() {
             if (isArticlePlaying) {
-                stopArticlePlayback({ statusKey: 'article.paused', resetPass: false });
+                stopArticlePlayback({ statusKey: 'article.paused', resetPass: false, manual: true });
                 return;
             }
             if (!articleList.length) return;
@@ -4878,9 +6150,10 @@
             startArticlePlayback(articleSentenceIndex, 'article', { resetPass: !isResumingArticle });
         }
 
-        function startArticlePlayback(startIndex = 0, mode = 'article', { resetPass = true } = {}) {
+        function startArticlePlayback(startIndex = 0, mode = 'article', options = null) {
             const article = articleList[articleIndex];
             if (!article || !article.sentences.length) return;
+            const resetPass = !options || options.resetPass !== false;
             stopPlayback();
             stopPhrasePlayback();
             stopVocabularyNotebookPlayback();
@@ -4889,6 +6162,7 @@
             if (resetPass || mode === 'single') articlePassCount = 0;
             articlePlaybackMode = mode;
             articlePlaybackCompleted = false;
+            if (mode === 'article') continueAutoPlay = true;
             isArticlePlaying = true;
             articlePlayIcon.classList.replace('fa-play', 'fa-pause');
             articleStatusKey = 'article.reading';
@@ -4921,12 +6195,18 @@
                 finishArticlePlayback();
             }, {
                 recorded: true,
+                lang: 'en-US',
                 onUnavailable: () => stopArticlePlayback({ statusKey: 'article.noVoice' })
             });
         }
 
         function finishArticlePlayback() {
             articlePassCount += 1;
+            if (pendingLocaleLibrarySwitch && pendingLocaleLibrarySwitch.view === 'articles') {
+                stopArticlePlayback({ statusKey: 'article.complete' });
+                completePendingLocaleSwitchAtBoundary('articles');
+                return;
+            }
             if (articlePlaybackMode === 'article' && articlePassCount < playRepeatCount) {
                 articleSentenceIndex = 0;
                 updateArticleSentenceUi({ statusKey: 'article.nextPass', scroll: true });
@@ -4945,9 +6225,13 @@
             stopArticlePlayback({ statusKey: 'article.complete' });
         }
 
-        function stopArticlePlayback({ statusKey = 'article.paused', resetPass = true } = {}) {
+        function stopArticlePlayback({ statusKey = 'article.paused', resetPass = true, manual = false } = {}) {
             if (isNotebookPlaying) stopVocabularyNotebookPlayback();
             isArticlePlaying = false;
+            if (manual) {
+                continueAutoPlay = false;
+                cancelPendingLocalePlaybackResume('articles');
+            }
             if (resetPass) articlePassCount = 0;
             articlePlayIcon.classList.remove('fa-pause');
             articlePlayIcon.classList.add('fa-play');
@@ -5279,8 +6563,8 @@
             warmRecordedAudioUrl(item.text, recordedVoicePreference);
             phraseSceneLabel.textContent = formatPhraseCategory(item.scene);
             phraseIndexEl.textContent = `${phraseIndex + 1}/${phraseList.length}`;
-            const note = item.note || getPhraseNote(item.scene, item.text);
-            currentPhraseNoteEl.textContent = note ? note : t('content.noChinese');
+            const localizedNote = resolveSentenceTranslation(item, getContentLibrary('sentences'));
+            setLocalizedElementText(currentPhraseNoteEl, localizedNote, t('content.noChinese'));
             updatePhraseBadge();
             updatePhraseNotebookToggle();
         }
@@ -5387,7 +6671,7 @@
         function togglePhrasePlay() {
             if (notebookDisplayedEntry && notebookDisplayedEntry.type === 'sentence' && notebookPlaybackQueue.length) {
                 if (isNotebookPlaying) {
-                    stopVocabularyNotebookPlayback();
+                    stopVocabularyNotebookPlayback(true);
                 } else {
                     notebookEntryPlayCount = 0;
                     resumeVocabularyNotebookPlayback();
@@ -5431,6 +6715,7 @@
                 } else {
                     markPhraseLearned(item.scene, item.idx);
                     stopPhrasePlayback();
+                    if (completePendingLocaleSwitchAtBoundary('sentences')) return;
                     if (isWordLooping) {
                         phrasePlayCount = 0;
                         phraseRepeatTimer = schedulePlaybackStep(() => {
@@ -5450,7 +6735,7 @@
                         }
                     }
                 }
-            }, { recorded: true });
+            }, { recorded: true, lang: 'en-US' });
         }
 
         function stopPhrasePlayback(manual = false) {
@@ -5459,7 +6744,10 @@
             phrasePlayIcon.classList.remove('fa-pause');
             phrasePlayIcon.classList.add('fa-play');
             updateTransportButtonLabels();
-            if (manual) continueAutoPlay = false;
+            if (manual) {
+                continueAutoPlay = false;
+                cancelPendingLocalePlaybackResume('sentences');
+            }
             if (phraseRepeatTimer) {
                 clearTimeout(phraseRepeatTimer);
                 phraseRepeatTimer = null;
@@ -5689,11 +6977,38 @@
         function loadVocabularyNotebook() {
             try {
                 const saved = JSON.parse(localStorage.getItem(VOCABULARY_NOTEBOOK_KEY) || '[]');
-                return Array.isArray(saved)
-                    ? saved
-                        .filter(item => item && item.id && (item.word || item.text))
-                        .map(item => ({ ...item, type: item.type || (item.text ? 'sentence' : 'word') }))
-                    : [];
+                if (!Array.isArray(saved)) return [];
+                const ids = new Set();
+                let migrated = false;
+                const entries = [];
+                saved.forEach(item => {
+                    const normalized = normalizeVocabularyNotebookEntry(item);
+                    if (!normalized) {
+                        migrated = true;
+                        return;
+                    }
+                    if (ids.has(normalized.id)) {
+                        migrated = true;
+                        return;
+                    }
+                    ids.add(normalized.id);
+                    entries.push(normalized);
+                    if (
+                        normalized.id !== item.id
+                        || normalized.dataset !== item.dataset
+                        || normalized.contentKey !== item.contentKey
+                        || normalized.contentLocale !== item.contentLocale
+                        || normalized.type !== item.type
+                    ) migrated = true;
+                });
+                if (migrated) {
+                    try {
+                        localStorage.setItem(VOCABULARY_NOTEBOOK_KEY, JSON.stringify(entries));
+                    } catch (error) {
+                        console.warn('Unable to migrate vocabulary notebook:', error);
+                    }
+                }
+                return entries;
             } catch (error) {
                 console.warn('Unable to read vocabulary notebook:', error);
                 return [];
@@ -5706,6 +7021,8 @@
 
         function getActiveWordLibrary() {
             const libraryId = activeLibraryIds.words || 'builtin-words';
+            const localized = getAvailableLibraries('words').find(item => item.id === libraryId);
+            if (localized) return localized;
             if (libraryId === 'builtin-words') return getBuiltInLibrary('words');
             return remoteWordbooks.find(item => item.id === libraryId)
                 || customLibraries.find(item => item.id === libraryId && item.type === 'words')
@@ -5714,6 +7031,8 @@
 
         function getActiveSentenceLibrary() {
             const libraryId = activeLibraryIds.sentences || 'builtin-sentences';
+            const localized = getAvailableLibraries('sentences').find(item => item.id === libraryId);
+            if (localized) return localized;
             const builtIn = getBuiltInLibrary('sentences', libraryId);
             if (builtIn && builtIn.id === libraryId) return builtIn;
             return customLibraries.find(item => item.id === libraryId && item.type === 'sentences')
@@ -5731,47 +7050,64 @@
 
         function getCurrentNotebookEntry() {
             if (notebookDisplayedEntry && notebookDisplayedEntry.type !== 'sentence') {
-                return { ...notebookDisplayedEntry };
+                return normalizeVocabularyNotebookEntry(notebookDisplayedEntry);
             }
             const word = cet4Words[currentIndex];
             if (!word) return null;
             const library = getActiveWordLibrary();
-            const sourceId = library.id || 'builtin-words';
+            const sourceId = getNotebookSourceLibraryId(library) || 'builtin-words';
+            const sourceLibrary = getSourceLibrary('words', sourceId);
             const definitions = getWordDefinitionParts(word);
-            return {
+            const localizedDefinition = resolveWordTranslation(word, library);
+            const entry = {
                 type: 'word',
-                id: `${sourceId}::${String(word.word).trim().toLowerCase()}`,
                 word: word.word,
                 phonetic: word.phonetic || '',
                 definitionEn: definitions.english || '',
-                definitionZh: definitions.chinese || '',
+                definitionZh: localizedDefinition.text || (library.localized ? '' : definitions.chinese) || '',
                 example: word.example || '',
                 sourceId,
-                sourceName: library.name || t('notebook.unknownWords'),
+                sourceName: sourceLibrary && sourceLibrary.name || library.name || t('notebook.unknownWords'),
+                dataset: getNotebookSourceDataset('words', library),
+                contentKey: getContentItemKey('words', word),
+                contentPosition: currentIndex,
+                contentVersion: library.contentVersion || '',
+                contentLocale: getContentLocale(),
                 addedAt: new Date().toISOString()
             };
+            entry.dataset = entry.dataset || 'words-local';
+            entry.id = getStableNotebookEntryId(entry);
+            return entry;
         }
 
         function getCurrentPhraseNotebookEntry() {
             if (notebookDisplayedEntry && notebookDisplayedEntry.type === 'sentence') {
-                return { ...notebookDisplayedEntry };
+                return normalizeVocabularyNotebookEntry(notebookDisplayedEntry);
             }
             const item = phraseList[phraseIndex];
             if (!item) return null;
             const library = getActiveSentenceLibrary();
-            const sourceId = library.id || 'builtin-sentences';
-            const translation = item.note || getPhraseNote(item.scene, item.text) || '';
-            return {
+            const sourceId = getNotebookSourceLibraryId(library) || 'builtin-sentences';
+            const sourceLibrary = getSourceLibrary('sentences', sourceId);
+            const localizedTranslation = resolveSentenceTranslation(item, library);
+            const entry = {
                 type: 'sentence',
-                id: `sentence::${sourceId}::${String(item.text).trim().toLowerCase()}`,
                 text: item.text,
-                translation,
+                translation: localizedTranslation.text,
                 scene: formatPhraseCategory(item.scene),
                 sceneKey: item.scene,
                 sourceId,
-                sourceName: library.name || t('notebook.unknownSentences'),
+                sourceName: sourceLibrary && sourceLibrary.name || library.name || t('notebook.unknownSentences'),
+                dataset: getNotebookSourceDataset('sentences', library),
+                contentKey: getContentItemKey('sentences', item),
+                contentPosition: phraseIndex,
+                contentVersion: library.contentVersion || '',
+                contentLocale: getContentLocale(),
                 addedAt: new Date().toISOString()
             };
+            entry.dataset = entry.dataset || 'sentences-local';
+            entry.id = getStableNotebookEntryId(entry);
+            return entry;
         }
 
         function isCurrentWordInNotebook() {
@@ -5877,14 +7213,20 @@
                 heading.append(entryTitle, phonetic);
                 content.appendChild(heading);
 
-                const definitionText = isSentence
-                    ? entry.translation
-                    : [entry.definitionEn, entry.definitionZh].filter(Boolean).join(' · ');
-                if (definitionText) {
+                if (!isSentence && entry.definitionEn) {
                     const definition = document.createElement('p');
                     definition.className = 'notebook-entry-copy';
-                    definition.textContent = definitionText;
+                    definition.lang = 'en';
+                    definition.dir = 'ltr';
+                    definition.textContent = entry.definitionEn;
                     content.appendChild(definition);
+                }
+                const localizedNotebookCopy = resolveNotebookTranslation(entry);
+                if (localizedNotebookCopy.text) {
+                    const translation = document.createElement('p');
+                    translation.className = 'notebook-entry-copy';
+                    setLocalizedElementText(translation, localizedNotebookCopy);
+                    content.appendChild(translation);
                 }
                 if (!isSentence && entry.example) {
                     const example = document.createElement('p');
@@ -5899,7 +7241,10 @@
                 sourceIcon.className = 'fa fa-book';
                 sourceIcon.setAttribute('aria-hidden', 'true');
                 const sourceType = t(isSentence ? 'notebook.entrySentence' : 'notebook.entryWord');
-                const sourceName = entry.sourceName || t(isSentence ? 'notebook.unknownSentences' : 'notebook.unknownWords');
+                const catalogLibrary = getNotebookCatalogLibrary(entry);
+                const sourceName = catalogLibrary && catalogLibrary.name
+                    || (getContentLocale() === 'zh-Hant' ? entry.sourceName : '')
+                    || t(isSentence ? 'notebook.unknownSentences' : 'notebook.unknownWords');
                 source.append(
                     sourceIcon,
                     document.createTextNode(`${sourceType} · ${t('notebook.source')}: ${sourceName}`)
@@ -5931,6 +7276,7 @@
 
         function openVocabularyNotebook() {
             renderVocabularyNotebook();
+            void requestNotebookContentBundles();
             vocabularyNotebookModal.style.display = 'block';
             setTimeout(() => vocabularyNotebookModal.classList.add('active'), 10);
         }
@@ -5944,7 +7290,7 @@
 
         function toggleVocabularyNotebookPlayback(type) {
             if (isNotebookPlaying && notebookPlaybackType === type) {
-                stopVocabularyNotebookPlayback();
+                stopVocabularyNotebookPlayback(true);
             } else {
                 startVocabularyNotebookPlayback(type);
             }
@@ -5965,10 +7311,11 @@
             if (window.location.hash !== `#${targetView}`) {
                 history.replaceState(null, '', `#${targetView}`);
             }
-            stopPlayback(true);
-            stopPhrasePlayback(true);
+            stopPlayback();
+            stopPhrasePlayback();
             stopArticlePlayback();
             stopVocabularyNotebookPlayback();
+            continueAutoPlay = true;
             notebookPlaybackType = type;
             notebookPlaybackQueue = queue;
             notebookPlaybackIndex = 0;
@@ -5978,9 +7325,10 @@
 
         function resumeVocabularyNotebookPlayback() {
             if (!notebookPlaybackQueue.length || notebookPlaybackIndex < 0 || notebookPlaybackIndex >= notebookPlaybackQueue.length) return;
-            stopPlayback(true);
-            stopPhrasePlayback(true);
+            stopPlayback();
+            stopPhrasePlayback();
             stopArticlePlayback();
+            continueAutoPlay = true;
             isNotebookPlaying = true;
             const activeIcon = notebookPlaybackType === 'sentence' ? notebookPlaySentencesIcon : notebookPlayWordsIcon;
             const resolvedButton = notebookPlaybackType === 'sentence' ? notebookPlaySentencesBtn : notebookPlayWordsBtn;
@@ -5999,7 +7347,11 @@
             updateFullscreenNeighbors(entry.type === 'sentence' ? 'sentence' : 'word');
             if (entry.type === 'sentence') {
                 currentPhraseEl.textContent = entry.text || '';
-                currentPhraseNoteEl.textContent = entry.translation || t('content.noChinese');
+                setLocalizedElementText(
+                    currentPhraseNoteEl,
+                    resolveNotebookTranslation(entry),
+                    t('content.noChinese')
+                );
                 phraseSceneLabel.textContent = entry.scene || t('notebook.entrySentence');
                 phraseIndexEl.textContent = `${formatUiNumber(position)}/${formatUiNumber(total)} · ${t('notebook.aria')}`;
                 phraseLearnedBadge.classList.add('hidden');
@@ -6011,8 +7363,9 @@
             phoneticEl.textContent = entry.phonetic || '';
             englishDefinitionEl.textContent = entry.definitionEn || '';
             englishDefinitionBlock.classList.toggle('hidden', !entry.definitionEn);
-            definitionEl.textContent = entry.definitionZh || '';
-            definitionBlock.classList.toggle('hidden', !entry.definitionZh);
+            const localizedDefinition = resolveNotebookTranslation(entry);
+            setLocalizedElementText(definitionEl, localizedDefinition);
+            definitionBlock.classList.toggle('hidden', !localizedDefinition.text);
             exampleEl.textContent = entry.example || '';
             exampleBlock.classList.toggle('hidden', !entry.example);
             wordIndexEl.textContent = `${formatUiNumber(position)}/${formatUiNumber(total)} · ${t('notebook.aria')}`;
@@ -6056,16 +7409,21 @@
                 return;
             }
             const isSentence = entry.type === 'sentence';
+            const localizedDefinition = isSentence ? null : resolveNotebookTranslation(entry);
             const parts = isSentence
-                ? [{ text: entry.text, element: currentPhraseEl, recorded: true }]
+                ? [{ text: entry.text, element: currentPhraseEl, recorded: true, lang: 'en-US' }]
                 : [
-                    { text: entry.word, element: currentWordEl },
+                    { text: entry.word, element: currentWordEl, lang: 'en-US' },
                     ...(shouldReadEnglishDefinition
-                        ? [{ text: entry.definitionEn, element: englishDefinitionEl }]
+                        ? [{ text: entry.definitionEn, element: englishDefinitionEl, lang: 'en-US' }]
                         : []),
-                    ...(shouldReadChineseDefinition ? [{ text: entry.definitionZh, element: definitionEl }] : []),
+                    ...(shouldReadChineseDefinition ? [{
+                        text: localizedDefinition.text,
+                        element: definitionEl,
+                        lang: getContentSpeechLanguage(localizedDefinition.locale)
+                    }] : []),
                     ...(shouldReadExample
-                        ? [{ text: entry.example, element: exampleEl, recorded: true }]
+                        ? [{ text: entry.example, element: exampleEl, recorded: true, lang: 'en-US' }]
                         : [])
                 ];
             const spokenParts = parts.filter(part => part.text && String(part.text).trim());
@@ -6077,7 +7435,10 @@
                     return;
                 }
                 const part = spokenParts[partIndex++];
-                playTextWithHighlight(part.text, part.element, playPart, { recorded: part.recorded });
+                playTextWithHighlight(part.text, part.element, playPart, {
+                    recorded: part.recorded,
+                    lang: part.lang
+                });
             };
             playPart();
         }
@@ -6085,8 +7446,7 @@
         function finishCurrentNotebookEntryPlayback() {
             if (!isNotebookPlaying) return;
             notebookEntryPlayCount++;
-            if (notebookEntryPlayCount < playRepeatCount || isWordLooping) {
-                if (notebookEntryPlayCount >= playRepeatCount) notebookEntryPlayCount = 0;
+            if (notebookEntryPlayCount < playRepeatCount) {
                 notebookRepeatTimer = schedulePlaybackStep(() => {
                     notebookRepeatTimer = null;
                     playCurrentNotebookEntryOnce();
@@ -6095,6 +7455,19 @@
             }
 
             notebookEntryPlayCount = 0;
+            if (pendingLocaleLibrarySwitch) {
+                const pendingView = pendingLocaleLibrarySwitch.view;
+                stopVocabularyNotebookPlayback();
+                completePendingLocaleSwitchAtBoundary(pendingView);
+                return;
+            }
+            if (isWordLooping) {
+                notebookRepeatTimer = schedulePlaybackStep(() => {
+                    notebookRepeatTimer = null;
+                    playCurrentNotebookEntryOnce();
+                }, 700);
+                return;
+            }
             if (isAutoPlaying && notebookPlaybackIndex < notebookPlaybackQueue.length - 1) {
                 notebookPlaybackIndex++;
                 playNextNotebookEntry();
@@ -6103,7 +7476,11 @@
             }
         }
 
-        function stopVocabularyNotebookPlayback() {
+        function stopVocabularyNotebookPlayback(manual = false) {
+            if (manual) {
+                continueAutoPlay = false;
+                cancelPendingLocalePlaybackResume(notebookPlaybackType === 'sentence' ? 'sentences' : 'words');
+            }
             isNotebookPlaying = false;
             if (notebookRepeatTimer) {
                 clearTimeout(notebookRepeatTimer);
@@ -6134,17 +7511,15 @@
             currentWordEl.textContent = word.word;
             phoneticEl.textContent = word.phonetic;
             const explicitEnglishDefinition = word.definitionEn || word.definition_en || '';
-            const explicitChineseDefinition = word.definitionZh || word.definition_zh || '';
             const baseDefinition = word.definition || '';
             const baseDefinitionIsChinese = /[\u3400-\u9fff]/.test(baseDefinition);
             const englishDefinition = explicitEnglishDefinition
                 || (!baseDefinitionIsChinese ? baseDefinition : '');
-            const chineseDefinition = explicitChineseDefinition
-                || (baseDefinitionIsChinese ? baseDefinition : '');
+            const localizedDefinition = resolveWordTranslation(word, getContentLibrary('words'));
             englishDefinitionEl.textContent = englishDefinition || '';
             englishDefinitionBlock.classList.toggle('hidden', !englishDefinition);
-            definitionEl.textContent = chineseDefinition || '';
-            definitionBlock.classList.toggle('hidden', !chineseDefinition);
+            setLocalizedElementText(definitionEl, localizedDefinition);
+            definitionBlock.classList.toggle('hidden', !localizedDefinition.text);
             exampleEl.textContent = word.example || '';
             exampleBlock.classList.toggle('hidden', !word.example);
             updateWordIndexLabel();
@@ -6171,7 +7546,7 @@
         // Update progress bar
         function updateProgress() {
             const learnedCount = getAllLearnedSet().size;
-            const progress = (learnedCount / cet4Words.length) * 100;
+            const progress = cet4Words.length ? (learnedCount / cet4Words.length) * 100 : 0;
             progressEl.style.width = `${progress}%`;
         }
 
@@ -6236,7 +7611,7 @@
             console.log('Play button clicked');
             if (notebookDisplayedEntry && notebookDisplayedEntry.type !== 'sentence' && notebookPlaybackQueue.length) {
                 if (isNotebookPlaying) {
-                    stopVocabularyNotebookPlayback();
+                    stopVocabularyNotebookPlayback(true);
                 } else {
                     notebookEntryPlayCount = 0;
                     resumeVocabularyNotebookPlayback();
@@ -6293,6 +7668,7 @@
             updateTransportButtonLabels();
             if (manual) {
                 continueAutoPlay = false;
+                cancelPendingLocalePlaybackResume('words');
             }
             
             // Remove speaking highlights
@@ -6333,7 +7709,8 @@
                     ? (next) => playTextWithHighlight(
                         englishDefinitionEl.textContent,
                         englishDefinitionEl,
-                        next
+                        next,
+                        { lang: 'en-US' }
                     )
                     : (next) => next();
                 playDefinition(function() {
@@ -6343,14 +7720,14 @@
                                 word.example,
                                 exampleEl,
                                 finishCurrentWordPlayback,
-                                { recorded: true }
+                                { recorded: true, lang: 'en-US' }
                             );
                         } else {
                             finishCurrentWordPlayback();
                         }
                     });
                 });
-            });
+            }, { lang: 'en-US' });
         }
 
         function finishCurrentWordPlayback() {
@@ -6369,6 +7746,7 @@
             console.log(`Finished playing word at index ${currentIndex} (${cet4Words[currentIndex].word}) ${playRepeatCount} times`);
             markAsLearned(currentIndex);
             stopPlayback();
+            if (completePendingLocaleSwitchAtBoundary('words')) return;
 
             if (isWordLooping) {
                 playCount = 0;
@@ -6408,7 +7786,9 @@
                 callback();
                 return;
             }
-            playTextWithHighlight(chineseDefinition, definitionEl, callback);
+            playTextWithHighlight(chineseDefinition, definitionEl, callback, {
+                lang: getContentSpeechLanguage(definitionEl.lang || getContentLocale())
+            });
         }
         
         // Play text with visual highlight
@@ -6478,9 +7858,9 @@
                     // Create new speech
                     const utterance = new SpeechSynthesisUtterance(text);
                 
-                // Set language based on content
+                // Prefer the explicit content locale; retain a safe legacy fallback.
                 const hasChinese = /[\u4e00-\u9fa5]/.test(text);
-                utterance.lang = hasChinese ? 'zh-CN' : 'en-US';
+                utterance.lang = options.lang || (hasChinese ? 'zh-CN' : 'en-US');
                 console.log('Set language to:', utterance.lang);
                 
                 // Set speech parameters
@@ -7053,6 +8433,7 @@
                     const phrasesForDate = Array.from(new Set(historyData[date] || []));
                     const sorted = phrasesForDate.map(getPhraseDataByKey).filter(Boolean).sort((a, b) => a.text.localeCompare(b.text));
                     sorted.forEach(item => {
+                        const localizedTranslation = resolveSentenceTranslation(item, getContentLibrary('sentences'));
                         const listItem = document.createElement('div');
                         listItem.className = 'p-3 bg-neutral rounded-lg hover:bg-gray-200 transition-all-300 cursor-pointer';
                         listItem.setAttribute('data-scene', item.scene);
@@ -7062,6 +8443,7 @@
                                 <div>
                                     <h3 class="font-semibold">${escapeHtml(item.text)}</h3>
                                     <p class="text-xs text-gray-500 mt-1">${escapeHtml(formatPhraseCategory(item.scene))}</p>
+                                    <p class="text-sm text-gray-600 mt-1" lang="${escapeHtml(localizedTranslation.locale)}" dir="${getContentDirection(localizedTranslation.locale)}">${escapeHtml(localizedTranslation.text)}</p>
                                 </div>
                                 <button class="delete-phrase-btn text-red-500 hover:text-red-700 transition-all-300" data-date="${escapeHtml(date)}" data-key="${escapeHtml(getPhraseKey(item.scene, item.idx))}">
                                     <i class="fa fa-trash-o"></i>
@@ -7101,6 +8483,7 @@
                     sortedWords.forEach(index => {
                         const wordData = cet4Words[index];
                         if (!wordData) return;
+                        const localizedDefinition = resolveWordTranslation(wordData, getContentLibrary('words'));
                         const listItem = document.createElement('div');
                         listItem.className = 'p-3 bg-neutral rounded-lg hover:bg-gray-200 transition-all-300 cursor-pointer';
                         listItem.setAttribute('data-index', index);
@@ -7111,7 +8494,7 @@
                                     <i class="fa fa-trash-o"></i>
                                 </button>
                             </div>
-                            <p class="text-sm text-gray-600 mt-1">${escapeHtml(wordData.definition)}</p>
+                            <p class="text-sm text-gray-600 mt-1" lang="${escapeHtml(localizedDefinition.locale)}" dir="${getContentDirection(localizedDefinition.locale)}">${escapeHtml(localizedDefinition.text)}</p>
                         `;
 
                         listItem.addEventListener('click', function(e) {
@@ -7198,13 +8581,14 @@
                         
                         // Add words from file
                         wordsFromFile.forEach(wordData => {
+                            const localizedDefinition = resolveWordTranslation(wordData, getContentLibrary('words'));
                             const listItem = document.createElement('div');
                             listItem.className = 'p-3 bg-neutral rounded-lg hover:bg-gray-200 transition-all-300';
                             listItem.innerHTML = `
                                 <div class="flex items-start">
                                     <h3 class="font-semibold">${escapeHtml(wordData.word)} <span class="text-gray-500 text-sm">${escapeHtml(wordData.phonetic)}</span></h3>
                                 </div>
-                                <p class="text-sm text-gray-600 mt-1">${escapeHtml(wordData.definition)}</p>
+                                <p class="text-sm text-gray-600 mt-1" lang="${escapeHtml(localizedDefinition.locale)}" dir="${getContentDirection(localizedDefinition.locale)}">${escapeHtml(localizedDefinition.text || t('content.noChinese'))}</p>
                             `;
                             wordsContainer.appendChild(listItem);
                         });

@@ -1,0 +1,2 @@
+# Offline Simplified-to-Traditional conversion used only by `opencc-hant`.
+opencc-python-reimplemented==0.1.7

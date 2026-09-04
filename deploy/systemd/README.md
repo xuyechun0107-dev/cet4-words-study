@@ -139,3 +139,57 @@ sha256sum --check ../audio-build-v1.sha256
 
 Keep the previous live audio tree until the new manifest has passed. Promotion
 is intentionally not automated by these units.
+
+## Localized-library rollout
+
+The API release adds `content_libraries`, `content_library_items`,
+`content_segments`, and `content_translations` with SQLAlchemy `create_all`;
+it does not alter an existing table. The first two tables are the production
+read path for complete independent foreign-language bookshelves. The latter
+two retain field-level provenance and the `zh-Hant` compatibility path. Before
+the first production start with this release:
+
+1. take a transaction-consistent database backup;
+2. inspect the four-table DDL against a disposable or development database;
+3. finish or stop the resource-intensive TTS build before any large translation
+   import;
+4. start the API and verify all four new tables exist, then create one draft
+   catalog library through the loopback-only admin API;
+5. import its versioned complete-item batches and promote the catalog metadata
+   to `ready` only after the API confirms that ready item count equals the
+   declared count;
+6. verify catalog isolation, complete bundle payloads, ETag/`304` behavior, and
+   exact `catalog.contentVersion == bundle.contentVersion` matching through the
+   versioned `?v=` bundle request, plus the absence of any foreign-to-Chinese
+   fallback, before importing the remaining resumable batches.
+
+Catalog and bundle responses are deliberately `private, no-store` because each
+origin request must carry a live signed presence lease. Do not configure a
+Cloudflare `Cache Everything` rule for `/api/v1/i18n/`, and do not override
+these response headers: a shared cache hit would bypass the 200-user admission
+gate. Recorded audio may keep its existing shared-cache policy.
+Clients that still hold an old catalog in memory during an atomic promotion
+must clear it and revalidate the catalog after a versioned bundle `404`, then
+retry once. They must not fall back to a Chinese library.
+
+Translation generation belongs on the development host or an external batch
+worker. The production request handler reads persisted localized records and
+the admin endpoints only store already-generated content. Do not install or
+run a multi-language neural translation model on the 4 GB production host, and
+do not run large imports concurrently with the full audio build.
+
+For a brand-new library, import in this order: generated catalog `draft`, all
+matching `library-items` batches, then catalog `ready`. For an update to an
+already-published library, keep the old catalog version live while importing
+the new version's item batches, then post the new `ready` metadata as the
+atomic version switch. The API treats a generated draft request for an existing
+ready library as a staging no-op, so the fixed draft/items/ready publisher also
+keeps the old version online if an import is interrupted. Preserve at least the
+active and previous version rows until rollback and retention checks are
+complete; no automatic pruning runs in the request path.
+
+The frontend and native API are separate release paths. Record the frontend
+deployment identifier, API release directory, translation content version,
+and imported row counts together so a rollback does not pair incompatible
+contracts. Rolling the API symlink back is safe because the added localized
+content tables can remain in place.

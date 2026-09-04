@@ -7,6 +7,7 @@ const vm = require('node:vm');
 const root = path.join(__dirname, '..');
 const read = file => fs.readFileSync(path.join(root, file), 'utf8');
 const html = read('index.html');
+const i18nPipelineReadme = read(path.join('tools', 'README.i18n-content.md'));
 
 function apiBaseUrlFor(hostname) {
     const bootstrap = html.match(
@@ -47,4 +48,14 @@ test('backend defaults and compose deployment accept both domain generations', (
         assert.ok(compose.includes(host), `Compose is missing host ${host}`);
         assert.ok(api.includes(host), `API defaults are missing host ${host}`);
     }
+});
+
+test('i18n publishing documentation targets the production API host', () => {
+    assert.ok(i18nPipelineReadme.includes('--api-base https://api-enplay.aoke.ltd'));
+    assert.ok(!i18nPipelineReadme.includes('--api-base https://enplay.aoke.ltd/api'));
+    assert.ok(
+        i18nPipelineReadme.includes(
+            '--api-base http://192.168.0.103/api --allow-http',
+        ),
+    );
 });
