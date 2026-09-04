@@ -42,8 +42,10 @@ const names = (context, type) => Array.from(context.getFullscreenNeighbors(type)
 
 test('all inline JavaScript parses and UTF-8 has no replacement characters', () => {
     assert.ok(!html.includes('\uFFFD'));
-    for (const match of html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)) {
-        new vm.Script(match[1]);
+    for (const match of html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi)) {
+        const type = match[1].match(/\btype=["']([^"']+)["']/i)?.[1];
+        if (type && !['text/javascript', 'application/javascript', 'module'].includes(type)) continue;
+        new vm.Script(match[2]);
     }
 });
 test('word previews follow shuffled playback order and learned filter', () => {

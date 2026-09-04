@@ -4,6 +4,22 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#17233c">
+    <meta name="description" content="Enplay 是免費的多語言英語聽讀播放器，提供單詞、情境句子與中高考分級文章，支援自然語音、逐句翻譯、生詞本及連續複習。">
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+    <meta name="googlebot" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+    <meta name="application-name" content="Enplay">
+    <meta name="author" content="Enplay">
+    <link rel="canonical" href="https://enplay.aoke.ltd/">
+    <link rel="manifest" href="/site.webmanifest">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Enplay">
+    <meta property="og:title" content="Enplay 免費英語聽讀播放器">
+    <meta property="og:description" content="用自然語音學習英語單詞、情境句子和中高考分級文章，支援逐句翻譯、生詞本與連續播放。">
+    <meta property="og:url" content="https://enplay.aoke.ltd/">
+    <meta property="og:locale" content="zh_TW">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="Enplay 免費英語聽讀播放器">
+    <meta name="twitter:description" content="用自然語音學習英語單詞、情境句子和分級文章。">
     <title>單詞播放器 · Enplay</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     <link rel="shortcut icon" href="/favicon.svg">
@@ -15,6 +31,68 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;family=Newsreader:opsz,wght@6..72,600;6..72,700&amp;family=Noto+Sans+Arabic:wght@400;500;600;700&amp;family=Noto+Sans+JP:wght@400;500;600;700&amp;family=Noto+Sans+KR:wght@400;500;600;700&amp;family=Noto+Sans+SC:wght@400;500;600;700&amp;family=Noto+Sans+Thai:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "WebSite",
+          "@id": "https://enplay.aoke.ltd/#website",
+          "url": "https://enplay.aoke.ltd/",
+          "name": "Enplay",
+          "description": "A multilingual English listening and reading player for vocabulary, practical sentences and graded articles.",
+          "inLanguage": ["zh-Hant", "ja", "ko", "fr", "es", "pt", "ru", "th", "ar"]
+        },
+        {
+          "@type": ["WebApplication", "LearningResource"],
+          "@id": "https://enplay.aoke.ltd/#app",
+          "url": "https://enplay.aoke.ltd/",
+          "name": "Enplay English Listening and Reading Player",
+          "applicationCategory": "EducationalApplication",
+          "operatingSystem": "Any",
+          "isAccessibleForFree": true,
+          "learningResourceType": ["Vocabulary trainer", "Listening practice", "Graded reader"],
+          "educationalUse": ["Listening practice", "Vocabulary review", "Reading comprehension"],
+          "audience": { "@type": "EducationalAudience", "educationalRole": "student" },
+          "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+          "featureList": [
+            "Vocabulary, sentence and graded-article players",
+            "Natural English audio with system voice fallback",
+            "Sentence-by-sentence translations",
+            "Personal vocabulary notebook and learning history",
+            "Adjustable playback speed and repeat controls"
+          ],
+          "isPartOf": { "@id": "https://enplay.aoke.ltd/#website" }
+        },
+        {
+          "@type": "FAQPage",
+          "@id": "https://enplay.aoke.ltd/#faq",
+          "mainEntity": [
+            {
+              "@type": "Question",
+              "name": "Enplay 可以學習哪些英語內容？",
+              "acceptedAnswer": { "@type": "Answer", "text": "Enplay 提供英語單詞、日常情境句子和按難度分級的文章，可用於詞彙記憶、聽力跟讀與閱讀理解。" }
+            },
+            {
+              "@type": "Question",
+              "name": "Enplay 支援自然英語語音嗎？",
+              "acceptedAnswer": { "@type": "Answer", "text": "支援。例句、句子和文章可使用自然英語語音播放；單詞、釋義或網路不穩時可使用裝置的系統語音回退。" }
+            },
+            {
+              "@type": "Question",
+              "name": "可以調整播放方式嗎？",
+              "acceptedAnswer": { "@type": "Answer", "text": "可以調整速度、重複次數、連續播放和朗讀內容，文章模式還支援逐句播放與全屏跟讀。" }
+            },
+            {
+              "@type": "Question",
+              "name": "學習記錄和生詞如何保存？",
+              "acceptedAnswer": { "@type": "Answer", "text": "學習進度、生詞本和自訂內容庫主要保存在目前瀏覽器中，方便在同一裝置上繼續複習。" }
+            }
+          ]
+        }
+      ]
+    }
+    </script>
     <script>
         tailwind.config = {
             theme: {
@@ -5184,6 +5262,24 @@
                 articles: 'document.articles'
             }[view] || 'document.words';
             document.title = t(key);
+
+            const descriptions = {
+                words: '使用自然語音循環播放英語單詞、英文釋義和例句，配合多語言詞典、生詞本與學習記錄持續複習。',
+                sentences: '按生活情境練習英語句子，支援自然語音、逐句翻譯、重複播放與生詞本收藏。',
+                articles: '閱讀並聆聽中高考主題分級英語文章，支援逐句翻譯、當前句高亮、全文重複與全屏跟讀。'
+            };
+            const description = descriptions[view] || descriptions.words;
+            const canonicalUrl = 'https://enplay.aoke.ltd/';
+            const setMetaContent = (selector, value) => {
+                const element = document.querySelector(selector);
+                if (element) element.setAttribute('content', value);
+            };
+            setMetaContent('meta[name="description"]', description);
+            setMetaContent('meta[property="og:title"]', document.title);
+            setMetaContent('meta[property="og:description"]', description);
+            setMetaContent('meta[property="og:url"]', canonicalUrl);
+            setMetaContent('meta[name="twitter:title"]', document.title);
+            setMetaContent('meta[name="twitter:description"]', description);
         }
 
         function getDefaultActiveLibraryIds(locale = getContentLocale()) {

@@ -1,0 +1,28 @@
+# Enplay
+
+> Enplay is a free browser-based English listening and reading player for vocabulary, practical sentences, and graded articles.
+
+Enplay helps independent learners practise English through repeatable audio input. It combines natural English recordings with a system-voice fallback and keeps playback controls predictable across word, sentence, and article modes.
+
+## Main learning modes
+
+- Vocabulary: English headwords, phonetics, English definitions, localized meanings, examples, repeat controls, and a personal vocabulary notebook.
+- Sentences: practical English grouped by everyday situations, localized translations, repeat playback, and notebook support.
+- Articles: original graded reading and listening passages inspired by common Chinese middle-school and high-school learning themes, with sentence-by-sentence translations, synchronized highlighting, full-article repeat, and fullscreen reading.
+
+## Languages
+
+The interface and localized learning libraries are available in Traditional Chinese, Japanese, Korean, French, Spanish, Portuguese, Russian, Thai, and Arabic. English remains the canonical learning language.
+
+## Audio and study data
+
+Natural audio is used for examples, sentences, and articles when available. Device speech can read words and definitions or act as a network fallback. Learning progress, notebook entries, and imported personal libraries are primarily stored in the learner's current browser.
+
+## Canonical pages and machine-readable resources
+
+- Application: https://enplay.aoke.ltd/
+- Vocabulary player: https://enplay.aoke.ltd/#words
+- Sentence player: https://enplay.aoke.ltd/#sentences
+- Article player: https://enplay.aoke.ltd/#articles
+- Sitemap: https://enplay.aoke.ltd/sitemap.xml
+

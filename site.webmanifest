@@ -1,0 +1,18 @@
+{
+  "name": "Enplay Language Study",
+  "short_name": "Enplay",
+  "description": "Multilingual English vocabulary, sentence and graded-article listening practice.",
+  "start_url": "/#words",
+  "display": "standalone",
+  "background_color": "#f6f8fc",
+  "theme_color": "#17233c",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
+
