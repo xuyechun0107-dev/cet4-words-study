@@ -657,7 +657,7 @@
         .learning-canvas {
             grid-area: canvas;
             min-width: 0;
-            padding: clamp(1rem, 3vw, 3rem) 0;
+            padding: 0 0 clamp(1rem, 3vw, 3rem);
         }
 
         .workspace-section {
@@ -814,10 +814,6 @@
             position: relative;
             overflow: hidden;
             padding: clamp(1.5rem, 4vw, 2.75rem);
-            border-bottom: 1px solid var(--line);
-            background:
-                radial-gradient(circle at 92% 8%, rgba(36, 87, 214, 0.12), transparent 32%),
-                linear-gradient(135deg, #f9fbff 0%, #eef4ff 100%);
         }
 
         .article-reader-header::after {
@@ -990,12 +986,10 @@
             position: sticky;
             z-index: 8;
             top: calc(5.15rem + env(safe-area-inset-top));
-            margin: 1rem clamp(1rem, 3vw, 2rem) 0;
-            padding: 0.85rem 1rem;
-            border: 1px solid rgba(255, 255, 255, 0.96);
-            border-radius: 1.05rem;
-            background: rgba(248, 251, 255, 0.93);
-            box-shadow: 0 16px 44px rgba(31, 47, 81, 0.14);
+            margin: 0;
+            padding: 1rem clamp(1rem, 3vw, 2rem);
+            border-bottom: 1px solid var(--line);
+            background: rgba(248, 251, 255, 0.88);
             backdrop-filter: blur(18px);
         }
 
@@ -1136,7 +1130,7 @@
                 max(clamp(1rem, 4vw, 3rem), env(safe-area-inset-right))
                 0.8rem
                 max(clamp(1rem, 4vw, 3rem), env(safe-area-inset-left));
-            border-bottom-color: rgba(36, 87, 214, 0.1);
+            border-radius: 0;
             background: rgba(248, 251, 255, 0.82);
             backdrop-filter: blur(18px);
         }
@@ -2238,7 +2232,7 @@
             .article-sentence-play { width: 2.2rem; height: 2.2rem; }
             .article-transport {
                 top: calc(8.1rem + env(safe-area-inset-top));
-                margin: 0.65rem 0.65rem 0;
+                margin: 0;
                 padding: 0.75rem;
             }
             .article-progress-meta { align-items: flex-start; padding-right: 3.25rem; }
