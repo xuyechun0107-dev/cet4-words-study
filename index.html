@@ -276,9 +276,10 @@
             top: 0;
             z-index: 40;
             display: grid;
-            grid-template-columns: minmax(190px, 1fr) auto minmax(240px, 1fr);
+            grid-template-columns: minmax(190px, 1fr) max-content;
             align-items: center;
-            gap: 1.5rem;
+            column-gap: 1.5rem;
+            row-gap: 0.65rem;
             min-height: 76px;
             padding: 0.75rem clamp(1rem, 3vw, 2.75rem);
             background: rgba(255, 255, 255, 0.82);
@@ -288,6 +289,8 @@
 
         .brand-mark {
             display: flex;
+            grid-column: 1;
+            grid-row: 1;
             align-items: center;
             gap: 0.75rem;
             min-width: 0;
@@ -323,6 +326,9 @@
 
         .workspace-nav {
             display: flex;
+            grid-column: 1 / -1;
+            grid-row: 2;
+            justify-self: center;
             align-items: center;
             gap: 0.25rem;
             padding: 0.3rem;
@@ -358,6 +364,8 @@
 
         .header-actions {
             display: flex;
+            grid-column: 2;
+            grid-row: 1;
             align-items: center;
             justify-content: flex-end;
             gap: 0.75rem;
@@ -2598,33 +2606,10 @@
 
         html[dir="rtl"] .language-menu { direction: rtl; }
 
-        @media (min-width: 901px) {
-            .app-header {
-                grid-template-columns: minmax(190px, 1fr) auto max-content;
-            }
-        }
-
         @media (min-width: 641px) {
             html[dir="rtl"] .language-menu {
                 inset-inline-start: 0;
                 inset-inline-end: auto;
-            }
-        }
-
-        @media (min-width: 901px) and (max-width: 1120px) {
-            :is(html[lang="fr"], html[lang="es"], html[lang="pt"], html[lang="ru"], html[lang="th"], html[lang="ar"]) .app-header {
-                grid-template-columns: minmax(0, 1fr) auto;
-            }
-
-            :is(html[lang="fr"], html[lang="es"], html[lang="pt"], html[lang="ru"], html[lang="th"], html[lang="ar"]) .workspace-nav {
-                grid-column: 1 / -1;
-                grid-row: 2;
-                width: 100%;
-            }
-
-            :is(html[lang="fr"], html[lang="es"], html[lang="pt"], html[lang="ru"], html[lang="th"], html[lang="ar"]) .header-actions {
-                grid-column: 2;
-                grid-row: 1;
             }
         }
 
