@@ -2,11 +2,15 @@
     'use strict';
 
     const STORAGE_KEY = 'enplay_locale_v1';
+    const INTERFACE_STORAGE_KEY = 'enplay_interface_language_v1';
     const DEFAULT_LOCALE = 'zh-Hant';
+    const DEFAULT_INTERFACE_LANGUAGE = 'localized';
 
     const BASE_MESSAGES = Object.freeze({
         'language.label': '語言',
-        'language.choose': '選擇介面語言',
+        'language.choose': '選擇內容語言',
+        'interface.english': 'English UI',
+        'interface.englishHelp': '以英文顯示介面，不改變目前內容語言或書架。',
 
         'common.home': '首頁',
         'common.close': '關閉',
@@ -240,10 +244,248 @@
         'document.articles': '文章播放器 · Enplay'
     });
 
+    const ENGLISH_MESSAGES = Object.freeze({
+        'language.label': 'Language',
+        'language.choose': 'Choose content language',
+        'interface.english': 'English UI',
+        'interface.englishHelp': 'Use English for interface labels without changing the selected content library language.',
+
+        'common.home': 'Home',
+        'common.close': 'Close',
+        'common.cancel': 'Cancel',
+        'common.confirm': 'Confirm',
+        'common.import': 'Import',
+        'common.play': 'Play',
+        'common.pause': 'Pause',
+        'common.fullscreen': 'Fullscreen',
+        'common.exitFullscreen': 'Exit fullscreen',
+        'common.previous': 'Previous',
+        'common.next': 'Next',
+        'common.learned': 'Learned',
+        'common.builtIn': 'Built in',
+        'common.custom': 'Custom',
+        'common.loading': 'Loading…',
+        'common.unknown': 'Unknown',
+
+        'nav.content': 'Learning content',
+        'nav.words': 'Words',
+        'nav.sentences': 'Sentences',
+        'nav.articles': 'Articles',
+        'nav.searchWord': 'Search words…',
+        'nav.learningRecord': 'Learning history',
+        'nav.wordRecord': 'Word history',
+        'nav.sentenceRecord': 'Sentence history',
+
+        'online.label': 'Online',
+        'online.connecting': 'Connecting',
+        'online.currentTitle': '{online} online, capacity {capacity}; updates every 30 seconds',
+        'online.reconnectingTitle': 'Reconnecting to the presence service',
+        'online.gateConnectingTitle': 'Connecting to the learning space',
+        'online.gateConnectingMessage': 'Checking current availability. Please wait.',
+        'online.gateFullTitle': 'The learning space is full',
+        'online.gateFullMessage': '{online} people are online and the capacity is {capacity}. We will retry automatically.',
+        'online.gateRetryTitle': 'Reconnecting',
+        'online.gateRetryMessage': 'The presence service is temporarily unavailable. You will enter automatically when it reconnects.',
+
+        'player.aria': 'Playback controls',
+        'player.title': 'Playback controls',
+        'player.todayWords': 'Today: {count} words',
+        'player.todaySentences': 'Today: {count} sentences',
+        'player.currentArticles': 'Current library: {count} articles',
+        'player.dateReviewWords': '{date} · {count} words',
+        'player.exitDateReview': 'Exit date replay',
+        'player.exitDateReviewTitle': 'Exit the {date} replay and return to your previous dictionary position',
+        'player.wordRepeat': 'Word repeats',
+        'player.sentenceRepeat': 'Sentence repeats',
+        'player.articleRepeat': 'Article repeats',
+        'player.speed': 'Playback speed',
+        'player.voice': 'Reading voice',
+        'player.naturalVoice': 'Natural voice',
+        'player.naturalVoiceHelp': 'Natural-sounding audio for examples, sentences, and articles. Uses a small amount of data.',
+        'player.systemVoice': 'System fallback',
+        'player.systemVoiceHelp': 'Reads words and definitions, and plays locally when the network is unstable.',
+        'player.systemAuto': 'Choose automatically',
+        'player.voiceUsFemale': 'US female',
+        'player.voiceGbFemale': 'UK female',
+        'player.voiceUsMale': 'US male',
+        'player.voiceGbMale': 'UK male',
+        'player.wordLoop': 'Loop word',
+        'player.sentenceLoop': 'Loop sentence',
+        'player.continuous': 'Continuous play',
+        'player.continuousArticles': 'Continue to next article',
+        'player.onlyUnlearned': 'Unlearned only',
+        'player.readEnglish': 'Read English definition',
+        'player.readExample': 'Read example',
+        'player.readChinese': 'Read translation',
+
+        'content.wordEyebrow': 'Vocabulary · Words',
+        'content.wordTitle': 'Hear a word. Remember a word.',
+        'content.wordDescription': 'Loop, shadow, and review at your own pace so every play becomes useful input.',
+        'content.currentWordAria': 'Current word',
+        'content.sentenceEyebrow': 'Sentences',
+        'content.sentenceTitle': 'Bring English back into real life.',
+        'content.sentenceDescription': 'Listen by scenario, compare translations, and repeat aloud to build natural responses.',
+        'content.currentSentenceAria': 'Current sentence',
+        'content.englishDefinition': 'English definition',
+        'content.chineseDefinition': 'Translation',
+        'content.example': 'Example',
+        'content.learned': 'Learned',
+        'content.addWord': 'Add to notebook',
+        'content.removeWord': 'Remove from notebook',
+        'content.addSentence': 'Add sentence to notebook',
+        'content.removeSentence': 'Remove sentence from notebook',
+        'content.noChinese': '(No translation yet)',
+
+        'articleEmpty.eyebrow': 'Articles',
+        'articleEmpty.title': 'The article player is waiting for its first article.',
+        'articleEmpty.description': 'This library is empty. Import an article to enable continuous playback, sentence-by-sentence practice, and word saving.',
+        'articleEmpty.featuresAria': 'Planned article player features',
+        'articleEmpty.continuousTitle': 'Continuous playback',
+        'articleEmpty.continuousDescription': 'Play by full article or individual sentence',
+        'articleEmpty.followTitle': 'Sentence practice',
+        'articleEmpty.followDescription': 'Highlight the current sentence and follow progress',
+        'articleEmpty.saveWordsTitle': 'Save words',
+        'articleEmpty.saveWordsDescription': 'Collect unfamiliar words for later review',
+
+        'article.controlsAria': 'Article playback controls',
+        'article.sentenceListAria': 'Article sentence comparison',
+        'article.previousArticle': 'Previous article',
+        'article.nextArticle': 'Next article',
+        'article.previousSentence': 'Previous sentence',
+        'article.nextSentence': 'Next sentence',
+        'article.playAll': 'Play article',
+        'article.pause': 'Pause article',
+        'article.fullscreen': 'Read article in fullscreen',
+        'article.exitFullscreen': 'Exit article fullscreen',
+        'article.ready': 'Ready',
+        'article.reading': 'Reading',
+        'article.paused': 'Paused',
+        'article.switching': 'Switching',
+        'article.sentenceDone': 'Sentence complete',
+        'article.nextPass': 'Starting next pass',
+        'article.complete': 'Article complete',
+        'article.noVoice': 'No voice is available. Check your network or system voices.',
+        'article.sentenceProgress': 'Sentence {current}/{total}',
+        'article.passProgress': 'Pass {current}/{total}',
+        'article.approxWords': 'About {count} words',
+        'article.noTranslation': 'No translation available',
+        'article.defaultSummary': 'Read sentence by sentence, compare translations, and follow the natural voice for listening practice.',
+        'article.defaultLevel': 'Graded article',
+        'article.defaultTopic': 'General topic',
+        'article.listening': 'Listening passage',
+        'article.readingComprehension': 'Reading comprehension',
+
+        'shelf.aria': 'My library',
+        'shelf.title': 'My library',
+        'shelf.count': '{count} libraries',
+        'shelf.localeEmpty': 'No content is available for the selected content language yet.',
+        'shelf.sourceLabel': 'Source',
+        'shelf.licenseLabel': 'License',
+        'shelf.import': 'Import content',
+        'shelf.formatNote': 'Supports UTF-8 CSV, TSV, and JSON; articles also support TXT and Markdown.',
+        'shelf.sentenceSource': 'Expanded sentence text comes from Tatoeba under CC BY 2.0 FR.',
+        'shelf.articleSource': 'Graded articles are original Enplay content inspired by common Chinese secondary-school exam topics and skills, not copied exam papers.',
+        'shelf.cet4Name': 'CET-4 Core Vocabulary',
+        'shelf.dailySentencesName': 'Everyday English Sentences',
+        'shelf.gradedArticlesName': 'Graded Secondary-School Articles',
+        'shelf.originalGraded': 'Original · Graded',
+        'shelf.wordUnit': 'words',
+        'shelf.sentenceUnit': 'sentences',
+        'shelf.articleUnit': 'articles',
+
+        'notebook.aria': 'Vocabulary notebook',
+        'notebook.open': 'Open vocabulary notebook',
+        'notebook.countAria': 'Saved item count',
+        'notebook.title': 'My vocabulary notebook',
+        'notebook.summary': '{words} words · {sentences} sentences',
+        'notebook.playWords': 'Play words',
+        'notebook.playSentences': 'Play sentences',
+        'notebook.close': 'Close vocabulary notebook',
+        'notebook.emptyTitle': 'Nothing saved yet',
+        'notebook.emptyHint': 'Select the + at the top right of a word or sentence card to save it for review.',
+        'notebook.source': 'Source',
+        'notebook.unknownWords': 'Unknown word library',
+        'notebook.unknownSentences': 'Unknown sentence library',
+        'notebook.remove': 'Remove from notebook',
+        'notebook.entryWord': 'Word',
+        'notebook.entrySentence': 'Sentence',
+
+        'history.title': 'Learning history',
+        'history.words': 'Words',
+        'history.sentences': 'Sentences',
+        'history.date': 'Date',
+        'history.all': 'All',
+        'history.noWords': 'No words learned yet',
+        'history.noSentences': 'No sentences learned yet',
+        'history.clear': 'Clear',
+        'history.confirmWords': 'Clear the learned words for this date?',
+        'history.confirmSentences': 'Clear the learned sentences for this date?',
+        'history.noClearWords': 'There are no learned words to clear for this date.',
+        'history.noClearSentences': 'There are no learned sentences to clear for this date.',
+        'history.dateRecord': 'Date record',
+        'history.wordNotFound': 'This word could not be found in the current order.',
+
+        'import.title': 'Import to this browser',
+        'import.description': 'Content is stored in this browser and is not uploaded publicly. You can switch to it immediately after import.',
+        'import.close': 'Close import dialog',
+        'import.contentType': 'Content type',
+        'import.wordLibrary': 'Word library',
+        'import.sentenceLibrary': 'Sentence library',
+        'import.articleLibrary': 'Article library',
+        'import.name': 'Library name',
+        'import.namePlaceholder': 'For example: Business English Vocabulary',
+        'import.chooseFile': 'Choose content file',
+        'import.noFile': 'No file selected',
+        'import.cancel': 'Cancel',
+        'import.confirm': 'Import library',
+        'import.parsing': 'Parsing and validating content…',
+        'import.noValid': 'No valid importable content was found in this file.',
+        'import.success': 'Import complete: {count} items added',
+        'import.failed': 'Import failed: {message}',
+        'import.jsonError': 'The top-level JSON value must be an array or contain an items array.',
+
+        'fullscreen.previousWord': 'Previous word',
+        'fullscreen.nextWord': 'Next word',
+        'fullscreen.previousSentence': 'Previous sentence',
+        'fullscreen.nextSentence': 'Next sentence',
+        'fullscreen.start': 'Beginning reached',
+        'fullscreen.end': 'End reached',
+        'fullscreen.wordEnter': 'View word in fullscreen',
+        'fullscreen.wordExit': 'Exit word fullscreen',
+        'fullscreen.sentenceEnter': 'View sentence in fullscreen',
+        'fullscreen.sentenceExit': 'Exit sentence fullscreen',
+
+        'errors.wordbookLoad': 'The word library could not be loaded. Check your network and try again.',
+        'errors.speechUnsupported': 'This browser does not support speech playback.',
+        'errors.noVoice': 'No voice is available. Check your network or system voices.',
+        'errors.network': 'Network connection failed. Please try again later.',
+        'errors.invalidFile': 'The file format or content is invalid.',
+        'errors.wordNotFound': 'The requested word could not be found.',
+
+        'categories.greetingsSocial': 'Greetings & socializing',
+        'categories.dailyRoutine': 'Daily routines',
+        'categories.diningFood': 'Food & dining',
+        'categories.familyFriends': 'Family & friends',
+        'categories.foodDining': 'Food & dining',
+        'categories.shoppingMoney': 'Shopping & money',
+        'categories.travelTransport': 'Travel & transport',
+        'categories.workBusiness': 'Work & business',
+        'categories.schoolStudy': 'School & study',
+        'categories.healthWellness': 'Health & wellbeing',
+        'categories.weatherTime': 'Weather & time',
+        'categories.technologyCommunication': 'Technology & communication',
+        'categories.feelingsOpinions': 'Feelings & opinions',
+        'categories.generalConversation': 'Useful expressions',
+
+        'document.words': 'Word Player · Enplay',
+        'document.sentences': 'Sentence Player · Enplay',
+        'document.articles': 'Article Player · Enplay'
+    });
+
     const LOCALE_OVERRIDES = {
         ja: {
             'language.label': '言語',
-            'language.choose': '表示言語を選択',
+            'language.choose': 'コンテンツの言語を選択',
             'common.home': 'ホーム',
             'common.close': '閉じる',
             'common.cancel': 'キャンセル',
@@ -463,7 +705,7 @@
         },
         ko: {
             'language.label': '언어',
-            'language.choose': '화면 언어 선택',
+            'language.choose': '콘텐츠 언어 선택',
             'common.home': '홈',
             'common.close': '닫기',
             'common.cancel': '취소',
@@ -683,7 +925,7 @@
         },
         fr: {
             'language.label': 'Langue',
-            'language.choose': 'Choisir la langue de l’interface',
+            'language.choose': 'Choisir la langue du contenu',
             'common.home': 'Accueil',
             'common.close': 'Fermer',
             'common.cancel': 'Annuler',
@@ -903,7 +1145,7 @@
         },
         es: {
             'language.label': 'Idioma',
-            'language.choose': 'Elegir idioma de la interfaz',
+            'language.choose': 'Elegir el idioma del contenido',
             'common.home': 'Inicio',
             'common.close': 'Cerrar',
             'common.cancel': 'Cancelar',
@@ -1123,7 +1365,7 @@
         },
         pt: {
             'language.label': 'Idioma',
-            'language.choose': 'Escolher idioma da interface',
+            'language.choose': 'Escolher o idioma do conteúdo',
             'common.home': 'Início',
             'common.close': 'Fechar',
             'common.cancel': 'Cancelar',
@@ -1343,7 +1585,7 @@
         },
         ru: {
             'language.label': 'Язык',
-            'language.choose': 'Выбрать язык интерфейса',
+            'language.choose': 'Выбрать язык материалов',
             'common.home': 'Главная',
             'common.close': 'Закрыть',
             'common.cancel': 'Отмена',
@@ -1563,7 +1805,7 @@
         },
         th: {
             'language.label': 'ภาษา',
-            'language.choose': 'เลือกภาษาของหน้าจอ',
+            'language.choose': 'เลือกภาษาของเนื้อหา',
             'common.home': 'หน้าหลัก',
             'common.close': 'ปิด',
             'common.cancel': 'ยกเลิก',
@@ -1783,7 +2025,7 @@
         },
         ar: {
             'language.label': 'اللغة',
-            'language.choose': 'اختيار لغة الواجهة',
+            'language.choose': 'اختيار لغة المحتوى',
             'common.home': 'الرئيسية',
             'common.close': 'إغلاق',
             'common.cancel': 'إلغاء',
@@ -2032,12 +2274,23 @@
         }
     }
 
-    let currentLocale = DEFAULT_LOCALE;
+    function readStoredInterfaceLanguage() {
+        try {
+            return window.localStorage.getItem(INTERFACE_STORAGE_KEY) === 'en'
+                ? 'en'
+                : DEFAULT_INTERFACE_LANGUAGE;
+        } catch (error) {
+            return DEFAULT_INTERFACE_LANGUAGE;
+        }
+    }
 
-    function setDocumentLocale(locale) {
-        const config = locales[locale] || locales[DEFAULT_LOCALE];
-        document.documentElement.lang = locale;
-        document.documentElement.dir = config.dir;
+    let currentLocale = DEFAULT_LOCALE;
+    let currentInterfaceLanguage = DEFAULT_INTERFACE_LANGUAGE;
+
+    function setDocumentLocale() {
+        const config = locales[currentLocale] || locales[DEFAULT_LOCALE];
+        document.documentElement.lang = currentInterfaceLanguage === 'en' ? 'en' : currentLocale;
+        document.documentElement.dir = currentInterfaceLanguage === 'en' ? 'ltr' : config.dir;
     }
 
     function interpolate(template, vars) {
@@ -2048,7 +2301,9 @@
     }
 
     function t(key, vars) {
-        const activeMessages = locales[currentLocale].messages;
+        const activeMessages = currentInterfaceLanguage === 'en'
+            ? ENGLISH_MESSAGES
+            : locales[currentLocale].messages;
         const template = Object.prototype.hasOwnProperty.call(activeMessages, key)
             ? activeMessages[key]
             : BASE_MESSAGES[key];
@@ -2057,6 +2312,10 @@
 
     function getLocale() {
         return currentLocale;
+    }
+
+    function getInterfaceLanguage() {
+        return currentInterfaceLanguage;
     }
 
     function parseVars(element) {
@@ -2102,7 +2361,7 @@
         const nextLocale = Object.prototype.hasOwnProperty.call(locales, locale) ? locale : DEFAULT_LOCALE;
         const previousLocale = currentLocale;
         currentLocale = nextLocale;
-        setDocumentLocale(nextLocale);
+        setDocumentLocale();
 
         if (persist) {
             try {
@@ -2119,6 +2378,29 @@
         return nextLocale;
     }
 
+    function setInterfaceLanguage(language, options) {
+        const settings = options || {};
+        const persist = settings.persist !== false;
+        const nextLanguage = language === 'en' ? 'en' : DEFAULT_INTERFACE_LANGUAGE;
+        const previousLanguage = currentInterfaceLanguage;
+        currentInterfaceLanguage = nextLanguage;
+        setDocumentLocale();
+
+        if (persist) {
+            try {
+                window.localStorage.setItem(INTERFACE_STORAGE_KEY, nextLanguage);
+            } catch (error) {
+                /* Storage can be unavailable in private or restricted contexts. */
+            }
+        }
+
+        apply(document);
+        window.dispatchEvent(new CustomEvent('enplay:interfacechange', {
+            detail: { language: nextLanguage, previousLanguage }
+        }));
+        return nextLanguage;
+    }
+
     function toDate(value) {
         if (value instanceof Date) return value;
         if (typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value)) {
@@ -2131,7 +2413,7 @@
         const value = toDate(date);
         if (Number.isNaN(value.getTime())) return '';
         try {
-            return new Intl.DateTimeFormat(currentLocale, {
+            return new Intl.DateTimeFormat(currentInterfaceLanguage === 'en' ? 'en' : currentLocale, {
                 year: 'numeric',
                 month: 'long',
                 day: 'numeric'
@@ -2145,20 +2427,23 @@
         const numericValue = typeof value === 'number' ? value : Number(value);
         if (!Number.isFinite(numericValue)) return String(value == null ? '' : value);
         try {
-            return new Intl.NumberFormat(currentLocale).format(numericValue);
+            return new Intl.NumberFormat(currentInterfaceLanguage === 'en' ? 'en' : currentLocale).format(numericValue);
         } catch (error) {
             return new Intl.NumberFormat(DEFAULT_LOCALE).format(numericValue);
         }
     }
 
     currentLocale = readStoredLocale();
-    setDocumentLocale(currentLocale);
+    currentInterfaceLanguage = readStoredInterfaceLanguage();
+    setDocumentLocale();
 
     window.EnplayI18n = Object.freeze({
         locales,
         t,
         getLocale,
         setLocale,
+        getInterfaceLanguage,
+        setInterfaceLanguage,
         apply,
         formatDate,
         formatNumber

@@ -446,6 +446,33 @@
             box-shadow: 0 6px 18px rgba(23, 35, 60, 0.18);
         }
 
+        .interface-language-toggle {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.42rem;
+            min-height: 2.35rem;
+            margin-left: 0.2rem;
+            padding: 0 0.8rem 0 0.72rem;
+            border-left: 1px solid var(--line);
+            color: var(--muted);
+            font-size: 0.78rem;
+            font-weight: 700;
+            white-space: nowrap;
+            cursor: pointer;
+        }
+
+        .interface-language-toggle:hover {
+            color: var(--ink);
+        }
+
+        .interface-language-toggle input {
+            width: 1rem;
+            height: 1rem;
+            margin: 0;
+            accent-color: var(--primary);
+            cursor: pointer;
+        }
+
         .header-actions {
             display: flex;
             grid-column: 2;
@@ -2366,6 +2393,7 @@
             .language-trigger i { display: none; }
             .workspace-nav { width: calc(100% - 1.5rem); overflow: hidden; }
             .nav-tab { min-width: 0; gap: 0.3rem; padding: 0.6rem 0.3rem; font-size: 0.8rem; }
+            .interface-language-toggle { gap: 0.3rem; padding: 0 0.45rem; font-size: 0.7rem; }
             .section-intro { grid-template-columns: 1fr; gap: 0.6rem; }
             .section-description { text-align: left; }
             .workspace-main { padding-top: 2rem; }
@@ -2844,6 +2872,10 @@
         <button class="nav-tab" type="button" data-view="articles" aria-selected="false">
             <i class="fa fa-file-text-o"></i><span data-i18n="nav.articles">文章</span>
         </button>
+        <label class="interface-language-toggle" data-i18n-title="interface.englishHelp" title="以英文顯示介面，不改變目前內容語言或書架。">
+            <input id="englishInterfaceToggle" type="checkbox" aria-describedby="englishInterfaceLabel">
+            <span id="englishInterfaceLabel" data-i18n="interface.english">English UI</span>
+        </label>
     </nav>
 
     <div id="accessGate" class="access-gate" role="alert" aria-live="assertive">
@@ -3379,6 +3411,7 @@
         const languageMenu = document.getElementById('languageMenu');
         const languageCurrentCode = document.getElementById('languageCurrentCode');
         const languageOptions = Array.from(document.querySelectorAll('[data-locale]'));
+        const englishInterfaceToggle = document.getElementById('englishInterfaceToggle');
         const libraryListEl = document.getElementById('libraryList');
         const libraryCountEl = document.getElementById('libraryCount');
         const sentenceSourceNote = document.getElementById('sentenceSourceNote');
@@ -4702,7 +4735,7 @@
             notebookPlaySentencesBtn.querySelector('span').textContent = t(notebookSentencesPlaying ? 'common.pause' : 'notebook.playSentences');
         }
 
-        function refreshLocalizedInterface() {
+        function refreshLocalizedInterface(skipContentSynchronization = false) {
             if (!i18n) return;
             i18n.apply(document);
             syncLanguageMenuSelection();
@@ -4726,7 +4759,7 @@
                 updateArticleMetadata(article, getContentLibrary('articles'));
             }
 
-            void synchronizeLocaleLibraries(getContentLocale());
+            if (skipContentSynchronization !== true) void synchronizeLocaleLibraries(getContentLocale());
 
             if (currentWorkspaceView === 'sentences') {
                 updateTodaySentenceCount();
@@ -4773,6 +4806,16 @@
                 if (!event.target.closest('.language-switcher')) setLanguageMenuOpen(false);
             });
             window.addEventListener('enplay:localechange', refreshLocalizedInterface);
+            if (englishInterfaceToggle && typeof i18n.getInterfaceLanguage === 'function') {
+                englishInterfaceToggle.checked = i18n.getInterfaceLanguage() === 'en';
+                englishInterfaceToggle.addEventListener('change', () => {
+                    i18n.setInterfaceLanguage(englishInterfaceToggle.checked ? 'en' : 'localized');
+                });
+                window.addEventListener('enplay:interfacechange', () => {
+                    englishInterfaceToggle.checked = i18n.getInterfaceLanguage() === 'en';
+                    refreshLocalizedInterface(true);
+                });
+            }
         }
 
         function getFullscreenElement() {

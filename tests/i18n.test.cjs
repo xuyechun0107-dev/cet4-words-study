@@ -8,9 +8,10 @@ const root = path.join(__dirname, '..');
 const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
 const source = fs.readFileSync(path.join(root, 'i18n.js'), 'utf8');
 
-function createContext(storedLocale = null) {
+function createContext(storedLocale = null, storedInterfaceLanguage = null) {
     const storage = new Map();
     if (storedLocale) storage.set('enplay_locale_v1', storedLocale);
+    if (storedInterfaceLanguage) storage.set('enplay_interface_language_v1', storedInterfaceLanguage);
     const events = [];
     const document = {
         documentElement: { lang: '', dir: '' },
@@ -40,7 +41,7 @@ function collectUsedKeys() {
     for (const match of html.matchAll(/data-i18n(?:-[a-z-]+)?="([A-Za-z0-9_.-]+)"/g)) keys.add(match[1]);
     for (const match of html.matchAll(/\bt\('([A-Za-z0-9_.-]+)'/g)) keys.add(match[1]);
     for (const match of html.matchAll(/setLabel\([^,]+,\s*'([A-Za-z0-9_.-]+)'\)/g)) keys.add(match[1]);
-    for (const match of html.matchAll(/['"]((?:language|common|nav|online|player|content|articleEmpty|article|shelf|notebook|history|import|fullscreen|errors|categories|document)\.[A-Za-z0-9_.-]+)['"]/g)) keys.add(match[1]);
+    for (const match of html.matchAll(/['"]((?:language|interface|common|nav|online|player|content|articleEmpty|article|shelf|notebook|history|import|fullscreen|errors|categories|document)\.[A-Za-z0-9_.-]+)['"]/g)) keys.add(match[1]);
     return [...keys].sort();
 }
 
@@ -68,6 +69,13 @@ test('all directly referenced interface keys resolve in every locale', () => {
             assert.notEqual(api.t(key), key, `${locale} is missing ${key}`);
         }
     }
+
+    api.setInterfaceLanguage('en', { persist: false });
+    for (const key of usedKeys) {
+        const value = api.t(key);
+        assert.notEqual(value, key, `English interface is missing ${key}`);
+        assert.doesNotMatch(value, /[\u3400-\u9fff\u3040-\u30ff\uac00-\ud7af]/u, `English interface falls back for ${key}`);
+    }
 });
 
 test('locale preference persists and Arabic alone enables RTL', () => {
@@ -90,6 +98,42 @@ test('invalid stored locales safely fall back to Traditional Chinese', () => {
     const { api, document } = createContext('unsupported-locale');
     assert.equal(api.getLocale(), 'zh-Hant');
     assert.equal(document.documentElement.lang, 'zh-Hant');
+});
+
+test('English interface mode is independent from the selected content locale', () => {
+    const state = createContext('ja');
+    assert.equal(state.api.getLocale(), 'ja');
+    assert.equal(state.api.getInterfaceLanguage(), 'localized');
+
+    state.api.setInterfaceLanguage('en');
+    assert.equal(state.api.getLocale(), 'ja');
+    assert.equal(state.api.getInterfaceLanguage(), 'en');
+    assert.equal(state.api.t('nav.words'), 'Words');
+    assert.equal(state.storage.get('enplay_interface_language_v1'), 'en');
+    assert.equal(state.storage.get('enplay_locale_v1'), 'ja');
+    assert.equal(state.document.documentElement.lang, 'en');
+    assert.equal(state.document.documentElement.dir, 'ltr');
+    assert.equal(state.events.at(-1).type, 'enplay:interfacechange');
+
+    state.api.setLocale('ar', { persist: false });
+    assert.equal(state.api.getLocale(), 'ar');
+    assert.equal(state.api.t('nav.words'), 'Words');
+    assert.equal(state.document.documentElement.dir, 'ltr');
+});
+
+test('English interface preference restores without becoming a content locale', () => {
+    const state = createContext('fr', 'en');
+    assert.equal(state.api.getLocale(), 'fr');
+    assert.equal(state.api.getInterfaceLanguage(), 'en');
+    assert.equal(state.api.t('shelf.localeEmpty'), 'No content is available for the selected content language yet.');
+    assert.deepEqual(Object.keys(state.api.locales), ['zh-Hant', 'ja', 'ko', 'fr', 'es', 'pt', 'ru', 'th', 'ar']);
+});
+
+test('navigation owns the English interface checkbox and interface refresh skips content synchronization', () => {
+    assert.match(html, /<nav class="workspace-nav"[\s\S]*id="englishInterfaceToggle"[\s\S]*<\/nav>/);
+    assert.doesNotMatch(html, /id="englishInterfaceToggle"[^>]*data-locale/);
+    assert.match(html, /enplay:interfacechange[\s\S]*refreshLocalizedInterface\(true\)/);
+    assert.match(html, /if \(skipContentSynchronization !== true\) void synchronizeLocaleLibraries\(getContentLocale\(\)\)/);
 });
 
 test('runtime listens for locale changes on window and treats locales as a keyed object', () => {
