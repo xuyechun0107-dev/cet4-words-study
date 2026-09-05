@@ -129,8 +129,9 @@ test('English interface preference restores without becoming a content locale', 
     assert.deepEqual(Object.keys(state.api.locales), ['zh-Hant', 'ja', 'ko', 'fr', 'es', 'pt', 'ru', 'th', 'ar']);
 });
 
-test('navigation owns the English interface checkbox and interface refresh skips content synchronization', () => {
-    assert.match(html, /<nav class="workspace-nav"[\s\S]*id="englishInterfaceToggle"[\s\S]*<\/nav>/);
+test('header places the English interface checkbox directly after the content language selector', () => {
+    assert.match(html, /<div class="language-switcher">[\s\S]*?<\/div>\s*<label class="interface-language-toggle"[\s\S]*?id="englishInterfaceToggle"/);
+    assert.doesNotMatch(html, /<nav class="workspace-nav"[\s\S]*id="englishInterfaceToggle"[\s\S]*<\/nav>/);
     assert.doesNotMatch(html, /id="englishInterfaceToggle"[^>]*data-locale/);
     assert.match(html, /enplay:interfacechange[\s\S]*refreshLocalizedInterface\(true\)/);
     assert.match(html, /if \(skipContentSynchronization !== true\) void synchronizeLocaleLibraries\(getContentLocale\(\)\)/);

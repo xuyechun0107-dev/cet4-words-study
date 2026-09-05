@@ -449,11 +449,13 @@
         .interface-language-toggle {
             display: inline-flex;
             align-items: center;
+            justify-content: center;
             gap: 0.42rem;
-            min-height: 2.35rem;
-            margin-left: 0.2rem;
-            padding: 0 0.8rem 0 0.72rem;
-            border-left: 1px solid var(--line);
+            min-height: 2.45rem;
+            padding: 0.55rem 0.72rem;
+            border: 1px solid var(--line);
+            border-radius: 0.8rem;
+            background: rgba(255, 255, 255, 0.94);
             color: var(--muted);
             font-size: 0.78rem;
             font-weight: 700;
@@ -2393,7 +2395,7 @@
             .language-trigger i { display: none; }
             .workspace-nav { width: calc(100% - 1.5rem); overflow: hidden; }
             .nav-tab { min-width: 0; gap: 0.3rem; padding: 0.6rem 0.3rem; font-size: 0.8rem; }
-            .interface-language-toggle { gap: 0.3rem; padding: 0 0.45rem; font-size: 0.7rem; }
+            .interface-language-toggle { gap: 0.3rem; min-height: 2.5rem; padding: 0.5rem 0.55rem; font-size: 0.7rem; }
             .section-intro { grid-template-columns: 1fr; gap: 0.6rem; }
             .section-description { text-align: left; }
             .workspace-main { padding-top: 2rem; }
@@ -2855,6 +2857,10 @@
                     </div>
                 </div>
             </div>
+            <label class="interface-language-toggle" data-i18n-title="interface.englishHelp" title="以英文顯示介面，不改變目前內容語言或書架。">
+                <input id="englishInterfaceToggle" type="checkbox" aria-describedby="englishInterfaceLabel">
+                <span id="englishInterfaceLabel" data-i18n="interface.english">English UI</span>
+            </label>
             <button id="historyBtn" class="history-button" type="button">
                 <i class="fa fa-history text-primary"></i>
                 <span id="historyButtonLabel" data-i18n="nav.learningRecord">學習記錄</span>
@@ -2872,10 +2878,6 @@
         <button class="nav-tab" type="button" data-view="articles" aria-selected="false">
             <i class="fa fa-file-text-o"></i><span data-i18n="nav.articles">文章</span>
         </button>
-        <label class="interface-language-toggle" data-i18n-title="interface.englishHelp" title="以英文顯示介面，不改變目前內容語言或書架。">
-            <input id="englishInterfaceToggle" type="checkbox" aria-describedby="englishInterfaceLabel">
-            <span id="englishInterfaceLabel" data-i18n="interface.english">English UI</span>
-        </label>
     </nav>
 
     <div id="accessGate" class="access-gate" role="alert" aria-live="assertive">
